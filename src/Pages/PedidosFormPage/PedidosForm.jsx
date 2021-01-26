@@ -20,15 +20,12 @@ const PedidosForm = () => {
         data: grupos, 
         isFetching: fetchingGrupos
     } = useGetGrupos()
-    
 
     const {
         data: empresas, 
         isFetching: fetchingFornecedores, 
         refetch: refetchRub
     } = useGetEmpresasByRubrica(selectedRubrica)
-
-  
 
     const {
         data: pedido, 
@@ -155,14 +152,14 @@ const PedidosForm = () => {
                 grupo:id?  pedido.data.grupo : grupos.data[0].name,
                 grupo_abrv:id?  pedido.data.grupo_abrv : grupos.data[0].abrv,
                 responsavel:id?  pedido.data.responsavel :  grupos.data[0].membros[0],
-                empresa: id? pedido.data.empresa : empresas.data.length > 0? empresas.data[0] : "",
-                ne:id?  pedido.data.ne :  "",
+                empresa: id? pedido.data.empresa : empresas.data.empresas.length > 0? empresas.data.empresas[0] : "",
+                ne:id?  pedido.data.ne : empresas.data.empresas.length > 0? empresas.data.ne.filter(n=>n.empresa===empresas.data.empresas[0])[0].ne : "",
                 proposta:id?  pedido.data.proposta : "",
                 notas:id?  pedido.data.notas: "",
                 valor_total:id?  pedido.data.valor_total: "",
                 artigos:id?  pedido.data.artigos : [],
                 fatura:id?  pedido.data.fatura : [],
-                cabimento: id? pedido.data.cabimento : "",
+                cabimento: id? pedido.data.cabimento : empresas.data.empresas.length > 0? empresas.data.ne.filter(n=>n.empresa===empresas.data.empresas[0])[0].cabimento : "",
             })
             if(id){
                 setSelectedRubrica(pedido.data.rubrica.code)
@@ -172,7 +169,7 @@ const PedidosForm = () => {
     }, [isLoading, id])
     
 
-  
+    console.log(empresas)
 
     if(isLoading || Object.keys(submitData).length=== 0) return <Loading msg="A carregar dados necessários..." />
     if(submitForm)  return <SubmitForm data={submitData}  id={id} submitFunction={id? useEditPedido: useSendPedidos}/>
@@ -277,12 +274,14 @@ const PedidosForm = () => {
                     // if(fetchNE)fetchNE()
                     setSubmitData({
                         ...submitData, 
-                        empresa: e.target.value
+                        empresa: e.target.value, 
+                        ne: empresas.data.ne.filter(n=>n.empresa===e.target.value)[0].ne,
+                        cabimento: empresas.data.ne.filter(n=>n.empresa===e.target.value)[0].cabimento
                     })
 
                 }}
             >
-                {empresas.data.map(e=>{
+                {empresas.data.empresas.map(e=>{
                     return (
                         <MenuItem key={e} value={e}>
                             {e}
@@ -292,11 +291,38 @@ const PedidosForm = () => {
                 })}
             </TextField>
            
-            <GetRubricas 
+            {/* <GetRubricas 
                 empresa={submitData.empresa}
                 setSubmitData={setSubmitData}
                 submitData={submitData}
-            />
+            /> */}
+             <TextField
+                variant="filled"
+                id="ne"
+                required
+                select
+                label="Nota de Encomenda"
+                value={submitData.ne}
+                helperText={submitData.ne!== "" ? `Cabimento: ${submitData.cabimento}`: ""}
+                onChange={(e)=>{
+                    console.log(e.target)
+                    setSubmitData({
+                        ...submitData, 
+                        ne: e.target.value,
+                        cabimento: e.target.name
+                    })
+                }}
+            >
+                {empresas.data.ne.filter(n=>n.empresa===submitData.empresa).map(n =>{
+                    
+                    return (
+                        <MenuItem name={n.cabimento} key={n.id} value={n.ne}>
+                            {n.ne}
+                        </MenuItem>
+                    )
+                })}
+            </TextField>
+
             <TextField
                 required
                 error={error.proposta}
@@ -489,7 +515,14 @@ const PedidosForm = () => {
                 InputLabelProps={{
                     shrink: true,
                 }}
-                onChange={onChangeInputFatura}
+                onChange={(e)=>{
+                    const selectedDate = new Date(e.target.value)
+                    setTempFatura({
+                        ...tempFatura, 
+                        data_emissao: selectedDate.toJSON,
+                        data_emissao_timestamp: selectedDate.getTime()
+                    })
+                }}
                 variant="filled"
             />
             <TextField

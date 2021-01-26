@@ -5,6 +5,7 @@ import {Bar} from "react-chartjs-2"
 import { Typography, Paper, Button, Accordion , AccordionSummary, AccordionDetails, Avatar, IconButton, Tooltip} from '@material-ui/core'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
+import {Link} from "react-router-dom"
  const DistPage = () => {
     const [datasets, setDatasets] = React.useState(null)
     const [membersDatasets, setMembersDatasets] = React.useState(null)
@@ -27,7 +28,6 @@ import MoreVertIcon from '@material-ui/icons/MoreVert';
         let tempAnualDatasets=[]
         let tempMembersDatasets = {}
         if(!isLoading){
-       
             Object.keys(dist.data).forEach(group=>{
                 let orderedDataAnual= []
                 
@@ -68,7 +68,7 @@ import MoreVertIcon from '@material-ui/icons/MoreVert';
         <div className="distContainer">
             <div className="titleContainer">
                 <Typography variant="h6" color="primary" >Distribuição Anual</Typography>
-                <Button variant="contained" color="primary" >gerir grupos</Button>
+                <Button component={Link} to="/gerirGrupos" variant="contained" color="primary" >gerir grupos</Button>
             </div>
             <Paper className="dataContainer">
                 <div className="exportContainer">

@@ -320,9 +320,26 @@ export const useEditPedido = (data, id) =>{
 export const useDeletePedido = (id) =>{
     const pedidos = Container.get(Pedidos)
     return useQuery({
-        queryKey: ['edit_pedido'],
+        queryKey: ['delete_pedido'],
         queryFn: async () => {
             const info =  await pedidos.deletePedido(id)
+            return info
+        },
+        config: { 
+          refetchOnWindowFocus: false,
+          refetchInterval: false,
+          refetchIntervalInBackground: false,
+          cacheTime: 0
+        }
+    })
+}
+
+export const useNovoGrupo = (id) =>{
+    const grupos = Container.get(Grupos)
+    return useQuery({
+        queryKey: ['novo_grupo'],
+        queryFn: async () => {
+            const info =  await grupos.deletePedido(id)
             return info
         },
         config: { 

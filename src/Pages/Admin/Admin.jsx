@@ -23,7 +23,7 @@ const Admin = () => {
     const closeMenu = ()=> setHideMenu(true)
     const { getAccessTokenSilently } = useAuth0();
     const [accessToken, setAccessToken] = React.useState(null) 
-    
+    const switchComponent = <SwitchComponent />
     const history = React.useMemo(() => {
         return createBrowserHistory()
       }, [])
@@ -100,7 +100,7 @@ const Admin = () => {
             <Nav hideMenu={hideMenu} setHideMenu={setHideMenu} height={appBarHeight}/>
             <main  style={{marginTop: appBarHeight}}>
               <AnimatePresence exitBeforeEnter={true} initial={false}>
-                <SwitchComponent />
+                {switchComponent}
               </AnimatePresence>
             </main>
             <Footer />

@@ -623,11 +623,6 @@ app.post('/api/searchPedidos', async  (req, res) => {
       }
     })
   })
-  // pedidos_ref.orderByChild(req.body.field).startAt(req.body.word).endAt(req.body.word + "\uf8ff").once("value", sanpshot => {
-  //   res.send({
-  //     "result": sanpshot.val()
-  //   })
-  // })
 })
 
 app.post("/api/saveConfig", (req, res) => {
@@ -709,7 +704,7 @@ app.post("/api/novo_pedido", async (req, res) => {
   pedido["pedido_done"] = false;
   pedido["pedido_feito_timestamp"] = "";
   pedido["pedido_feito_formated_date"] = "";
-  await pedidos_ref
+  const novo_pedido = await pedidos_ref
     .add(pedido)
     .catch(err => {
       res.json({
@@ -738,7 +733,19 @@ app.post("/api/novo_pedido", async (req, res) => {
     [pedido.grupo_abrv]: current_dist
   },{merge: true})
 
-
+  console.log(pedido)
+  pedido.fatura.forEach( async (f)=>{
+    await faturasRef.add({
+      ...f,
+      pedido: novo_pedido.id
+    })
+    .catch(err => {
+      res.json({
+          error: true,
+          msg: String(err)
+      })
+    })
+  })
 
   res.json({
     error: false
@@ -883,7 +890,15 @@ app.post("/api/getEmpresasByRubrica", async (req, res) => {
       })
     })
     res.json({
-      data: [...new Set(empresas.docs.map(doc=>doc.data().empresa))]
+      data: {
+        empresas:[...new Set(empresas.docs.map(doc=>doc.data().empresa))],
+        ne: empresas.docs.map(doc=>{
+          return {
+            ...doc.data(),
+            id: doc.id
+          }
+        })
+      }
     })
 
 });

@@ -1,9 +1,8 @@
 import React from 'react'
 import VpnKeyIcon from '@material-ui/icons/VpnKey';
-import {Typography ,Button} from "@material-ui/core"
+import {Avatar ,IconButton, Tooltip} from "@material-ui/core"
 import CEBLogo from "../../Assets/logoceb.png" 
 import { useAuth0 } from "@auth0/auth0-react";
-import zIndex from '@material-ui/core/styles/zIndex';
 
 const  Login = () => {
     const { loginWithRedirect } = useAuth0();
@@ -44,10 +43,18 @@ const  Login = () => {
                     marginBottom: 20
                      
                 }}src={CEBLogo} alt=""/>
-                <Typography style={{marginBottom: 20}} variant="h1" >Bem-Vinda</Typography>
-                <Button  onClick={()=>loginWithRedirect()}  variant="contained"  color="primary" >
-                    <VpnKeyIcon/>
-                </Button>
+                {/* <Typography style={{marginBottom: 20}} variant="h1" >Bem-Vinda</Typography> */}
+                <Tooltip title="Fazer login">
+                    <Avatar component={IconButton} onClick={()=>loginWithRedirect()} style={{
+                        backgroundColor: "#3498db",
+                        width: 80,
+                        height: 80
+                    }}>
+                        <VpnKeyIcon style={{
+                            fontSize: 50
+                        }}/>
+                    </Avatar>
+                </Tooltip>
             </div>
 
         </div>

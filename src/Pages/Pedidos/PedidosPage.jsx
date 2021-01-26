@@ -56,7 +56,7 @@ const PedidosPage = () => {
     const Rubricas = {
         "gestures": ()=> <GestureIcon style={{color: "#9b59b6"}}/>, 
         "whatshot":()=>  <WhatshotIcon style={{color: "#e74c3c"}}/>,
-        "widgets": ()=> <WidgetsIcon style={{color: "#3498db"}}/>,
+        "widget": ()=> <WidgetsIcon style={{color: "#3498db"}}/>,
     }
 
     const {
@@ -309,13 +309,13 @@ const PedidosPage = () => {
                 }}
             >
                 {faturacaoData &&  <>
-                    {faturacaoData.length > 0&&<Table size="small">
+                    {faturacaoData.length > 0 &&<Table size="small">
                         <TableHead>
                             <TableRow >
                                 <TableCell align="right">Data de Emissão</TableCell>
                                 <TableCell align="right">Códido</TableCell>
-                                <TableCell align="right">Notas</TableCell>
                                 <TableCell align="right">Valor</TableCell>
+                                <TableCell align="right">Notas</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -324,8 +324,8 @@ const PedidosPage = () => {
                                     <TableRow key={`fatura_${i}`}>
                                             <TableCell align="right">{f.data_emissao}</TableCell>
                                             <TableCell align="right">{f.name}</TableCell>
-                                            <TableCell align="right">{f.notas}</TableCell>
                                             <TableCell align="right">{f.valor_fatura} €</TableCell>
+                                            <TableCell align="right">{f.notas}</TableCell>
                                     </TableRow>
                                 )
                             })}
