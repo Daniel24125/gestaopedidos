@@ -1,0 +1,61 @@
+
+.openMenuNav
+    width: calc(100% - 300px) !important
+.navContainer
+    width: 100%
+    z-index: 5000
+    transition: all 200ms ease 
+    position: fixed 
+    display: flex 
+    align-items: center
+    min-height: 64px
+    .contentContainer
+        width: 100%
+        padding: 0 25px
+        display: flex 
+        justify-content: space-between
+        .iconContainer
+            display: flex
+            align-items: center
+            .titleText
+                @include mQ(500px)
+                    display: none
+        .navAccountContainer
+            display: flex
+            .MuiAvatar-root 
+                cursor: pointer
+        .openMenu
+            cursor: pointer
+            font-size: 30px
+.drawerContainer
+    width: 300px 
+    height: 100vh 
+    z-index: 6000
+    .MuiDrawer-paper
+        width: 300px 
+        .drawerHeader
+            width: 100% 
+            display: flex 
+            justify-content: space-around
+            padding: 20px 0 
+            align-items: center
+        .navListContainer
+            padding: 10px 0 
+            ul 
+                width: 100% 
+                
+                li
+                    width: 100% 
+                    transition: all 100ms ease 
+                    &:hover 
+                        background: #E9F9FF
+                        color: #00A4DD
+                    a
+                        display: flex 
+                        align-items: center
+                        width: 100% 
+                        padding: 10px 50px  
+                        svg 
+                            margin-right: 20px
+
+                    
