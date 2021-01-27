@@ -368,12 +368,12 @@ export const useGetGrupoByID = (id) =>{
     })
 }
 
-export const useEditGrupo = (id) =>{
+export const useEditGrupo = (data, id) =>{
     const grupos = Container.get(Grupos)
     return useQuery({
         queryKey: ['edit_grupo'],
         queryFn: async () => {
-            const info =  await grupos.editGrupo(id)
+            const info =  await grupos.editGrupo(data, id)
             return info
         },
         config: { 
@@ -385,12 +385,12 @@ export const useEditGrupo = (id) =>{
     })
 }
 
-export const useDeleteGrupo = (id) =>{
+export const useDeleteGrupo = (id,selectedDistID) =>{
     const grupos = Container.get(Grupos)
     return useQuery({
         queryKey: ['delete_grupo'],
         queryFn: async () => {
-            const info =  await grupos.deleteGrupo(id)
+            const info =  await grupos.deleteGrupo(id,selectedDistID)
             return info
         },
         config: { 
@@ -425,6 +425,78 @@ export const useGetDistAnual = (year) =>{
         queryKey: ['get_dist_anual'],
         queryFn: async () => {
             const info =  await grupos.getDistAnual(year)
+            return info
+        },
+        config: { 
+          refetchOnWindowFocus: false,
+          refetchInterval: false,
+          refetchIntervalInBackground: false,
+          cacheTime: 0
+        }
+    })
+}
+
+
+export const useAddEmpresa = (empresa) =>{
+    const fornecedores = Container.get(Fornecedores)
+    return useQuery({
+        queryKey: ['add_empresa'],
+        queryFn: async () => {
+            const info =  await fornecedores.addEmpresa(empresa)
+            return info
+        },
+        config: { 
+          refetchOnWindowFocus: false,
+          refetchInterval: false,
+          refetchIntervalInBackground: false,
+          cacheTime: 0
+        }
+    })
+}
+
+
+export const useEditEmpresa = (id, empresa) =>{
+    const fornecedores = Container.get(Fornecedores)
+    return useQuery({
+        queryKey: ['edit_empresa'],
+        queryFn: async () => {
+            const info =  await fornecedores.editEmpresa(id, empresa)
+            return info
+        },
+        config: { 
+          refetchOnWindowFocus: false,
+          refetchInterval: false,
+          refetchIntervalInBackground: false,
+          cacheTime: 0
+        }
+    })
+}
+
+
+export const useDeleteEmpresa = (id) =>{
+    const fornecedores = Container.get(Fornecedores)
+    return useQuery({
+        queryKey: ['delete_empresa'],
+        queryFn: async () => {
+            const info =  await fornecedores.deleteEmpresa(id)
+            return info
+        },
+        config: { 
+          refetchOnWindowFocus: false,
+          refetchInterval: false,
+          refetchIntervalInBackground: false,
+          cacheTime: 0
+        }
+    })
+}
+
+
+export const useGetEmpresaById = (id) =>{
+    const fornecedores = Container.get(Fornecedores)
+    return useQuery({
+        queryKey: ['get_empresa_by_id'],
+        queryFn: async () => {
+            const info =  await fornecedores.getEmpresaById(id)
             return info
         },
         config: { 

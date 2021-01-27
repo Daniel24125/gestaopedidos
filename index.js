@@ -703,6 +703,7 @@ app.post("/api/getEmpresaInfo", (req, res) => {
       res.send(data.val())
     });
 })
+
 app.post("/api/getDistAnual", async (req, res) => {
   const year = req.body.year
   console.log(year)
@@ -714,12 +715,6 @@ app.post("/api/getDistAnual", async (req, res) => {
           msg: String(err)
       })
     })
-  console.log( distAnual.docs.map(doc=>{
-    return {
-      ...doc.data(),
-     id: doc.id
-    }
-  }))
   res.json({
     data: distAnual.docs.map(doc=>{
       return {
@@ -730,7 +725,7 @@ app.post("/api/getDistAnual", async (req, res) => {
   })
 })
 
-const updateGrupoDist = async (valor_total, pedido, res,)=>{
+const updateGrupoDist = async (valor_total, pedido, res)=>{
   const dist_data = await distAnualRef
     .where("grupo", "==", pedido.grupo_abrv)
     .where("year", "==", pedido.year)
@@ -913,23 +908,31 @@ app.post("/api/novo_grupo", async (req, res) => {
   })
 });
 
-app.post("/api/nova_empresa", (req, res) => {
-  let empresa = req.body;
-  empresas_ref.push(empresa, () => {
-    res.send({
-      "msg": "Success"
+app.post("/api/nova_empresa", async (req, res) => {
+  const empresa = req.body.empresa;
+  const notasEncomenda = empresa.nes
+  delete empresa.nes
+  const added_empresa = await empresas_ref.add(empresa)
+  .catch(err => {
+    res.json({
+        error: true,
+        msg: String(err)
     })
   })
+  notasEncomenda.forEach(async (n)=>{
+    await notasEncomendaRef.add({
+      ...n,
+      "empresa": empresa.empresa,
+      "empresa_id": added_empresa.id
+    })
+  })
+  
+  res.json({
+    error: false
+  })
+
 });
 
-app.post("/api/getEmpresaById",  (req, res) => {
-  let id = req.body.id;
-  empresas_ref.child(id).once("value", (empresa) => {
-    res.send({
-      "empresa": empresa.val()
-    })
-  });
-});
 
 app.post("/api/getRubricasByEmpresa", async (req, res) => {
   let e = req.body.empresa;
@@ -999,6 +1002,27 @@ app.post("/api/getEmpresasByRubrica", async (req, res) => {
 
 });
 
+app.post("/api/getEmpresaById", async (req, res) => {
+  let id = req.body.id;
+  if(id){
+    const result = await empresas_ref.doc(id).get()
+    .catch(err => {
+      res.json({
+          error: true,
+          msg: String(err)
+      })
+    })
+    res.json({
+      data: result.data()
+    })
+  }else{
+    res.json({
+      data: null
+    })
+  }
+ 
+});
+
 app.post("/api/editEmpresa",  (req, res) => {
   let id = req.body.id;
   empresas_ref.child(id).set(req.body.data, () => {
@@ -1033,7 +1057,7 @@ app.post("/api/getEmpresaStats",  (req, res) => {
       if (snap.val() != null) {
         pedidos_id = Object.keys(snap.val())
         pedido = snap.val();
-        pedidos_id.map(id => {
+        pedidos_id.forEach(id => {
           promises.push(grupos_ref.child(pedido[id].grupo).child("abrv").once("value"))
         })
         return Promise.all(promises)
@@ -1104,6 +1128,7 @@ app.delete("/api/deletePedido", async (req, res) => {
 
 app.delete("/api/deleteGrupo", async (req, res) => {
   const id = req.body.id;  
+  const distID = req.body.selectedDistID
   const members = await grupos_ref.doc(id).collection("membros").get()
   .catch(err => {
     res.json({
@@ -1122,23 +1147,98 @@ app.delete("/api/deleteGrupo", async (req, res) => {
         msg: String(err)
     })
   })
-  res.json({
-    error: false
-  })
 
-});
-
-app.patch("/api/editGrupo", async (req, res) => {
-  const id = req.body.id;
-  const data = req.body.data
-
-  await grupos_ref.doc(id).set(data, {merge: true})
+  await distAnualRef.doc(distID).delete()
   .catch(err => {
     res.json({
         error: true,
         msg: String(err)
     })
   })
+  res.json({
+    error: false
+  })
+
+  
+});
+
+
+app.patch("/api/editGrupo", async (req, res) => {
+  const id = req.body.id;
+  const data = req.body.data
+  const old_data = await grupos_ref.doc(id).get()
+  .catch(err => {
+    res.json({
+        error: true,
+        msg: String(err)
+    })
+  })
+
+  const old_grupo_data_membros = await grupos_ref.doc(id).collection("membros").get()
+  .catch(err => {
+    res.json({
+        error: true,
+        msg: String(err)
+    })
+  })
+
+  const membros_names = old_grupo_data_membros.docs.map(doc=>doc.data().name)
+  const diff = data.membros.filter(m=>!membros_names.includes(m)).concat(membros_names.filter(x => !data.membros.includes(x)))
+  if(diff.length > 0){
+    diff.forEach(async (dif_m) =>{
+      if(membros_names.includes(dif_m)){
+        const m_id = old_grupo_data_membros.docs.filter(doc=>doc.data().name=== dif_m)[0].id
+        await grupos_ref.doc(id).collection("membros").doc(m_id).delete()
+        .catch(err => {
+          res.json({
+              error: true,
+              msg: String(err)
+          })
+        })
+      }else{
+        await grupos_ref.doc(id).collection("membros").add({
+          name: dif_m,
+          dist: [{
+            "m1": 0,
+            "m2": 0,
+            "m3": 0,
+            "m4": 0,
+            "m5": 0,
+            "m6": 0,
+            "m7": 0,
+            "m8": 0,
+            "m9": 0,
+            "m10": 0,
+            "m11": 0,
+            "m12": 0,
+            total: 0,
+            year: new Date().getFullYear()
+          }]
+        }).catch(err => {
+          res.json({
+              error: true,
+              msg: String(err)
+          })
+        })
+
+      }
+    })
+  }
+
+ await grupos_ref.doc(id).set(data, {merge: true})
+  .catch(err => {
+    res.json({
+        error: true,
+        msg: String(err)
+    })
+  })
+
+  if(data.abrv !== old_data.data().abrv){
+    await distAnualRef.doc(old_data.data().dist).set({
+      grupo: data.abrv
+    }, {merge: true})
+  }
+  
   res.json({
     error: false
   })
@@ -1190,7 +1290,6 @@ app.post("/api/getPedidoById", async (req, res) => {
 app.post("/api/editPedido", async (req, res) => {
     let pedido = req.body.data;
     const id = req.body.id
-  
     const old_pedido = await pedidos_ref.doc(id)
       .get()
       .catch(err => {
@@ -1199,32 +1298,10 @@ app.post("/api/editPedido", async (req, res) => {
             msg: String(err)
         })
       })
-
     let valor_atualizar = Number(pedido.valor_total - old_pedido.data().valor_total)
-    
     if(Boolean(valor_atualizar)){
-      const dist_data = await distRef.doc(String(pedido.year))
-        .get()
-        .catch(err => {
-          res.json({
-              error: true,
-              msg: String(err)
-          })
-        })
-      let current_dist = dist_data.data()[pedido.grupo_abrv]
-      let current_dist_membro = current_dist.members[pedido.responsavel]
-
-      current_dist.members[pedido.responsavel][`m${pedido.mounth}`] = Number(current_dist_membro[`m${pedido.mounth}`]) + pedido.valor_total
-      current_dist.members[pedido.responsavel].total = Number(current_dist_membro.total ) + pedido.valor_total
-      current_dist.anual[`m${pedido.mounth}`]= Number( current_dist.anual[`m${pedido.mounth}`])+ pedido.valor_total
-      current_dist.total = Number(current_dist.total) + pedido.valor_total
-
-      await distRef.doc(String(pedido.year)).set({
-        [pedido.grupo_abrv]: current_dist
-      },{merge: true})
-
+      updateGrupoDist(valor_atualizar, pedido, res)
     }
-
     await pedidos_ref.doc(id)
       .set(pedido, {merge: true})
       .catch(err => {
@@ -1233,60 +1310,10 @@ app.post("/api/editPedido", async (req, res) => {
             msg: String(err)
         })
       })
-
     res.json({
       error: false
     })
-
-
-  // let id = req.body.id;
-  // let edit_pedido = req.body.data
-  // edit_pedido["day"] = parseInt(edit_pedido["data_pedido "].split("/")[0]);
-  // edit_pedido["mounth"] = parseInt(edit_pedido["data_pedido "].split("/")[1]);
-  // edit_pedido["year"] = parseInt(edit_pedido["data_pedido "].split("/")[2]);
-
-  // pedidos_ref.child(id).once("value", result => {
-  //   let pedido = result.val()
-  //   let pedido_done = true;
-  //   let old_rubrica = pedido.rubrica.name.toLowerCase()
-  //   if (old_rubrica == "sequenciação")
-  //     old_rubrica = "sequenciacao"
-  //   let new_rubrica = edit_pedido.rubrica.name.toLowerCase();
-  //   if (new_rubrica == "sequenciação") {
-  //     new_rubrica = "sequenciacao"
-  //   }
-  //   edit_pedido.artigos.map(artigo => {
-  //     if (!artigo.entrega.chegada) {
-  //       pedido_done = false;
-  //     } else if (artigo.quantidade != artigo.entrega.quantidade_chegada) {
-  //       pedido_done = false
-  //     }
-  //   })
-  //   edit_pedido["pedido_done"] = pedido_done
-  //   updateValorDisponivel(false, pedido.empresa, old_rubrica, pedido["ne"], parseFloat(pedido["valor_total"]))
-
-  //   grupos_ref.child(pedido["grupo"]).once("value", old_grupo => {
-  //     updateDistGrupoValue(true, pedido["year"], `m${pedido["mounth"]}`, old_grupo.val().abrv, pedido["responsavel"], parseFloat(pedido["valor_total"]))
-  //   });
-  //   setTimeout(() => {
-  //     grupos_ref.child(edit_pedido["grupo"]).once("value", grupo => {
-  //       updateDistGrupoValue(false, edit_pedido["year"], `m${edit_pedido["mounth"]}`, grupo.val().abrv, edit_pedido["responsavel"], parseFloat(edit_pedido["valor_total"]))
-  //     });
-  //     updateValorDisponivel(true, edit_pedido.empresa, new_rubrica, edit_pedido["ne"], edit_pedido["valor_total"])
-
-  //   }, 700)
-
-  //   pedidos_ref.child(id).set(edit_pedido, () => {
-  //     res.send({
-  //       "msg": "Success"
-  //     })
-  //   })
-  // })
-
-
 });
-
-
 
 app.listen(port, () => {
   console.log("App is listenning o port " + port);

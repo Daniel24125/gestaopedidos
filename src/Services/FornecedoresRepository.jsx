@@ -24,20 +24,6 @@ export default class FornecedoresRepository  {
         })
         return response.then(res =>res.json())
     }
-  
-    getEmpresaById = id =>{
-        let url = this.apiBaseUrl().toString()
-        url += `getEmpresaById`
-        const response =  fetch(url,{
-            method: "POST", 
-            headers:{
-                "content-type": "application/json", 
-                },
-                body: JSON.stringify({id}),
-                json: true
-            })
-            return response.then(res =>res.json())
-    }
 
     getRubricasByEmpresa = empresa =>{
         let url = this.apiBaseUrl().toString()
@@ -77,5 +63,61 @@ export default class FornecedoresRepository  {
                 json: true
             })
             return response.then(res =>res.json())
+    }
+
+    addEmpresa = empresa =>{
+        let url = this.apiBaseUrl().toString()
+        url += `nova_empresa`
+        const response =  fetch(url,{
+            method: "POST", 
+            headers:{
+                "content-type": "application/json", 
+                },
+                body: JSON.stringify({empresa}),
+                json: true
+            })
+        return response.then(res =>res.json())
+    }
+
+    editEmpresa = (id, empresa) =>{
+        let url = this.apiBaseUrl().toString()
+        url += `editEmpresa`
+        const response =  fetch(url,{
+            method: "POST", 
+            headers:{
+                "content-type": "application/json", 
+                },
+                body: JSON.stringify({id,empresa}),
+                json: true
+            })
+        return response.then(res =>res.json())
+    }
+
+    deleteEmpresa = (id) =>{
+        let url = this.apiBaseUrl().toString()
+        url += `deleteEmpresa`
+        const response =  fetch(url,{
+            method: "DELETE", 
+            headers:{
+                "content-type": "application/json", 
+                },
+                body: JSON.stringify({id}),
+                json: true
+            })
+        return response.then(res =>res.json())
+    }
+
+    getEmpresaById = (id) =>{
+        let url = this.apiBaseUrl().toString()
+        url += `getEmpresaById`
+        const response =  fetch(url,{
+            method: "POST", 
+            headers:{
+                "content-type": "application/json", 
+                },
+                body: JSON.stringify({id}),
+                json: true
+            })
+        return response.then(res =>res.json())
     }
 }

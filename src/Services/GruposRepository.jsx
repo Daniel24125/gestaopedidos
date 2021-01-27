@@ -67,7 +67,7 @@ export default class GruposRepository  {
         return response.then(res =>res.json())
     }
     
-    editGrupo = (id) =>{
+    editGrupo = (data, id) =>{
         let url = this.apiBaseUrl().toString()
         url += `editGrupo`
         const response =  fetch(url,{
@@ -75,13 +75,13 @@ export default class GruposRepository  {
             headers:{
             "content-type": "application/json", 
             },
-            body: JSON.stringify({id}),
+            body: JSON.stringify({data, id}),
             json: true
         })
         return response.then(res =>res.json())
     }
     
-    deleteGrupo = (id) =>{
+    deleteGrupo = (id,selectedDistID) =>{
         let url = this.apiBaseUrl().toString()
         url += `deleteGrupo`
         const response =  fetch(url,{
@@ -89,7 +89,7 @@ export default class GruposRepository  {
             headers:{
             "content-type": "application/json", 
             },
-            body: JSON.stringify({id}),
+            body: JSON.stringify({id,selectedDistID}),
             json: true
         })
         return response.then(res =>res.json())

@@ -6,6 +6,7 @@ import MoreVertIcon from '@material-ui/icons/MoreVert';
 import CloseIcon from '@material-ui/icons/Close';
 import RubricasComponent from "./RubricasComponent"
 import FaturasComponent from "./FaturasComponent"
+import {Link} from "react-router-dom"
 
 const SaldosPage = () => {
     const [anchorEl, setAnchorEl] = React.useState(null);
@@ -24,7 +25,7 @@ const SaldosPage = () => {
         <div className="fornecedoresContainer">
             <div className="titleContainer">
                 <Typography color="primary" variant="h6">Fornecedores Registados</Typography>
-                <Button color="primary" variant="contained">adicionar fornecedor</Button>
+                <Button component={Link} to="/empresas/registo" color="primary" variant="contained">adicionar fornecedor</Button>
             </div>
             <TableContainer style={{padding: "20px 0px 0 0"}} component={Paper}>
                 <Table size="small">

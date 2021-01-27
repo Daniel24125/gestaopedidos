@@ -8,7 +8,6 @@ const SubmitForm = ({
     id,
     submitFunction
 }) => {
-    console.log(data, id, submitFunction)
     const {
         data: response, 
         isFetching
@@ -19,7 +18,7 @@ const SubmitForm = ({
         <div className="formSubmitedContainer">
             <LibraryAddCheckIcon style={{fontSize: 200, color: "#2ecc71"}} />
             <Typography variant="h4">A operação foi realizada com sucesso</Typography>
-            <Button variant="contained"component={Link} to="/gerirGrupos" color="primary">Ver lista de grupo</Button>
+            <Button variant="contained"component={Link} to="/empresas" color="primary">Ver lista de fornecedores</Button>
         </div>
     )
 }

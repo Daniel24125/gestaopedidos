@@ -14,6 +14,7 @@ const SwitchComponent = ()=>{
     const Artigos = loadable(() => import('../ArtigosPage/ArtigosComponent'))
     const GerirGrupos = loadable(() => import('../GerirGrupos/GerirGruposPage'))
     const AddGroup = loadable(() => import('../AddGroup/AddGroup'))
+    const EmpresasForm = loadable(() => import('../EmpresasForm/EmpresasForm'))
     
     return <Switch location={location} key={location.pathname}>
         <Route path="/dashboard" exact render={
@@ -44,7 +45,7 @@ const SwitchComponent = ()=>{
             </MountTransition>
           }} />
        
-        <Route path="/saldo" exact render={
+        <Route path="/empresas" exact render={
           ()=>{
             return <MountTransition>
               <Saldos />
@@ -76,6 +77,20 @@ const SwitchComponent = ()=>{
           ()=>{
             return <MountTransition>
               <AddGroup />
+            </MountTransition>
+          }} />
+
+        <Route path="/empresas/registo" exact render={
+          ()=>{
+            return <MountTransition>
+              <EmpresasForm />
+            </MountTransition>
+          }} />
+
+        <Route path="/empresas/:id" exact render={
+          ()=>{
+            return <MountTransition>
+              <EmpresasForm />
             </MountTransition>
           }} />
 

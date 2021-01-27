@@ -5,7 +5,6 @@ import loadable from '@loadable/component'
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import DashboardIcon from '@material-ui/icons/Dashboard';
 import LocalShippingIcon from '@material-ui/icons/LocalShipping';
-import EuroIcon from '@material-ui/icons/Euro';
 import CreditCardIcon from '@material-ui/icons/CreditCard';
 import { Typography, Drawer,Divider, IconButton } from '@material-ui/core';
 import {useAuth0} from "@auth0/auth0-react"
@@ -13,6 +12,7 @@ import {useSetAccessToken} from "../../Domain/useCases"
 import { AnimatePresence } from 'framer-motion'
 import SwitchComponent from "./SwitchComponent"
 import AllInboxIcon from '@material-ui/icons/AllInbox';
+import GroupIcon from '@material-ui/icons/Group';
 
 const appBarHeight = 65
 const Nav = loadable(() => import('.//Nav'))
@@ -78,12 +78,12 @@ const Admin = () => {
                             </li>
                             <li onClick={closeMenu}>
                                 <Link to="/gerirGrupos">
-                                    <EuroIcon/>
+                                    <GroupIcon/>
                                       Grupos de Investigação
                                 </Link>
                             </li>
                             <li onClick={closeMenu}>
-                                <Link to="/saldo">
+                                <Link to="/empresas">
                                     <CreditCardIcon/>
                                       Saldo Empresarial
                                 </Link>

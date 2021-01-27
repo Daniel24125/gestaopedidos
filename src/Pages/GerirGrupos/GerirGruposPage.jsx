@@ -19,6 +19,7 @@ const GerirGruposPage = () => {
     const [openDelete, setOpenDelete] = React.useState(false);
     const [deleteResult, setDeleteResult] = React.useState(null);
     const [selectedYear, setSelectedYear] = React.useState(2021);
+    const [selectedDistID, setSelectedDistID] = React.useState(null);
     
     
     const {
@@ -55,7 +56,6 @@ const GerirGruposPage = () => {
             distAnual.data.forEach(d=>{
                  let orderedDataAnual= []
                  const grupoColor = grupos.data.filter(g=>g.abrv === d.grupo)[0].color
-                 console.log(grupoColor)
                 for (let i = 1; i< 13; i++){
                     orderedDataAnual.push(Number(d.anual[`m${i}`]))
                 }
@@ -84,11 +84,11 @@ const GerirGruposPage = () => {
         </Paper>}
             {grupos.data.length > 0 && <>
                 <Dialog onClose={()=>{
-                 setOpenDelete(false)
-                 setDeleteResult(null)
-                 setDeleteGrupo(false)
-                 refetch()
-            }} aria-labelledby="simple-dialog-title" open={openDelete}>
+                    setOpenDelete(false)
+                    setDeleteResult(null)
+                    setDeleteGrupo(false)
+                    refetch()
+                }} aria-labelledby="simple-dialog-title" open={openDelete}>
                 <DialogTitle id="alert-dialog-title">{"Tem a certeza que pretende apagar o grupo selecionado"}</DialogTitle>
                 <DialogContent>
                     <DialogContentText id="alert-dialog-description">
@@ -102,7 +102,9 @@ const GerirGruposPage = () => {
                     {deleteGrupo && <DeleteGroup
                         id={selectedGroup} 
                         setDeleteGrupo={setDeleteGrupo}
-                        setDeleteResult={setDeleteResult}/>}
+                        setDeleteResult={setDeleteResult}
+                        selectedDistID = {selectedDistID}
+                        />}
                     <Button onClick={()=>setOpenDelete(false)} autoFocus>
                         cancelar
                     </Button>
@@ -168,7 +170,6 @@ const GerirGruposPage = () => {
                                     ticks:{
                                         fontColor: "#666"
                                     },
-                                    // stacked: true,
                                 }],
                                 yAxes: [{
                                     display: true,
@@ -205,10 +206,10 @@ const GerirGruposPage = () => {
                         <IconButton onClick={(e)=>{
                             setSelectedGroup(g.id)
                             setAnchorEl(e.target)
+                            setSelectedDistID(g.dist)
                         }}>
                             <MoreVertIcon/>
                         </IconButton>
-                        {/* {collapse===g.id ? <ExpandLess /> : <ExpandMore />} */}
                     </ListItem>
                     <Collapse key={"col_"+g.id} in={collapse===g.id} timeout="auto" unmountOnExit>
                         <MembersComponent selectedYear={2021} setCollapse={setCollapse} id={g.id} />
@@ -223,12 +224,12 @@ const GerirGruposPage = () => {
                 open={Boolean(anchorEl)}
                 onClose={()=>setAnchorEl(null)}
             >
-                <MenuItem componente={Button} onClick={()=>{
+                <MenuItem component={Button} onClick={()=>{
                     setAnchorEl(null)
                     setCollapse(selectedGroup)    
                 }}>DETALHES</MenuItem>
-                <MenuItem componente={Link} to={`/editGrupo/${selectedGroup}`} onClick={()=>setAnchorEl(null)}>EDITAR</MenuItem>
-                <MenuItem componente={Button} onClick={()=>{
+                <MenuItem component={Link} to={`/editGrupo/${selectedGroup}`} onClick={()=>setAnchorEl(null)}>EDITAR</MenuItem>
+                <MenuItem component={Button} onClick={()=>{
                     setAnchorEl(null)
                     setOpenDelete(true)
                 }}>ELIMINAR</MenuItem>

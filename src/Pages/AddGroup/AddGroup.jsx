@@ -9,6 +9,7 @@ import {useNovoGrupo, useGetGrupoByID, useEditGrupo} from "../../Domain/useCases
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import ColorPicker, { useColor } from "react-color-palette";
 import ColorLensIcon from '@material-ui/icons/ColorLens';
+
 const AddGroup = () => {
     let { id } = useParams();
     
@@ -110,7 +111,7 @@ const AddGroup = () => {
                 }} onClick={(e)=>{
                     setAnchorEl(e.target)
                 }}>
-                    <ColorLensIcon style={{color: color.hex}}/>
+                    <ColorLensIcon style={{color: submitData.color}}/>
                 </IconButton>
                 <TextField
                     fullWidth
@@ -153,6 +154,17 @@ const AddGroup = () => {
             <TextField
                 id="name"
                 label="Nome"
+                onKeyDown={(e)=>{
+                    if(e.key=== "Enter"){
+                        let tmpM = submitData.membros
+                        tmpM.push(tempMembro)
+                        setSubmitData({
+                            ...submitData,
+                            membros: tmpM
+                        })
+                        setTempMembro("")
+                    }
+                }}
                 value={tempMembro}
                 onChange={(e)=>{setTempMembro(e.target.value)}}
                 variant="filled"
