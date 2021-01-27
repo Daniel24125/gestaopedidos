@@ -1,12 +1,14 @@
 import React from 'react'
-import {useGetGrupos} from "../../Domain/useCases"
+import {useGetGrupos, useGetDistAnual} from "../../Domain/useCases"
 import Loading from "../../Components/Loading"
-import {Button,   DialogTitle,Dialog,DialogActions,     DialogContent,DialogContentText,  Paper,MenuItem,Menu, Tooltip,Typography, IconButton, List, ListItem,Collapse, ListItemText, ListItemIcon} from "@material-ui/core"
+import {Button,   DialogTitle,Dialog,DialogActions, Snackbar, DialogContent,DialogContentText,  Paper,MenuItem,Menu, Tooltip,Typography, IconButton, List, ListItem,Collapse, ListItemText, ListItemIcon} from "@material-ui/core"
 import {Link} from "react-router-dom"
 import GroupWorkIcon from '@material-ui/icons/GroupWork';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import {Bar} from "react-chartjs-2"
 import MembersComponent from "./MembersComponent"
+import DeleteGroup from "./DeleteGrupoComponent"
+import MuiAlert from '@material-ui/lab/Alert';
 
 const GerirGruposPage = () => {
     const [collapse, setCollapse]=React.useState(null)
@@ -15,47 +17,55 @@ const GerirGruposPage = () => {
     const [datasets, setDatasets] = React.useState(null)
     const [deleteGrupo, setDeleteGrupo] = React.useState(false);
     const [openDelete, setOpenDelete] = React.useState(false);
+    const [deleteResult, setDeleteResult] = React.useState(null);
+    const [selectedYear, setSelectedYear] = React.useState(2021);
+    
+    
+    const {
+        data: distAnual, 
+        isFetching: fetchingDistAnual,
+        refetch: refetchDist
+    } = useGetDistAnual(selectedYear)
+
 
     const {
         data: grupos, 
         isFetching: fetchingGrupos,
-        refetch: refetchGrupo
+        refetch
     } = useGetGrupos()
+
+    const handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+          return;
+        } 
+        refetch()
+        setOpenDelete(false)
+    };
 
     const isLoading = React.useMemo(() => {
         return  fetchingGrupos
-    }, [fetchingGrupos])
-    console.log(grupos)
+        || fetchingDistAnual
+    }, [fetchingGrupos, fetchingDistAnual])
+
+    console.log(distAnual)
+    
     React.useEffect(()=>{
         let tempAnualDatasets=[]
         if(!isLoading){
-            grupos.data.forEach(g=>{
+            distAnual.data.forEach(d=>{
                  let orderedDataAnual= []
+                 const grupoColor = grupos.data.filter(g=>g.abrv === d.grupo)[0].color
+                 console.log(grupoColor)
                 for (let i = 1; i< 13; i++){
-                    orderedDataAnual.push(Number(g.dist.anual[`m${i}`]))
+                    orderedDataAnual.push(Number(d.anual[`m${i}`]))
                 }
                 tempAnualDatasets.push( {
-                    label: g.name, 
+                    label: d.grupo, 
                     data:  orderedDataAnual, 
-                    backgroundColor: g.color,
+                    backgroundColor: grupoColor,
                     fill: true,
-                    borderColor: g.color
+                    borderColor: grupoColor
                 })
-
-            //     g.membros.forEach(m=>{
-            //         const rc = RandomColor()
-            //         let orderedDataMembers= []
-            //         for (let j = 1; j< 13; j++){
-            //             orderedDataMembers.push(Number(dist.data[g.abrv].members[m][`m${j}`]))
-            //         }
-            //         tempMembersDatasets[g.abrv].push({
-            //             label: m, 
-            //             data: orderedDataMembers, 
-            //             backgroundColor: rc,
-            //             fill: true,
-            //             borderColor: rc
-            //         })
-            //    })
             })
           
             setDatasets(tempAnualDatasets)
@@ -65,25 +75,38 @@ const GerirGruposPage = () => {
     if(isLoading) return <Loading msg="A carregar dados relacionados com os grupos de investigação..." />
     return (
         <div className="gerirGruposContainer">
-            <Dialog onClose={()=>setOpenDelete(false)} aria-labelledby="simple-dialog-title" open={openDelete}>
-            <DialogTitle id="alert-dialog-title">{"Tem a certeza que pretende apagar o pedido"}</DialogTitle>
+            {grupos.data.length === 0 && <Paper style={{
+            padding: "10px 20px",
+            width: "100%",
+            marginTop: 50
+        }}>
+            <Typography>Sem grupos para apresentar. <Button component={Link} to="/novoGrupo" color="primary">adicionar grupo</Button></Typography>    
+        </Paper>}
+            {grupos.data.length > 0 && <>
+                <Dialog onClose={()=>{
+                 setOpenDelete(false)
+                 setDeleteResult(null)
+                 setDeleteGrupo(false)
+                 refetch()
+            }} aria-labelledby="simple-dialog-title" open={openDelete}>
+                <DialogTitle id="alert-dialog-title">{"Tem a certeza que pretende apagar o grupo selecionado"}</DialogTitle>
                 <DialogContent>
                     <DialogContentText id="alert-dialog-description">
-                    O pedido será apagado permanentemente da base de dados. Tem a certeza que pretende continuar?
+                        O grupo será apagado permanentemente da base de dados. Tem a certeza que pretende continuar?
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>
                     {!deleteGrupo && <Button style={{color: "#e74c3c"}}onClick={()=>{setDeleteGrupo(true)}}>
                         apagar
                     </Button>}
-                    {deleteGrupo && <deleteGrupo
-                        refetchGrupo={refetchGrupo}
-                        id={selectedGroup} />}
+                    {deleteGrupo && <DeleteGroup
+                        id={selectedGroup} 
+                        setDeleteGrupo={setDeleteGrupo}
+                        setDeleteResult={setDeleteResult}/>}
                     <Button onClick={()=>setOpenDelete(false)} autoFocus>
                         cancelar
                     </Button>
                 </DialogActions>
-
             </Dialog>
              <div className="titleContainer">
                 <Typography variant="h6" color="primary" >Gestão de Grupos de Investigação</Typography>
@@ -102,7 +125,7 @@ const GerirGruposPage = () => {
                         width={100}
                         height={25}
                         data={{
-                            labels: ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"], 
+                            labels: ["Jan", "Fev", "Março", "Abril", "Maio", "Junho", "Julho", "Ag", "Set", "Out", "Nov", "Dez"], 
                             datasets: datasets
                         }}
                         options={{
@@ -188,7 +211,7 @@ const GerirGruposPage = () => {
                         {/* {collapse===g.id ? <ExpandLess /> : <ExpandMore />} */}
                     </ListItem>
                     <Collapse key={"col_"+g.id} in={collapse===g.id} timeout="auto" unmountOnExit>
-                        <MembersComponent setCollapse={setCollapse} id={g.id} />
+                        <MembersComponent selectedYear={2021} setCollapse={setCollapse} id={g.id} />
                     </Collapse>
                 </>)
                 })
@@ -210,7 +233,18 @@ const GerirGruposPage = () => {
                     setOpenDelete(true)
                 }}>ELIMINAR</MenuItem>
             </Menu>
+            {Boolean(deleteResult) && <Snackbar open={true} autoHideDuration={6000} onClose={handleClose}>
+                <Alert onClose={handleClose} severity={deleteResult.error? "error": "success"}>
+                    {deleteResult.error? deleteResult.msg: "O grupo foi eliminado com sucesso!"}
+                </Alert>
+            </Snackbar>}
+
+            </>}
         </div>
     )
 }
 export default GerirGruposPage
+
+const Alert = (props) => {
+    return <MuiAlert elevation={6} variant="filled" {...props} />;
+  }

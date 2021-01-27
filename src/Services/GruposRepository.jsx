@@ -94,4 +94,18 @@ export default class GruposRepository  {
         })
         return response.then(res =>res.json())
     }
+
+    getDistAnual = (year) =>{
+        let url = this.apiBaseUrl().toString()
+        url += `getDistAnual`
+        const response =  fetch(url,{
+            method: "POST", 
+            headers:{
+            "content-type": "application/json", 
+            },
+            body: JSON.stringify({year}),
+            json: true
+        })
+        return response.then(res =>res.json())
+    }
 }

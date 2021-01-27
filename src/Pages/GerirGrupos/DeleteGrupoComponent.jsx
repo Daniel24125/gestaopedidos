@@ -1,11 +1,10 @@
 import React from 'react'
 import {useDeleteGrupo} from "../../Domain/useCases"
-import { CircularProgress, Snackbar} from "@material-ui/core"
-import MuiAlert from '@material-ui/lab/Alert';
+import { CircularProgress} from "@material-ui/core"
 
  const DeletePedidoComponent = ({
-    refetch, 
     id,
+    setDeleteResult
  }) => {
 
     const {
@@ -13,27 +12,15 @@ import MuiAlert from '@material-ui/lab/Alert';
         isFetching 
     } = useDeleteGrupo(id)
 
-
-    const handleClose = (event, reason) => {
-        if (reason === 'clickaway') {
-          return;
-        } 
-        refetch()
-    };
+    React.useEffect(()=>{
+        if(!isFetching){
+            setDeleteResult(result)
+            setDeleteGrupo(false)
+        }
+    }, [isFetching])
 
     if(isFetching) return (<CircularProgress />)
-    return (
-        <>
-            <Snackbar open={true} autoHideDuration={6000} onClose={handleClose}>
-                <Alert onClose={handleClose} severity={result.error? "error": "success"}>
-                    {result.error? result.msg: "O grupo foi eliminado com sucesso!"}
-                </Alert>
-            </Snackbar>
-        </>
-    )
+    return (<></>)
 }
 export default DeletePedidoComponent
 
-const Alert = (props) => {
-    return <MuiAlert elevation={6} variant="filled" {...props} />;
-  }

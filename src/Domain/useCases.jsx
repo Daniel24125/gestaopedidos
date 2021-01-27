@@ -418,3 +418,20 @@ export const useGetGrupoMembros = (id) =>{
         }
     })
 }
+
+export const useGetDistAnual = (year) =>{
+    const grupos = Container.get(Grupos)
+    return useQuery({
+        queryKey: ['get_dist_anual'],
+        queryFn: async () => {
+            const info =  await grupos.getDistAnual(year)
+            return info
+        },
+        config: { 
+          refetchOnWindowFocus: false,
+          refetchInterval: false,
+          refetchIntervalInBackground: false,
+          cacheTime: 0
+        }
+    })
+}

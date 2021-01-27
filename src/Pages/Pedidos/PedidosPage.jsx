@@ -92,7 +92,7 @@ const PedidosPage = () => {
         }}>
             <Typography>Sem pedidos para apresentar. <Button component={Link} to="/pedidos/registo" color="primary">registar pedido</Button></Typography>    
         </Paper>}
-       {pedidosList.data.length > 0&& <div className="pedidosContainer">
+       {pedidosList.data.length > 0 && <div className="pedidosContainer">
                 
             <Dialog onClose={()=>{
                 setOpenDelete(false)

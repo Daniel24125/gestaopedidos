@@ -8,7 +8,8 @@ import RandomColor from "randomcolor"
 
 const MembersComponent = ({
     id,
-    setCollapse
+    setCollapse,
+    selectedYear
 }) => {
     const [membersDatasets, setMemberDataset] = React.useState([])
     const {
@@ -22,8 +23,10 @@ const MembersComponent = ({
             membros.data.forEach(m=>{
                 const orderedDataMembers = []
                 const rc = RandomColor()
+                const currentMembroDist = m.dist.filter(d=>d.year=== selectedYear)[0]
+                console.log(currentMembroDist)
                 for (let j = 1; j< 13; j++){
-                    orderedDataMembers.push(Number(m.dist[`m${j}`]))
+                    orderedDataMembers.push(Number(currentMembroDist[`m${j}`]))
                 }
                 tempMembersDatasets.push({
                     label: m.name, 
@@ -61,7 +64,7 @@ const MembersComponent = ({
                     width={80}
                     height={25}
                     data={{
-                        labels: ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"], 
+                        labels: ["Jan", "Fev", "Março", "Abril", "Maio", "Junho", "Julho", "Ag", "Set", "Out", "Nov", "Dez"], 
                         datasets: membersDatasets? membersDatasets: []
                     }}
                     options={{

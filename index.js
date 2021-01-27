@@ -60,6 +60,7 @@ const grupos_ref = admin.firestore().collection("grupos")
 const configRef = admin.firestore().collection("utils")
 const notasEncomendaRef = admin.firestore().collection("notasEncomenda")
 const faturasRef = admin.firestore().collection("faturas")
+const distAnualRef = admin.firestore().collection("distAnual")
 
 
 // app.post("/api/exportExcelData",  (req, res) => {
@@ -702,9 +703,37 @@ app.post("/api/getEmpresaInfo", (req, res) => {
       res.send(data.val())
     });
 })
+app.post("/api/getDistAnual", async (req, res) => {
+  const year = req.body.year
+  console.log(year)
+  const distAnual = await  distAnualRef.where("year", "==", year)
+    .get()
+    .catch(err => {
+      res.json({
+          error: true,
+          msg: String(err)
+      })
+    })
+  console.log( distAnual.docs.map(doc=>{
+    return {
+      ...doc.data(),
+     id: doc.id
+    }
+  }))
+  res.json({
+    data: distAnual.docs.map(doc=>{
+      return {
+        ...doc.data(),
+       id: doc.id
+      }
+    })
+  })
+})
 
 const updateGrupoDist = async (valor_total, pedido, res,)=>{
-  const dist_data = await grupos_ref.doc(pedido.grupo_id).collection("dist")
+  const dist_data = await distAnualRef
+    .where("grupo", "==", pedido.grupo_abrv)
+    .where("year", "==", pedido.year)
     .get()
     .catch(err => {
       res.json({
@@ -726,21 +755,25 @@ const updateGrupoDist = async (valor_total, pedido, res,)=>{
       id: doc.id
     }
   }).filter(d=>d.year=== pedido.year)[0]
-  let current_dist_membro = dist_data_membros.docs.map(doc=>{
+  
+  const dist_membro = dist_data_membros.docs.map(doc=>{
     return {
       ...doc.data(),
       id: doc.id
     }
   }).filter(d=>d.name=== pedido.responsavel)[0]
 
+  let current_dist_membro = dist_membro.dist.filter(d=>d.year === pedido.year)[0]
   
   current_dist.anual[`m${pedido.mounth}`] = Number(current_dist.anual[`m${pedido.mounth}`]) + valor_total
   current_dist.total = Number(current_dist.total ) + valor_total
   
-  current_dist_membro.dist[`m${pedido.mounth}`]= Number(current_dist_membro.dist[`m${pedido.mounth}`])+ valor_total
-  current_dist_membro.dist.total = Number(current_dist_membro.dist.total) + valor_total
-
-  await grupos_ref.doc(pedido.grupo_id).collection("dist").doc(current_dist.id).set(current_dist, {merge: true})
+  current_dist_membro[`m${pedido.mounth}`]= Number(current_dist_membro[`m${pedido.mounth}`])+ valor_total
+  current_dist_membro.total = Number(current_dist_membro.total) + valor_total
+  
+  const yearIndex = dist_membro.dist.findIndex(d=>d.year===pedido.year)
+  dist_membro.dist[yearIndex] = current_dist_membro
+  await distAnualRef.doc(current_dist.id).set(current_dist, {merge: true})
   .catch(err => {
     res.json({
         error: true,
@@ -748,7 +781,7 @@ const updateGrupoDist = async (valor_total, pedido, res,)=>{
     })
   })
 
-  await grupos_ref.doc(pedido.grupo_id).collection("membros").doc(current_dist_membro.id).set(current_dist_membro, {merge: true})
+  await grupos_ref.doc(pedido.grupo_id).collection("membros").doc(dist_membro.id).set(dist_membro, {merge: true})
   .catch(err => {
     res.json({
         error: true,
@@ -806,36 +839,41 @@ app.post("/api/addArticleToDb", (req, res) => {
 
 app.post("/api/artigo_faturado", (req, res) => {
   let artigo_status = req.body;
-
   pedidos_ref.child(artigo_status.id).child("artigos").child(artigo_status.index).child("faturado").set(artigo_status.status)
   res.send({
     "msg": "Status updated"
   })
 })
 
+
+
 app.post("/api/novo_grupo", async (req, res) => {
   let grupo = req.body.grupo;
   const year = new Date().getFullYear()
+
+  const dist = await distAnualRef.add({
+    grupo: grupo.abrv,
+    year,
+    anual: {
+      "m1": 0,
+      "m2": 0,
+      "m3": 0,
+      "m4": 0,
+      "m5": 0,
+      "m6": 0,
+      "m7": 0,
+      "m8": 0,
+      "m9": 0,
+      "m10": 0,
+      "m11": 0,
+      "m12": 0,
+    },
+    total: 0
+  })
+
   const new_group = await grupos_ref.add({
     ...grupo, 
-    dist: {
-      year: year, 
-      anual: {
-        "m1": 0,
-        "m2": 0,
-        "m3": 0,
-        "m4": 0,
-        "m5": 0,
-        "m6": 0,
-        "m7": 0,
-        "m8": 0,
-        "m9": 0,
-        "m10": 0,
-        "m11": 0,
-        "m12": 0,
-      },
-      total: 0
-    }
+    dist: dist.id
   })
   .catch(err => {
     res.json({
@@ -846,7 +884,7 @@ app.post("/api/novo_grupo", async (req, res) => {
   grupo.membros.forEach(async m=>{
     await grupos_ref.doc(new_group.id).collection("membros").add({
       name: m,
-      dist: {
+      dist: [{
         "m1": 0,
         "m2": 0,
         "m3": 0,
@@ -859,8 +897,9 @@ app.post("/api/novo_grupo", async (req, res) => {
         "m10": 0,
         "m11": 0,
         "m12": 0,
-        total: 0
-      }
+        total: 0,
+        year
+      }]
     })
     .catch(err => {
       res.json({
@@ -869,8 +908,6 @@ app.post("/api/novo_grupo", async (req, res) => {
       })
     })
   })
-
-
   res.json({
     error: false
   })
@@ -1067,19 +1104,15 @@ app.delete("/api/deletePedido", async (req, res) => {
 
 app.delete("/api/deleteGrupo", async (req, res) => {
   const id = req.body.id;  
-  await grupos_ref.doc(id).collection("dist").delete()
+  const members = await grupos_ref.doc(id).collection("membros").get()
   .catch(err => {
     res.json({
         error: true,
         msg: String(err)
     })
   })
-  await grupos_ref.doc(id).collection("membros").delete()
-  .catch(err => {
-    res.json({
-        error: true,
-        msg: String(err)
-    })
+  members.forEach(async (m)=>{
+    await grupos_ref.doc(id).collection("membros").doc(m.id).delete()
   })
 
   await grupos_ref.doc(id).delete()
