@@ -1,7 +1,7 @@
 import React from 'react'
-import {useParams, Link} from "react-router-dom"
+import {useParams} from "react-router-dom"
 import FormComponent from "../../Components/FormComponent"
-import {List , ListItem,FormHelperText, CircularProgress,Button,ListItemText,ListItemSecondaryAction, TextField,  MenuItem, Typography, InputAdornment , IconButton,InputLabel, Input, FormControl, Popover} from "@material-ui/core"
+import {List,Dialog,DialogTitle,DialogContent,DialogContentText,DialogActions, ListItem,FormHelperText, CircularProgress,Button,ListItemText,ListItemSecondaryAction, TextField,  MenuItem, Typography, InputAdornment , IconButton,InputLabel, Input, FormControl, Popover} from "@material-ui/core"
 import RubricasComponent from "./RubricasComponent"
 import Loading from "../../Components/Loading"
 import {useGetGrupos, useGetEmpresasByRubrica} from "../../Domain/useCases"
@@ -9,8 +9,10 @@ import SearchArticle from "./SearchArticle"
 import SearchIcon from '@material-ui/icons/Search';
 import DeleteIcon from '@material-ui/icons/Delete';
 import SubmitForm from "./SubmitForm"
-import {useSendPedidos, useGetPedidoByID, useEditPedido, useGetRubricasByEmppresa} from "../../Domain/useCases"
+import {useSendPedidos, useGetPedidoByID, useEditPedido,useGetFaturasByPedido} from "../../Domain/useCases"
 import ErrorIcon from '@material-ui/icons/Error';
+import SubmitFatura from "./SubmitFatura"
+import DeleteFatura from "./DeleteFatura"
 
 const getFormatedNumber = (number)=> String(number).length === 1 ? `0${number}`: number 
 
@@ -26,6 +28,12 @@ const PedidosForm = () => {
     } = useGetGrupos()
 
     const {
+        data: faturas, 
+        isFetching: fetchingFaturas,
+        refetch: refetchFaturas
+    } = useGetFaturasByPedido(id)
+
+    const {
         data: pedido, 
         isFetching: fetchingPedido
     } = useGetPedidoByID(id)
@@ -33,6 +41,11 @@ const PedidosForm = () => {
     const date = new Date()
     const today = `${date.getFullYear()}-${getFormatedNumber(date.getMonth()+1)}-${getFormatedNumber(date.getDate())}`
     const [articlesResult, setArticlesResult] = React.useState([])
+    const [addArtigo, setAddArtigo] = React.useState(false);
+    const [addFat, setAddFat] = React.useState(false);
+    const [submitFatura, setSubmitFatura] = React.useState(false);
+    const [deleteFatura, setDeleteFatura] = React.useState(false);
+
     const [articleSearchTerm, setArticlesSearchTerm] = React.useState([])
     const [performSearch, setPerformSearch] = React.useState(false)
     const [anchorEl, setAnchorEl] = React.useState(null);
@@ -124,11 +137,14 @@ const PedidosForm = () => {
         
     }
 
+    console.log(faturas)
     const isLoading = React.useMemo(() => {
         return  fetchingGrupos 
             || fetchingPedido
+            ||fetchingFaturas
     }, [fetchingGrupos, 
         fetchingPedido,
+        fetchingFaturas
     ])
 
     React.useEffect(()=>{
@@ -154,9 +170,8 @@ const PedidosForm = () => {
                     cabimento: id? pedido.cabimento: empresasList.length > 0? empresasList.filter(n=>n.empresa===empresasList[0].empresas)[0].cabimento: "",
                     proposta:id?  pedido.data.proposta : "",
                     notas:id?  pedido.data.notas: "",
-                    valor_total:id?  pedido.data.valor_total: "",
-                    artigos:id?  pedido.data.artigos : [],
-                    faturas:id?  pedido.data.faturas : [],
+                    valor_total: id?  pedido.data.valor_total: "",
+                    artigos: id?  pedido.data.artigos : [],
                 })
                 if(id){
                     setSelectedRubrica(pedido.data.rubrica.code)
@@ -164,11 +179,252 @@ const PedidosForm = () => {
         }
     }, [isLoading])
 
-
     if((isLoading || Object.keys(submitData).length=== 0)) return <Loading msg="A carregar dados necessários..." />
     if(submitForm)  return <SubmitForm data={submitData}  id={id} submitFunction={id? useEditPedido: useSendPedidos}/>
     return (
         <FormComponent title={id? "Editar Pedido": "Registo de Novo Pedido"}>
+            <Dialog open={addArtigo} onClose={()=>setAddArtigo(false)} aria-labelledby="form-dialog-title">
+                <DialogTitle id="form-dialog-title">Adicionar Artigo</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Por favor preencha todos os dados para adicionar um novo artigo a este pedido
+                    </DialogContentText>
+                    <FormControl 
+                        variant="outlined"
+                        fullWidth
+                        margin="normal"
+                        error={error.artigos}
+                        style={{
+                            marginBottom: 40
+                        }}
+                    > 
+                        <InputLabel htmlFor="standard-adornment-password">Pesquisar referência do artigo</InputLabel>
+                        <Input
+                            id="articleSearch"
+                            value={articleSearchTerm}
+                            onChange={(e)=>{
+                                setArticlesSearchTerm(e.target.value)
+                            }}
+                            style={{padding: "0px 0px 0px 15px"}}
+                            onKeyDown={(e)=>{
+                                if(e.key === "Enter"){
+                                    if(articleSearchTerm !== "" ) {
+                                        setPerformSearch(true)
+                                        setAnchorEl(e.target)
+                                    }
+                                }
+                            }}
+                            endAdornment={
+                            <InputAdornment position="end">
+                                <SearchArticle 
+                                    term={articleSearchTerm}
+                                    setArticlesResult={setArticlesResult}
+                                    performSearch={performSearch}
+                                    setPerformSearch={setPerformSearch}
+                                />
+                            <IconButton disabled={performSearch} onClick={(e)=>{
+                                    if(articleSearchTerm !== "" ) {
+                                        setPerformSearch(true)
+                                        setAnchorEl(e.target)
+                                    }
+                                }
+                            } color="primary">
+                                <SearchIcon/>
+                                </IconButton>
+                            </InputAdornment>
+                            }
+                            />
+                            {tempArticle.artigo!== "" && <FormHelperText>Artigo: {tempArticle.artigo}</FormHelperText>}
+                        </FormControl>
+                        <Popover 
+                            id={id}
+                            open={Boolean(anchorEl)}
+                            anchorEl={anchorEl}
+                            onClose={()=>setAnchorEl(null)}
+                            anchorOrigin={{
+                                vertical: 'bottom',
+                                horizontal: 'right',
+                            }}
+                            transformOrigin={{
+                                vertical: 'top',
+                                horizontal: 'right',
+                            }}
+                        >
+                            <div className="formSearchResultContainer">
+                                {performSearch && <CircularProgress />}
+                                {!performSearch&& articlesResult.length > 0 &&  <List dense={true}>
+                                    {articlesResult.map(a=>{
+                                        return (
+                                            <ListItem button key={a.id} onClick={()=>{
+                                                setAnchorEl(null)
+                                                setArticlesSearchTerm(a.code)
+                                                setTempArticle({
+                                                    ...tempArticle,
+                                                    artigo: a.name,
+                                                    referencia_artigo: a.code, 
+                                                })
+                                                
+                                            }}>
+                                                <ListItemText primary={a.name} secondary={a.code} />
+                                            </ListItem>
+                                        )
+                                    })}
+                                    
+                                    </List>
+                                }
+                                {!performSearch&& articlesResult.length === 0 && <Typography style={{
+                                    padding: 20
+                                }}>
+                                    O artigo não se encontra na base de dados. <Button color="primary">adicionar artigo</Button>    
+                                </Typography>}
+                            </div>
+                        </Popover>
+                
+                <TextField
+                    id="quantidade"
+                    label="Quantidade"
+                    value={tempArticle.quantidade}
+                    onChange={onChangeInputArticle}
+                    variant="filled"
+                    type="number"
+                    fullWidth
+                    margin="normal"
+                />
+                <TextField
+                    id="preco"
+                    label="Preço"
+                    type="number"
+                    value={tempArticle.preco}
+                    onChange={onChangeInputArticle}
+                    variant="filled"
+                    fullWidth
+                    margin="normal"
+                />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={()=>setAddArtigo(false)} color="primary">
+                            Cancelar
+                        </Button>
+                        <Button disabled={tempArticle.artigo === "" || tempArticle.quantidade === 0 || tempArticle.preco === 0} onClick={()=>{
+                            if(tempArticle.quantidade !== 0 && tempArticle.preco !== 0){
+                                let tempArtigo = submitData.artigos
+                                tempArtigo.push(tempArticle)
+                                setSubmitData({
+                                    ...submitData,
+                                    artigos: tempArtigo,
+                                    valor_total: submitData.valor_total + (tempArticle.quantidade * tempArticle.preco)
+                                })
+                                setTempArticle({
+                                    artigo: "", 
+                                    preco: 0, 
+                                    quantidade: 0, 
+                                    referencia_artigo: "", 
+                                    faturado: false,
+                                    entrega: {
+                                        chegada: false, 
+                                        data_chegada: "", 
+                                        guia: "", 
+                                        quantidade_chegada: 0
+                                    }
+                                })
+                                setArticlesSearchTerm("")
+                                setAddArtigo(false)
+                            }
+                        }} >adicionar</Button>
+                                
+                </DialogActions>
+            </Dialog>
+            
+           {id && <Dialog open={addFat} onClose={()=>setAddFat(false)} aria-labelledby="form-dialog-title">
+                <DialogTitle id="form-dialog-title">Adicionar Fatura</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Por favor preencha todos os dados para adicionar uma nova fatura
+                    </DialogContentText>
+                    <TextField
+                        fullWidth
+                        margin="normal"
+                        id="name"
+                        label="Código da Fatura"
+                        value={tempFatura.name}
+                        onChange={onChangeInputFatura}
+                        variant="filled"
+                    />
+                    <TextField
+                        fullWidth
+                        margin="normal"
+                        id="data_emissao"
+                        label="Data de Emissão"
+                        value={tempFatura.data_emissao.substring(0,10)}
+                        type="date"
+                        InputLabelProps={{
+                            shrink: true,
+                        }}
+                        onChange={(e)=>{
+                            const selectedDate = new Date(e.target.value)
+                            console.log(selectedDate.toJSON().substring(0,10))
+                            setTempFatura({
+                                ...tempFatura, 
+                                data_emissao: selectedDate.toJSON(),
+                                data_emissao_timestamp: selectedDate.getTime()
+                            })
+                        }}
+                        variant="filled"
+                    />
+                    <TextField
+                        fullWidth
+                        margin="normal"
+                        id="valor_fatura"
+                        label="Valor"
+                        type="number"
+                        value={tempFatura.valor_fatura}
+                        onChange={onChangeInputFatura}
+                        variant="filled"
+                    />
+                    <TextField
+                        fullWidth
+                        margin="normal"
+                        id="notas"
+                        multiline
+                        rows={4}
+                        label="Notas"
+                        value={tempFatura.notas}
+                        onChange={onChangeInputFatura}
+                        variant="filled"
+                    />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={()=>setAddFat(false)} color="primary">
+                            Cancelar
+                        </Button>
+                       {submitFatura&& <SubmitFatura
+                            fatura={{
+                                ...tempFatura,
+                                pedido: id
+                            }}
+                            setSubmitFatura={setSubmitFatura}
+                            refetchFaturas={refetchFaturas}
+                            setAddFat={setAddFat}
+                            setTempFatura={setTempFatura}
+                        />}
+                        {!submitFatura && <Button
+                            disabled={tempFatura.name==="" ||tempFatura.data_emissao=== "" || tempFatura.valor_fatura === 0 }
+                            onClick={()=>{
+                                // setAddFat(false)
+                                // let tempFat = submitData.faturas
+                                // tempFat.push(tempFatura)
+                                // setSubmitData({
+                                //     ...submitData,
+                                //     faturas: tempFat
+                                // })
+                                setSubmitFatura(true)
+                            }}
+                        >
+                            adicionar fatura
+                        </Button>}
+                                
+                </DialogActions>
+            </Dialog>}
             <div style={{display: "flex"}}>
                 <RubricasComponent 
                         submitData={submitData}
@@ -350,133 +606,8 @@ const PedidosForm = () => {
                 variant="filled"
             />
 
-            <div className="formTitleContainer">
-                <Typography color="primary" >Adicionar Artigos</Typography>
-            </div>
-
-            <FormControl 
-                variant="outlined"
-                error={error.artigos}
-                style={{
-                    marginBottom: 40
-                }}
-            > 
-                <InputLabel htmlFor="standard-adornment-password">Pesquisar referência do artigo</InputLabel>
-                <Input
-                    id="articleSearch"
-                    value={articleSearchTerm}
-                    onChange={(e)=>{
-                        setArticlesSearchTerm(e.target.value)
-                    }}
-                    style={{padding: "0px 0px 0px 15px"}}
-                    endAdornment={
-                    <InputAdornment position="end">
-                        <SearchArticle 
-                            term={articleSearchTerm}
-                            setArticlesResult={setArticlesResult}
-                            performSearch={performSearch}
-                            setPerformSearch={setPerformSearch}
-                        />
-                       <IconButton disabled={performSearch} onClick={(e)=>{
-                            if(articleSearchTerm !== "" ) {
-                                setPerformSearch(true)
-                                setAnchorEl(e.target)
-                            }
-                           }
-                       } color="primary">
-                          <SearchIcon/>
-                        </IconButton>
-                    </InputAdornment>
-                    }
-                    />
-                    {tempArticle.artigo!== "" && <FormHelperText>Artigo: {tempArticle.artigo}</FormHelperText>}
-                </FormControl>
-                <Popover 
-                    id={id}
-                    open={Boolean(anchorEl)}
-                    anchorEl={anchorEl}
-                    onClose={()=>setAnchorEl(null)}
-                    anchorOrigin={{
-                        vertical: 'bottom',
-                        horizontal: 'right',
-                      }}
-                    transformOrigin={{
-                        vertical: 'top',
-                        horizontal: 'right',
-                    }}
-                >
-                    <div className="formSearchResultContainer">
-                        {performSearch && <CircularProgress />}
-                        {!performSearch&& articlesResult.length > 0 &&  <List dense={true}>
-                            {articlesResult.map(a=>{
-                                return (
-                                    <ListItem button key={a.id} onClick={()=>{
-                                        setAnchorEl(null)
-                                        setArticlesSearchTerm(a.code)
-                                        setTempArticle({
-                                            ...tempArticle,
-                                            artigo: a.name,
-                                            referencia_artigo: a.code, 
-                                        })
-                                        
-                                    }}>
-                                        <ListItemText primary={a.name} secondary={a.code} />
-                                    </ListItem>
-                                )
-                            })}
-                            
-                            </List>
-                        }
-                        {!performSearch&& articlesResult.length === 0 && <Typography style={{
-                            padding: 20
-                        }}>
-                            O artigo não se encontra na base de dados. <Button color="primary">adicionar artigo</Button>    
-                        </Typography>}
-                    </div>
-                </Popover>
-                
-                <TextField
-                    id="quantidade"
-                    label="Quantidade"
-                    value={tempArticle.quantidade}
-                    onChange={onChangeInputArticle}
-                    variant="filled"
-                    type="number"
-                />
-                <TextField
-                    id="preco"
-                    label="Preço"
-                    type="number"
-                    value={tempArticle.preco}
-                    onChange={onChangeInputArticle}
-                    variant="filled"
-                />
-                <Button disabled={tempArticle.artigo === "" || tempArticle.quantidade === 0 || tempArticle.preco === 0} onClick={()=>{
-                    if(tempArticle.quantidade !== 0 && tempArticle.preco !== 0){
-                        let tempArtigo = submitData.artigos
-                        tempArtigo.push(tempArticle)
-                        setSubmitData({
-                            ...submitData,
-                            artigos: tempArtigo,
-                            valor_total: submitData.valor_total + (tempArticle.quantidade * tempArticle.preco)
-                        })
-                        setTempArticle({
-                            artigo: "", 
-                            preco: 0, 
-                            quantidade: 0, 
-                            referencia_artigo: "", 
-                            faturado: false,
-                            entrega: {
-                                chegada: false, 
-                                data_chegada: "", 
-                                guia: "", 
-                                quantidade_chegada: 0
-                            }
-                        })
-                        setArticlesSearchTerm("")
-
-                    }
-                }} variant="contained" fullWidth>adicionar artigo</Button>
+            <Button onClick={()=>setAddArtigo(true)}>adicionar artigo</Button>
+            
             <List dense={true}>
                 {
                     submitData.artigos.map((a, index)=>{
@@ -504,79 +635,17 @@ const PedidosForm = () => {
                     })
                 }
             </List>
-            <div className="formTitleContainer">
-                <Typography color="primary" >Adicionar Faturas</Typography>
-            </div>
-            <TextField
-                id="name"
-                label="Código da Fatura"
-                value={tempFatura.name}
-                onChange={onChangeInputFatura}
-                variant="filled"
-            />
-            <TextField
-                id="data_emissao"
-                label="Data de Emissão"
-                value={tempFatura.data_emissao}
-                type="date"
-                InputLabelProps={{
-                    shrink: true,
-                }}
-                onChange={(e)=>{
-                    const selectedDate = new Date(e.target.value)
-                    setTempFatura({
-                        ...tempFatura, 
-                        data_emissao: selectedDate.toJSON,
-                        data_emissao_timestamp: selectedDate.getTime()
-                    })
-                }}
-                variant="filled"
-            />
-            <TextField
-                id="valor_fatura"
-                label="Valor"
-                type="number"
-                value={tempFatura.valor_fatura}
-                onChange={onChangeInputFatura}
-                variant="filled"
-            />
-            <TextField
-                id="notas"
-                multiline
-                rows={4}
-                label="Notas"
-                value={tempFatura.notas}
-                onChange={onChangeInputFatura}
-                variant="filled"
-            />
-            <Button
-                variant="contained"
-                disabled={tempFatura.name==="" ||tempFatura.data_emissao=== "" || tempFatura.valor_fatura === 0 }
-                onClick={()=>{
-                    let tempFat = submitData.faturas
-                    tempFat.push(tempFatura)
-                    setSubmitData({
-                        ...submitData,
-                        faturas: tempFat
-                    })
-                    setTempFatura({
-                        name: "", 
-                        data_emissao: "", 
-                        valor_fatura: 0, 
-                        notas: "", 
-                    })
-                }}
-            >
-                adicionar fatura
-            </Button>
-            <List dense={true}>
+            
+           {id && <Button color="error" onClick={()=>setAddFat(true)}>adicionar fatura</Button>}
+
+           {id && <List dense={true}>
                 {
-                    submitData.faturas.map((f, index)=>{
+                    faturas.data.map((f, index)=>{
                         return (
                             <ListItem style={{
                                 background: "#f8e6ff"
-                            }} key={"fatura_" + index}>
-                                    <ListItemText primary={`${f.name} com o valor de ${f.valor_fatura}€`} secondary={`Emitida a ${f.data_emissao}`} />
+                            }} key={"fatura_" + f.id}>
+                                    <ListItemText primary={`${f.name} com o valor de ${f.valor_fatura}€`} secondary={`Emitida a ${f.data_emissao.substring(0,10)}`} />
                                     <ListItemSecondaryAction>
                                         <IconButton onClick={()=>{
                                                 let tempFat = submitData.fatura
@@ -593,7 +662,7 @@ const PedidosForm = () => {
                         )
                     })
                 }
-            </List>
+            </List>}
 
             <Button
                 variant="contained"

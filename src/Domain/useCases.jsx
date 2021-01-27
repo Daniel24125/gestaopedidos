@@ -234,6 +234,54 @@ export const useGetEmpresasByRubrica = (rubrica) =>{
     })
 }
 
+export const useGetFaturasByPedido = (pedidoID) =>{
+    const fornecedores = Container.get(Fornecedores)
+    return useQuery({
+        queryKey: ['get_fat_by_pedido'],
+        queryFn: async () => {
+            const info =  await fornecedores.getFaturasByPedido(pedidoID)
+            return info
+        },
+        config: { 
+          refetchOnWindowFocus: false,
+          refetchInterval: false,
+          refetchIntervalInBackground: false,
+        }
+    })
+}
+
+export const useAddFatura = (fatura) =>{
+    const fornecedores = Container.get(Fornecedores)
+    return useQuery({
+        queryKey: ['add_fatura'],
+        queryFn: async () => {
+            const info =  await fornecedores.addFatura(fatura)
+            return info
+        },
+        config: { 
+          refetchOnWindowFocus: false,
+          refetchInterval: false,
+          refetchIntervalInBackground: false,
+        }
+    })
+}
+
+export const useDeleteFatura = (id) =>{
+    const fornecedores = Container.get(Fornecedores)
+    return useQuery({
+        queryKey: ['delete_fatura'],
+        queryFn: async () => {
+            const info =  await fornecedores.deleteFatura(id)
+            return info
+        },
+        config: { 
+          refetchOnWindowFocus: false,
+          refetchInterval: false,
+          refetchIntervalInBackground: false,
+        }
+    })
+}
+
 export const useGetFaturasByEmppresa = (empresa) =>{
     const fornecedores = Container.get(Fornecedores)
     return useQuery({

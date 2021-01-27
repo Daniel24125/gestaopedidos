@@ -9,49 +9,52 @@ const FaturasComponent = ({empresa}) => {
         isFetching
     } = useGetFaturasByEmppresa(empresa)
 
-    console.log(faturas)
     return (
         <div className="optionsContainer">
-            {isFetching && <CircularProgress size={60} style={{color: "white"}} />}
-            {!isFetching && <Table size="medium">
-                <TableHead> 
-                    <TableRow>
-                        <TableCell >Código da Fatura</TableCell>
-                        <TableCell >Data de Emissão</TableCell>
-                        <TableCell >Pedido</TableCell>
-                        <TableCell >Valor</TableCell>
-                        <TableCell >Notas</TableCell>
-                        <TableCell></TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {faturas.data.map(f => {
-                        return (
+            {isFetching && <CircularProgress size={60} color="primary"/>}
+            {!isFetching && <>
+                {faturas.data.length === 0 && <Typography style={{marginBottom: 20}}> Não existem faturas emitidas para esta empresa</Typography>}
+                {faturas.data.length > 0 && <Table size="medium">
+                    <TableHead> 
                         <TableRow>
-                            <TableCell  >{f.codigo_fatura}</TableCell>
-                            <TableCell >{f.data_emissao.slice(0,11)}</TableCell>
-                            <TableCell >
-                                <Button color="primary">ver pedido</Button>
-                            </TableCell>
-                            <TableCell >{f.valor}</TableCell>
+                            <TableCell >Código da Fatura</TableCell>
+                            <TableCell >Data de Emissão</TableCell>
+                            <TableCell >Pedido</TableCell>
+                            <TableCell >Valor</TableCell>
+                            <TableCell >Notas</TableCell>
+                            <TableCell></TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {faturas.data.map(f => {
+                            return (
+                            <TableRow>
+                                <TableCell  >{f.codigo_fatura}</TableCell>
+                                <TableCell >{f.data_emissao.slice(0,11)}</TableCell>
+                                <TableCell >
+                                    <Button color="primary">ver pedido</Button>
+                                </TableCell>
+                                <TableCell >{f.valor}</TableCell>
+                                <TableCell>
+                                    <Tooltip title="Ver notas">
+                                        <IconButton color="primary">
+                                            <CommentIcon/>
+                                        </IconButton>
+                                    </Tooltip>
+                                </TableCell>
                             <TableCell>
-                                <Tooltip title="Ver notas">
-                                    <IconButton color="primary">
-                                        <CommentIcon/>
+                                <Tooltip title="Apagar fatura">
+                                    <IconButton style={{color: "#e74c3c"}}>
+                                        <DeleteIcon />
                                     </IconButton>
                                 </Tooltip>
                             </TableCell>
-                        <TableCell>
-                            <Tooltip title="Apagar fatura">
-                                <IconButton style={{color: "#e74c3c"}}>
-                                    <DeleteIcon />
-                                </IconButton>
-                            </Tooltip>
-                        </TableCell>
-                    </TableRow>
-                    )})}
-                </TableBody>
-            </Table>}
+                        </TableRow>
+                        )})}
+                    </TableBody>
+                </Table>}
+            
+            </>}
         </div>
     )
 }

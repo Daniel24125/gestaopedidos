@@ -793,7 +793,7 @@ app.post("/api/novo_pedido", async (req, res) => {
   pedido["pedido_feito_timestamp"] = "";
   pedido["pedido_feito_formated_date"] = "";
 
-  const novo_pedido = await pedidos_ref
+  await pedidos_ref
   .add(pedido)
   .catch(err => {
     res.json({
@@ -801,20 +801,25 @@ app.post("/api/novo_pedido", async (req, res) => {
         msg: String(err)
     })
   })
-  if(pedido.faturas.length > 0){
-    pedido.faturas.forEach( async (f, i)=>{
-      await faturasRef.add({
-        ...f,
-        pedido: novo_pedido.id
-      })
-      .catch(err => {
-        res.json({
-          error: true,
-          msg: String(err)
-        })
-      })
-    })
-  }
+  // const faturasList = []
+  // if(pedido.faturas.length > 0){
+  //   pedido.faturas.forEach( async (f, i)=>{
+  //     const fatura = await faturasRef.add({
+  //       ...f,
+  //       pedido: novo_pedido.id
+  //     })
+  //     .catch(err => {
+  //       res.json({
+  //         error: true,
+  //         msg: String(err)
+  //       })
+  //     })
+  //     faturasList.push(fatura.id)
+  //   })
+  //   await pedidos_ref.doc(novo_pedido.id).set({
+  //     faturas_ids: faturasList
+  //   },{merge: true})
+  // }
   
   await updateGrupoDist(Number(pedido.valor_total), pedido, res)
 
@@ -922,7 +927,7 @@ app.post("/api/nova_empresa", async (req, res) => {
   notasEncomenda.forEach(async (n)=>{
     await notasEncomendaRef.add({
       ...n,
-      "empresa": empresa.empresa,
+      empresa: empresa.empresa,
       "empresa_id": added_empresa.id
     })
   })
@@ -957,6 +962,36 @@ app.post("/api/getRubricasByEmpresa", async (req, res) => {
 
 });
 
+app.post("/api/getFaturasByPedido", async (req, res) => {
+  let pedidoID = req.body.pedidoID;
+  if(pedidoID){
+
+    const faturas = await faturasRef
+      .where("pedido", "==", pedidoID)
+      .get()
+      .catch(err => {
+        res.json({
+            error: true,
+            msg: String(err)
+        })
+      })
+      
+      res.json({
+        data: faturas.docs.map(doc=>{
+          return {
+            ...doc.data(),
+            id: doc.id
+          }
+        })
+      })
+  }else{
+    res.json({
+      data: null
+    })
+  }
+
+});
+
 app.post("/api/getFaturasByEmpresa", async (req, res) => {
   let e = req.body.empresa;
   const faturas = await faturasRef
@@ -979,6 +1014,39 @@ app.post("/api/getFaturasByEmpresa", async (req, res) => {
     })
 
 });
+
+app.post("/api/addFatura", async (req, res) => {
+  let data = req.body.fatura;
+  const faturas = await faturasRef.add(data)
+    .catch(err => {
+      res.json({
+          error: true,
+          msg: String(err)
+      })
+    })
+
+    res.json({
+      error: false
+    })
+
+});
+
+app.post("/api/deleteFatura", async (req, res) => {
+  let id = req.body.fatura;
+  await faturasRef.doc(id).delete()
+    .catch(err => {
+      res.json({
+          error: true,
+          msg: String(err)
+      })
+    })
+
+    res.json({
+      error: false
+    })
+
+});
+
 
 app.post("/api/getEmpresasByRubrica", async (req, res) => {
   let r = req.body.rubrica;
@@ -1032,7 +1100,7 @@ app.post("/api/editEmpresa",  (req, res) => {
   })
 });
 
-app.post("/api/deleteEmpresa",  (req, res) => {
+app.delete("/api/deleteEmpresa",  (req, res) => {
   let id = req.body.id;
   empresas_ref.child(id).remove()
   empresas_ref.once('value', (empresas) => {

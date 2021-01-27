@@ -41,6 +41,7 @@ import VerifiedUserIcon from '@material-ui/icons/VerifiedUser';
 import DescriptionIcon from '@material-ui/icons/Description';
 import CommentIcon from '@material-ui/icons/Comment';
 import DeletePedido from "./DeletePedidoComponent"
+import GetFaturasPedido from "./GetFaturasPedido"
 
 const PedidosPage = () => {
     const [pedidosList, setPedidosList] = React.useState(null);
@@ -184,23 +185,14 @@ const PedidosPage = () => {
                                             {p.valor_total} €
                                         </TableCell>
                                         <TableCell  component="th" scope="row">
-                                            {p.faturas.length > 0 && <>
-                                                <Tooltip title="Mais informação">
-                                                    <IconButton onClick={(e)=>{
-                                                        setFaturacaoData(p.faturas)
-                                                        setAnchorFaturacao(e.target)
-                                                    }}style={{color: "#2ecc71"}}>
-                                                        <FileCopyIcon />
-                                                    </IconButton> 
-                                                </Tooltip> 
-                                            </>}
-                                            {p.faturas.length === 0 && <>
-                                                <Tooltip title="Fatura não entregue">
-                                                    <IconButton disabled={true}>
-                                                        <FileCopyIcon style={{color: "#dcdcdc"}} />
-                                                    </IconButton>
-                                                </Tooltip>
-                                            </>}
+                                            <Tooltip title="Mais informação">
+                                                <IconButton onClick={(e)=>{
+                                                    setAnchorFaturacao(e.target)
+                                                    setSelectedPedido(p.id)
+                                                }}style={{color: "#2ecc71"}}>
+                                                    <FileCopyIcon />
+                                                </IconButton> 
+                                            </Tooltip> 
                                         </TableCell>
                                         <TableCell  component="th" scope="row">
                                             <IconButton onClick={(e)=>{
@@ -324,31 +316,9 @@ const PedidosPage = () => {
                     horizontal: 'right',
                 }}
             >
-                {faturacaoData &&  <>
-                    {faturacaoData.length > 0 &&<Table size="small">
-                        <TableHead>
-                            <TableRow >
-                                <TableCell align="right">Data de Emissão</TableCell>
-                                <TableCell align="right">Códido</TableCell>
-                                <TableCell align="right">Valor</TableCell>
-                                <TableCell align="right">Notas</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {faturacaoData.map((f,i)=>{
-                                return (
-                                    <TableRow key={`fatura_${i}`}>
-                                            <TableCell align="right">{f.data_emissao}</TableCell>
-                                            <TableCell align="right">{f.name}</TableCell>
-                                            <TableCell align="right">{f.valor_fatura} €</TableCell>
-                                            <TableCell align="right">{f.notas}</TableCell>
-                                    </TableRow>
-                                )
-                            })}
-                        </TableBody>
-                    </Table>}
-                    {faturacaoData.length === 0 && <Typography>Não foram emitidas faturas</Typography>}
-                </>}
+                <GetFaturasPedido 
+                    pedidoID={selectedPedido}
+                />
             </Popover>
             <Menu
                 id="pedidos_menu"

@@ -51,6 +51,49 @@ export default class FornecedoresRepository  {
             })
             return response.then(res =>res.json())
     }
+
+    getFaturasByPedido = pedidoID =>{
+        let url = this.apiBaseUrl().toString()
+        url += `getFaturasByPedido`
+        const response =  fetch(url,{
+            method: "POST", 
+            headers:{
+                "content-type": "application/json", 
+                },
+                body: JSON.stringify({pedidoID}),
+                json: true
+            })
+            return response.then(res =>res.json())
+    }
+
+    addFatura = fatura =>{
+        let url = this.apiBaseUrl().toString()
+        url += `addFatura`
+        const response =  fetch(url,{
+            method: "POST", 
+            headers:{
+                "content-type": "application/json", 
+                },
+                body: JSON.stringify({fatura}),
+                json: true
+            })
+            return response.then(res =>res.json())
+    }
+
+    deleteFatura = id =>{
+        let url = this.apiBaseUrl().toString()
+        url += `deleteFatura`
+        const response =  fetch(url,{
+            method: "DELETE", 
+            headers:{
+                "content-type": "application/json", 
+                },
+                body: JSON.stringify({id}),
+                json: true
+            })
+            return response.then(res =>res.json())
+    }
+
     getEmpresasByRubrica = rubrica =>{
         let url = this.apiBaseUrl().toString()
         url += `getEmpresasByRubrica`
