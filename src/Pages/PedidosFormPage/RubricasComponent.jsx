@@ -8,19 +8,17 @@ import GestureIcon from '@material-ui/icons/Gesture';
 const RubricasComponent = ({
     submitData,
     setSubmitData,
-    empresas,
     setSelectedRubrica,
-    refetch
+    setFetchEmpresas
 }) => {
 
     const changeRubrica = (rubrica)=>{
             setSelectedRubrica(rubrica.code)
-            refetch()
             setSubmitData({
                 ...submitData, 
-                empresa: empresas.length > 0?empresas[0].empresa : "",
                 rubrica
             })
+            setFetchEmpresas(true)
     }
     return (
         <div className="rubricasContainer">
@@ -61,7 +59,7 @@ const RubricasComponent = ({
                         }
                     } 
                 }}>
-                    <GestureIcon style={{fontSize: 50,color: submitData.rubrica.code=== "SEQ"?"#9b59b6": "#bdc3c7" }} />
+                    <GestureIcon style={{fontSize: 50,color: submitData.rubrica.code=== "SEQ" ?"#9b59b6": "#bdc3c7" }} />
                 </IconButton>
         
         </div>

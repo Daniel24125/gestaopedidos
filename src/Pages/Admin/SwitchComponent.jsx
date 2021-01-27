@@ -10,10 +10,10 @@ const SwitchComponent = ()=>{
     const Dashboard = loadable(() => import('../Dashboard/Dashboard'))
     const Pedidos = loadable(() => import('../Pedidos/PedidosPage'))
     const PedidosForm = loadable(() => import('../PedidosFormPage/PedidosForm'))
-    const Dist = loadable(() => import('../Dist/DistPage'))
     const Saldos = loadable(() => import('../Saldos/SaldosPage'))
     const Artigos = loadable(() => import('../ArtigosPage/ArtigosComponent'))
     const GerirGrupos = loadable(() => import('../GerirGrupos/GerirGruposPage'))
+    const AddGroup = loadable(() => import('../AddGroup/AddGroup'))
     
     return <Switch location={location} key={location.pathname}>
         <Route path="/dashboard" exact render={
@@ -44,13 +44,6 @@ const SwitchComponent = ()=>{
             </MountTransition>
           }} />
        
-        <Route path="/dist" exact render={
-          ()=>{
-            return <MountTransition>
-              <Dist />
-            </MountTransition>
-          }} />
-       
         <Route path="/saldo" exact render={
           ()=>{
             return <MountTransition>
@@ -69,6 +62,20 @@ const SwitchComponent = ()=>{
           ()=>{
             return <MountTransition>
               <GerirGrupos />
+            </MountTransition>
+          }} />
+      
+        <Route path="/novoGrupo" exact render={
+          ()=>{
+            return <MountTransition>
+              <AddGroup />
+            </MountTransition>
+          }} />
+
+        <Route path="/editGrupo/:id" exact render={
+          ()=>{
+            return <MountTransition>
+              <AddGroup />
             </MountTransition>
           }} />
 

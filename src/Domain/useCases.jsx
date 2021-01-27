@@ -334,12 +334,80 @@ export const useDeletePedido = (id) =>{
     })
 }
 
-export const useNovoGrupo = (id) =>{
+export const useNovoGrupo = (grupo) =>{
     const grupos = Container.get(Grupos)
     return useQuery({
         queryKey: ['novo_grupo'],
         queryFn: async () => {
-            const info =  await grupos.deletePedido(id)
+            const info =  await grupos.novoGrupo(grupo)
+            return info
+        },
+        config: { 
+          refetchOnWindowFocus: false,
+          refetchInterval: false,
+          refetchIntervalInBackground: false,
+          cacheTime: 0
+        }
+    })
+}
+
+export const useGetGrupoByID = (id) =>{
+    const grupos = Container.get(Grupos)
+    return useQuery({
+        queryKey: ['grupo_by_id'],
+        queryFn: async () => {
+            const info =  await grupos.getGrupoById(id)
+            return info
+        },
+        config: { 
+          refetchOnWindowFocus: false,
+          refetchInterval: false,
+          refetchIntervalInBackground: false,
+          cacheTime: 0
+        }
+    })
+}
+
+export const useEditGrupo = (id) =>{
+    const grupos = Container.get(Grupos)
+    return useQuery({
+        queryKey: ['edit_grupo'],
+        queryFn: async () => {
+            const info =  await grupos.editGrupo(id)
+            return info
+        },
+        config: { 
+          refetchOnWindowFocus: false,
+          refetchInterval: false,
+          refetchIntervalInBackground: false,
+          cacheTime: 0
+        }
+    })
+}
+
+export const useDeleteGrupo = (id) =>{
+    const grupos = Container.get(Grupos)
+    return useQuery({
+        queryKey: ['delete_grupo'],
+        queryFn: async () => {
+            const info =  await grupos.deleteGrupo(id)
+            return info
+        },
+        config: { 
+          refetchOnWindowFocus: false,
+          refetchInterval: false,
+          refetchIntervalInBackground: false,
+          cacheTime: 0
+        }
+    })
+}
+
+export const useGetGrupoMembros = (id) =>{
+    const grupos = Container.get(Grupos)
+    return useQuery({
+        queryKey: ['get_grupo_membros'],
+        queryFn: async () => {
+            const info =  await grupos.getGrupoMembros(id)
             return info
         },
         config: { 

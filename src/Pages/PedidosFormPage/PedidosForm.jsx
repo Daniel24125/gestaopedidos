@@ -10,22 +10,20 @@ import SearchIcon from '@material-ui/icons/Search';
 import DeleteIcon from '@material-ui/icons/Delete';
 import SubmitForm from "./SubmitForm"
 import {useSendPedidos, useGetPedidoByID, useEditPedido, useGetRubricasByEmppresa} from "../../Domain/useCases"
+import ErrorIcon from '@material-ui/icons/Error';
 
 const getFormatedNumber = (number)=> String(number).length === 1 ? `0${number}`: number 
 
 const PedidosForm = () => {
     let { id } = useParams();
     const [selectedRubrica, setSelectedRubrica] = React.useState("PM")
+    const [fetchEmpresas, setFetchEmpresas] = React.useState(true)
+    const [empresasList, setEmpresasList] = React.useState([])
+
     const {
         data: grupos, 
         isFetching: fetchingGrupos
     } = useGetGrupos()
-
-    const {
-        data: empresas, 
-        isFetching: fetchingFornecedores, 
-        refetch: refetchRub
-    } = useGetEmpresasByRubrica(selectedRubrica)
 
     const {
         data: pedido, 
@@ -55,12 +53,11 @@ const PedidosForm = () => {
     const [tempFatura, setTempFatura] = React.useState({
         name: "", 
         data_emissao: today, 
-        notas: 0, 
+        notas: "", 
         valor_fatura: 0, 
        
     });
 
-   
     const [submitData, setSubmitData] = React.useState({})
     
     const [error, setError] = React.useState({
@@ -126,62 +123,77 @@ const PedidosForm = () => {
         }
         
     }
+
     const isLoading = React.useMemo(() => {
         return  fetchingGrupos 
-            || fetchingFornecedores
             || fetchingPedido
     }, [fetchingGrupos, 
-        fetchingFornecedores,
         fetchingPedido,
     ])
-    console.log(empresas)
+
     React.useEffect(()=>{
-        if(!isLoading ){
-            setSubmitData({
-                rubrica:id?  pedido.data.rubrica: {
-                        code: "PM", 
-                        icon: "widget",
-                        name: "Materiais"
+        if(!isLoading){
+                setSubmitData({
+                    rubrica:id?  pedido.data.rubrica: {
+                            code: "PM", 
+                            icon: "widget",
+                            name: "Materiais"
                     },
-                data_pedido:id?  pedido.data.data_pedido : Date.now(),
-                data_pedido_formated:id?  pedido.data.data_pedido_formated: today,
-                day:id?  pedido.data.day :  date.getDate(),
-                mounth:id?  pedido.data.mounth: date.getMonth()+1,
-                year:id?  pedido.data.year : date.getFullYear(),
-                remetente: id? pedido.data.remetente : "",
-                grupo:id?  pedido.data.grupo : grupos.data[0].name,
-                grupo_abrv:id?  pedido.data.grupo_abrv : grupos.data[0].abrv,
-                responsavel:id?  pedido.data.responsavel :  grupos.data[0].membros[0],
-                empresa: id? pedido.data.empresa : empresas.data.empresas.length > 0? empresas.data.empresas[0] : "",
-                ne:id?  pedido.data.ne : empresas.data.empresas.length > 0? empresas.data.ne.filter(n=>n.empresa===empresas.data.empresas[0])[0].ne : "",
-                proposta:id?  pedido.data.proposta : "",
-                notas:id?  pedido.data.notas: "",
-                valor_total:id?  pedido.data.valor_total: "",
-                artigos:id?  pedido.data.artigos : [],
-                fatura:id?  pedido.data.fatura : [],
-                cabimento: id? pedido.data.cabimento : empresas.data.empresas.length > 0? empresas.data.ne.filter(n=>n.empresa===empresas.data.empresas[0])[0].cabimento : "",
-            })
-            if(id){
-                setSelectedRubrica(pedido.data.rubrica.code)
-                refetchRub()
-            }
+                    data_pedido:id?  pedido.data.data_pedido : Date.now(),
+                    data_pedido_formated:id?  pedido.data.data_pedido_formated: today,
+                    day:id?  pedido.data.day :  date.getDate(),
+                    mounth:id?  pedido.data.mounth: date.getMonth()+1,
+                    year:id?  pedido.data.year : date.getFullYear(),
+                    remetente: id? pedido.data.remetente : "",
+                    grupo:id?  pedido.data.grupo : grupos.data[0].name,
+                    grupo_abrv:id?  pedido.data.grupo_abrv : grupos.data[0].abrv,
+                    grupo_id :id?  pedido.data.grupo_id : grupos.data[0].id,
+                    responsavel:id?  pedido.data.responsavel :  grupos.data[0].membros[0],
+                    empresa: id? pedido.data.empresa : empresasList.length > 0? empresasList[0].empresas: "",
+                    ne: id?  pedido.data.ne : empresasList.length > 0? empresasList.filter(n=>n.empresa===empresasList[0].empresas)[0].ne: "",
+                    cabimento: id? pedido.cabimento: empresasList.length > 0? empresasList.filter(n=>n.empresa===empresasList[0].empresas)[0].cabimento: "",
+                    proposta:id?  pedido.data.proposta : "",
+                    notas:id?  pedido.data.notas: "",
+                    valor_total:id?  pedido.data.valor_total: "",
+                    artigos:id?  pedido.data.artigos : [],
+                    faturas:id?  pedido.data.faturas : [],
+                })
+                if(id){
+                    setSelectedRubrica(pedido.data.rubrica.code)
+                }
         }
-    }, [isLoading, id])
-    
+    }, [isLoading])
 
-    console.log(empresas)
 
-    if(isLoading || Object.keys(submitData).length=== 0) return <Loading msg="A carregar dados necessários..." />
+    if((isLoading || Object.keys(submitData).length=== 0)) return <Loading msg="A carregar dados necessários..." />
     if(submitForm)  return <SubmitForm data={submitData}  id={id} submitFunction={id? useEditPedido: useSendPedidos}/>
     return (
         <FormComponent title={id? "Editar Pedido": "Registo de Novo Pedido"}>
-           <RubricasComponent 
-                submitData={submitData}
-                setSubmitData={setSubmitData}
-                setSelectedRubrica={setSelectedRubrica}
-                refetch={refetchRub}
-                empresas={empresas.data}
-            />
+            <div style={{display: "flex"}}>
+                <RubricasComponent 
+                        submitData={submitData}
+                        setSubmitData={setSubmitData}
+                        setSelectedRubrica={setSelectedRubrica}
+                        setFetchEmpresas={setFetchEmpresas}
+                    />
+
+                    {fetchEmpresas && <FetchEmpresasByRubrica 
+                        setFetchEmpresas={setFetchEmpresas}
+                        setSubmitData={setSubmitData}
+                        submitData={submitData}
+                        selectedRubrica={selectedRubrica}
+                        setEmpresasList={setEmpresasList}
+                    />}
+            </div>
+            {empresasList.length === 0 && <Typography style={{
+                    display: "flex",
+                    alignItems: "center",
+                    marginBottom: 30
+                }} color="error">
+                    <ErrorIcon/>
+                    Não existem notas de encomenda para a rúbirca selecionada    
+                </Typography>}
+            
            <TextField
                 id="data_pedido"
                 label="Data do Pedido"
@@ -226,7 +238,8 @@ const PedidosForm = () => {
                         ...submitData, 
                         grupo: e.target.value,
                         grupo_abrv: grupos.data.filter(g=>g.name===e.target.value)[0].abrv,
-                        responsavel: grupos.data.filter(g=>g.name===e.target.value)[0].membros[0]
+                        grupo_id: grupos.data.filter(g=>g.name===e.target.value)[0].id,
+                        responsavel: grupos.data.filter(g=>g.name===e.target.value)[0].membros[0],
                     })
                 }}
             >
@@ -267,53 +280,47 @@ const PedidosForm = () => {
                 required
                 error={error.empresa}
                 select
-                disabled={empresas.data.length === 0 }
+                disabled={empresasList.length === 0}
                 label="Empresa"
                 value={submitData.empresa}
                 onChange={(e)=>{
-                    // if(fetchNE)fetchNE()
                     setSubmitData({
                         ...submitData, 
                         empresa: e.target.value, 
-                        ne: empresas.data.ne.filter(n=>n.empresa===e.target.value)[0].ne,
-                        cabimento: empresas.data.ne.filter(n=>n.empresa===e.target.value)[0].cabimento
+                        empresa_id:  empresasList.filter(n=>n.empresa===e.target.value)[0].id,
+                        ne: empresasList.filter(n=>n.empresa===e.target.value)[0].ne,
+                        cabimento: empresasList.filter(n=>n.empresa===e.target.value)[0].cabimento
                     })
-
                 }}
             >
-                {empresas.data.empresas.map(e=>{
+                {empresasList.map(e=>{
                     return (
-                        <MenuItem key={e} value={e}>
-                            {e}
+                        <MenuItem key={e.empresa} value={e.empresa}>
+                            {e.empresa}
                         </MenuItem>
                     )
                     
                 })}
             </TextField>
            
-            {/* <GetRubricas 
-                empresa={submitData.empresa}
-                setSubmitData={setSubmitData}
-                submitData={submitData}
-            /> */}
              <TextField
                 variant="filled"
                 id="ne"
                 required
+                disabled={empresasList.length === 0}
                 select
                 label="Nota de Encomenda"
                 value={submitData.ne}
                 helperText={submitData.ne!== "" ? `Cabimento: ${submitData.cabimento}`: ""}
-                onChange={(e)=>{
-                    console.log(e.target)
+                onChange={(evt, name)=>{
                     setSubmitData({
                         ...submitData, 
-                        ne: e.target.value,
-                        cabimento: e.target.name
+                        ne: evt.target.value,
+                        cabimento: name.props.name
                     })
                 }}
             >
-                {empresas.data.ne.filter(n=>n.empresa===submitData.empresa).map(n =>{
+                {empresasList.filter(n=>n.empresa===submitData.empresa).map(n =>{
                     
                     return (
                         <MenuItem name={n.cabimento} key={n.id} value={n.ne}>
@@ -546,11 +553,11 @@ const PedidosForm = () => {
                 variant="contained"
                 disabled={tempFatura.name==="" ||tempFatura.data_emissao=== "" || tempFatura.valor_fatura === 0 }
                 onClick={()=>{
-                    let tempFat = submitData.fatura
+                    let tempFat = submitData.faturas
                     tempFat.push(tempFatura)
                     setSubmitData({
                         ...submitData,
-                        fatura: tempFat
+                        faturas: tempFat
                     })
                     setTempFatura({
                         name: "", 
@@ -564,7 +571,7 @@ const PedidosForm = () => {
             </Button>
             <List dense={true}>
                 {
-                    submitData.fatura.map((f, index)=>{
+                    submitData.faturas.map((f, index)=>{
                         return (
                             <ListItem style={{
                                 background: "#f8e6ff"
@@ -576,7 +583,7 @@ const PedidosForm = () => {
                                                 tempFat.splice(index,1)
                                                 setSubmitData({
                                                     ...submitData,
-                                                    fatura: tempFat
+                                                    faturas: tempFat
                                                 })
                                         }} style={{color: "#e74c3c"}}>
                                             <DeleteIcon/>
@@ -605,46 +612,35 @@ const PedidosForm = () => {
     )
 }
 
-const GetRubricas = ({
+const FetchEmpresasByRubrica = ({
     setSubmitData,
     submitData,
-}) =>{
+    selectedRubrica,
+    setFetchEmpresas,
+    setEmpresasList
+})=>{
     const {
-        data: ne, 
-        isFetching: fetchingNE,
-        refetch
-    } = useGetRubricasByEmppresa(submitData.empresa)
+        data: empresas, 
+        isFetching, 
+    } = useGetEmpresasByRubrica(selectedRubrica)
 
-  
-    if(fetchingNE) return ""
-    return (
-        <TextField
-            variant="filled"
-            id="ne"
-            required
-            select
-            label="Nota de Encomenda"
-            value={submitData.ne}
-            // helperText={submitData.ne!== "" && ne.data.length > 0 ? `Cabimento: ${empresas.data[submitData.emppresa].cabimento}`: ""}
-            onChange={(e)=>{
-                setSubmitData({
-                    ...submitData, 
-                    ne: e.target.value,
-                    cabimento: e.target.name
-                })
-            }}
-        >
-            {ne.data.filter(nota=>nota.rubrica===submitData.rubrica.code).map(n =>{
-                return (
-                    <MenuItem name={n.cabimento} key={n.id} value={n.ne}>
-                        {n.ne}
-                    </MenuItem>
-                )
-            })}
-    </TextField>
-    )     
+
+    React.useEffect(()=>{
+        if(!isFetching){     
+            setSubmitData({
+                ...submitData, 
+                empresa: empresas.data.length > 0?empresas.data[0].empresa : "",
+                ne: empresas.data.length > 0? empresas.data[0].ne: "",
+                cabimento: empresas.data.length > 0? empresas.data[0].cabimento: "",
+            })
+            setFetchEmpresas(false)
+            setEmpresasList(empresas.data)
+        }
+    },[isFetching])
+    
+    console.log(empresas)
+    return <CircularProgress color="primary" />
 }
-
 
 export default  PedidosForm
 

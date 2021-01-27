@@ -38,4 +38,60 @@ export default class GruposRepository  {
         return response.then(res =>res.json())
     }
 
+    
+    getGrupoById = (id) =>{
+        let url = this.apiBaseUrl().toString()
+        url += `getGrupoById`
+        const response =  fetch(url,{
+            method: "POST", 
+            headers:{
+            "content-type": "application/json", 
+            },
+            body: JSON.stringify({id}),
+            json: true
+        })
+        return response.then(res =>res.json())
+    }
+
+    getGrupoMembros = (id) =>{
+        let url = this.apiBaseUrl().toString()
+        url += `getGrupoMembros`
+        const response =  fetch(url,{
+            method: "POST", 
+            headers:{
+            "content-type": "application/json", 
+            },
+            body: JSON.stringify({id}),
+            json: true
+        })
+        return response.then(res =>res.json())
+    }
+    
+    editGrupo = (id) =>{
+        let url = this.apiBaseUrl().toString()
+        url += `editGrupo`
+        const response =  fetch(url,{
+            method: "PATCH", 
+            headers:{
+            "content-type": "application/json", 
+            },
+            body: JSON.stringify({id}),
+            json: true
+        })
+        return response.then(res =>res.json())
+    }
+    
+    deleteGrupo = (id) =>{
+        let url = this.apiBaseUrl().toString()
+        url += `deleteGrupo`
+        const response =  fetch(url,{
+            method: "DELETE", 
+            headers:{
+            "content-type": "application/json", 
+            },
+            body: JSON.stringify({id}),
+            json: true
+        })
+        return response.then(res =>res.json())
+    }
 }

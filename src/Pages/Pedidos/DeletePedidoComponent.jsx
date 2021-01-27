@@ -1,41 +1,24 @@
 import React from 'react'
 import {useDeletePedido} from "../../Domain/useCases"
-import {Button, CircularProgress, Snackbar} from "@material-ui/core"
-import CloseIcon from '@material-ui/icons/Close';
-import MuiAlert from '@material-ui/lab/Alert';
+import {CircularProgress} from "@material-ui/core"
 
- const DeletePedidoComponent = ({
-    refetch, 
+ const DeletePedidoComponent = ({ 
     id,
-
+    setDeleteResult
  }) => {
 
     const {
         data: result, 
         isFetching 
     } = useDeletePedido(id)
-
-
-    const handleClose = (event, reason) => {
-        if (reason === 'clickaway') {
-          return;
-        } 
-        refetch()
-    };
-
+    React.useEffect(()=>{
+        if(!isFetching){
+            setDeleteResult(result)
+        }
+    }, [isFetching])
+    
     if(isFetching) return (<CircularProgress />)
-    return (
-        <>
-            <Snackbar open={true} autoHideDuration={6000} onClose={handleClose}>
-                <Alert onClose={handleClose} severity={result.error? "error": "success"}>
-                    {result.error? result.msg: "O pedido foi eliminado com sucesso!"}
-                </Alert>
-            </Snackbar>
-        </>
-    )
+    return <></>
 }
 export default DeletePedidoComponent
 
-const Alert = (props) => {
-    return <MuiAlert elevation={6} variant="filled" {...props} />;
-  }

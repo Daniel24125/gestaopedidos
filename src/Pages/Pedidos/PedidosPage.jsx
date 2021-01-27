@@ -20,14 +20,14 @@ import { Paper,
     Dialog,
     DialogActions, 
     DialogContent,
-    DialogContentText 
-
+    DialogContentText, 
+    Snackbar
 } from '@material-ui/core'
 import {
     useGetPedidos
 } from "../../Domain/useCases"
 import SearchComponent from "./SearchPedidosComponent"
-
+import MuiAlert from '@material-ui/lab/Alert';
 import WidgetsIcon from '@material-ui/icons/Widgets';
 import WhatshotIcon from '@material-ui/icons/Whatshot';
 import GestureIcon from '@material-ui/icons/Gesture';
@@ -52,6 +52,7 @@ const PedidosPage = () => {
     const [showComment, setShowComment] = React.useState(null)
     const [openDelete, setOpenDelete] = React.useState(false);
     const [deletePedido, setDeletePedido] = React.useState(false);
+    const [deleteResult, setDeleteResult] = React.useState(null);
 
     const Rubricas = {
         "gestures": ()=> <GestureIcon style={{color: "#9b59b6"}}/>, 
@@ -71,6 +72,16 @@ const PedidosPage = () => {
         }
     }, [fetchingPedidos])
 
+    
+    const handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+          return;
+        } 
+        refetch()
+        setOpenDelete(false)
+
+    };
+
     if(fetchingPedidos || !pedidosList) return <Loading msg="A carregar os pedidos" />
     return (
         <>
@@ -83,7 +94,12 @@ const PedidosPage = () => {
         </Paper>}
        {pedidosList.data.length > 0&& <div className="pedidosContainer">
                 
-            <Dialog onClose={()=>setOpenDelete(false)} aria-labelledby="simple-dialog-title" open={openDelete}>
+            <Dialog onClose={()=>{
+                setOpenDelete(false)
+                setDeleteResult(null)
+                setDeletePedido(false)
+                refetch()
+            }} aria-labelledby="simple-dialog-title" open={openDelete}>
             <DialogTitle id="alert-dialog-title">{"Tem a certeza que pretende apagar o pedido"}</DialogTitle>
                 <DialogContent>
                     <DialogContentText id="alert-dialog-description">
@@ -95,8 +111,8 @@ const PedidosPage = () => {
                         apagar
                     </Button>}
                     {deletePedido && <DeletePedido
-                        refetch={refetch}
-                        id={selectedPedido} />}
+                        id={selectedPedido} 
+                        setDeleteResult={setDeleteResult}/>}
                     <Button onClick={()=>setOpenDelete(false)} autoFocus>
                         cancelar
                     </Button>
@@ -168,17 +184,17 @@ const PedidosPage = () => {
                                             {p.valor_total} €
                                         </TableCell>
                                         <TableCell  component="th" scope="row">
-                                            {p.fatura.length > 0 && <>
+                                            {p.faturas.length > 0 && <>
                                                 <Tooltip title="Mais informação">
                                                     <IconButton onClick={(e)=>{
-                                                        setFaturacaoData(p.fatura)
+                                                        setFaturacaoData(p.faturas)
                                                         setAnchorFaturacao(e.target)
                                                     }}style={{color: "#2ecc71"}}>
                                                         <FileCopyIcon />
                                                     </IconButton> 
                                                 </Tooltip> 
                                             </>}
-                                            {p.fatura.length === 0 && <>
+                                            {p.faturas.length === 0 && <>
                                                 <Tooltip title="Fatura não entregue">
                                                     <IconButton disabled={true}>
                                                         <FileCopyIcon style={{color: "#dcdcdc"}} />
@@ -352,9 +368,17 @@ const PedidosPage = () => {
                     setOpenDelete(true)
                 }}>ELIMINAR</MenuItem>
             </Menu>
+            {Boolean(deleteResult) &&<Snackbar open={true} autoHideDuration={5000} onClose={handleClose}>
+                <Alert onClose={handleClose} severity={deleteResult.error? "error": "success"}>
+                    {deleteResult.error? deleteResult.msg: "O pedido foi eliminado com sucesso!"}
+                </Alert>
+            </Snackbar>}
         </div>}
         </>
     )
 }
 export default  PedidosPage
 
+const Alert = (props) => {
+    return <MuiAlert elevation={6} variant="filled" {...props} />;
+  }

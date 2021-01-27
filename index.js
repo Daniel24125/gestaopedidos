@@ -57,154 +57,150 @@ const pedidos_ref = admin.firestore().collection("pedidos")
 const pedido_codigos_ref = admin.firestore().collection("codigo_pedidos")
 const empresas_ref = admin.firestore().collection("fornecedores")
 const grupos_ref = admin.firestore().collection("grupos")
-const distRef = admin.firestore().collection("dist")
 const configRef = admin.firestore().collection("utils")
 const notasEncomendaRef = admin.firestore().collection("notasEncomenda")
 const faturasRef = admin.firestore().collection("faturas")
 
 
-app.post("/api/exportExcelData",  (req, res) => {
-  var wb = new xl.Workbook();
-  var ws = wb.addWorksheet('Distribuição Mensal');
-  var titles = ["Grupo", "Responsável", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro", "Total"]
-  var style = wb.createStyle({
-    fill: {
-      type: 'pattern',
-      patternType: 'solid',
-      bgColor: '#FFFFFF',
-      // fgColor: '#FFFF00',
-    },
-    font: {
-      color: '#000000',
-      size: 11,
-    }, 
+// app.post("/api/exportExcelData",  (req, res) => {
+//   var wb = new xl.Workbook();
+//   var ws = wb.addWorksheet('Distribuição Mensal');
+//   var titles = ["Grupo", "Responsável", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro", "Total"]
+//   var style = wb.createStyle({
+//     fill: {
+//       type: 'pattern',
+//       patternType: 'solid',
+//       bgColor: '#FFFFFF',
+//       // fgColor: '#FFFF00',
+//     },
+//     font: {
+//       color: '#000000',
+//       size: 11,
+//     }, 
     
-  });
-  var titleStyle = wb.createStyle({
-    fill: {
-      type: 'pattern',
-      patternType: 'solid',
-      bgColor: "#000000"
-    },
-    font: {
-      color: '#ffffff',
-      size: 12,
-    },
-    alignment: {
-      horizontal: "center"
-    }
-  });
+//   });
+//   var titleStyle = wb.createStyle({
+//     fill: {
+//       type: 'pattern',
+//       patternType: 'solid',
+//       bgColor: "#000000"
+//     },
+//     font: {
+//       color: '#ffffff',
+//       size: 12,
+//     },
+//     alignment: {
+//       horizontal: "center"
+//     }
+//   });
 
-  var selectedYear = req.body.year
+//   var selectedYear = req.body.year
 
-  ws.cell(1, 1, 1, titles.length, true)
-    .string("Valores Mensais (S/IVA)")
-    .style(titleStyle);
+//   ws.cell(1, 1, 1, titles.length, true)
+//     .string("Valores Mensais (S/IVA)")
+//     .style(titleStyle);
 
-  for (var i = 0; i < titles.length; i++) {
-    ws.cell(2, i + 1)
-      .string(titles[i])
-      .style(titleStyle)
-  }
+//   for (var i = 0; i < titles.length; i++) {
+//     ws.cell(2, i + 1)
+//       .string(titles[i])
+//       .style(titleStyle)
+//   }
 
-  distRef.child(selectedYear).once("value")
-    .then(dist => {
-      dist = dist.val()
-      let row_number = 3;
-      let promises_array = []
-      Object.keys(dist).map(g => {
-        let current_promise = grupos_ref.orderByChild("abrv").equalTo(g).once("value")
-          .then(result => {
-            let g_color = result.val()[Object.keys(result.val())[0]].color
-            let members = Object.keys(dist[g]["members"]);
-            let start_row = row_number;
-            members.map((m) => {
-              ws.cell(row_number, 1).string(g).style(style)
-                .style({
-                  fill: {
-                    type: 'pattern',
-                    patternType: 'solid',
-                    "bgColor": g_color,
-                    fgColor: g_color
-                  }, 
-                  border: {
-                    top: {
-                      style:"thin", 
-                      color: "#000000"
-                    }, 
-                    bottom: {
-                      style:"thin", 
-                      color: "#000000"
-                    }
-                  }
-                })
-              ws.cell(row_number, 2).string(m).style(style)
-                .style({
-                  fill: {
-                    type: 'pattern',
-                    patternType: 'solid',
-                    "bgColor": g_color,
-                    fgColor: g_color
-                  }, 
-                  border: {
-                    top: {
-                      style:"thin", 
-                      color: "#000000"
-                    }, 
-                    bottom: {
-                      style:"thin", 
-                      color: "#000000"
-                    }
-                  }
-                })
+//   distRef.child(selectedYear).once("value")
+//     .then(dist => {
+//       dist = dist.val()
+//       let row_number = 3;
+//       let promises_array = []
+//       Object.keys(dist).map(g => {
+//         let current_promise = grupos_ref.orderByChild("abrv").equalTo(g).once("value")
+//           .then(result => {
+//             let g_color = result.val()[Object.keys(result.val())[0]].color
+//             let members = Object.keys(dist[g]["members"]);
+//             let start_row = row_number;
+//             members.map((m) => {
+//               ws.cell(row_number, 1).string(g).style(style)
+//                 .style({
+//                   fill: {
+//                     type: 'pattern',
+//                     patternType: 'solid',
+//                     "bgColor": g_color,
+//                     fgColor: g_color
+//                   }, 
+//                   border: {
+//                     top: {
+//                       style:"thin", 
+//                       color: "#000000"
+//                     }, 
+//                     bottom: {
+//                       style:"thin", 
+//                       color: "#000000"
+//                     }
+//                   }
+//                 })
+//               ws.cell(row_number, 2).string(m).style(style)
+//                 .style({
+//                   fill: {
+//                     type: 'pattern',
+//                     patternType: 'solid',
+//                     "bgColor": g_color,
+//                     fgColor: g_color
+//                   }, 
+//                   border: {
+//                     top: {
+//                       style:"thin", 
+//                       color: "#000000"
+//                     }, 
+//                     bottom: {
+//                       style:"thin", 
+//                       color: "#000000"
+//                     }
+//                   }
+//                 })
 
-              for (var j = 1; j <= 12; j++) {
-                ws.cell(row_number, 2 + j).number(parseInt(dist[g]["members"][m][`m${j}`])).style(style)
-                  .style({
-                    alignment: {
-                      horizontal: "center"
-                    },
-                    fill: {
-                      type: 'pattern',
-                      patternType: 'solid',
-                      "bgColor": "#ffffff",
-                      fgColor: "#ffffff"
-                    }
-                  })
-              }
+//               for (var j = 1; j <= 12; j++) {
+//                 ws.cell(row_number, 2 + j).number(parseInt(dist[g]["members"][m][`m${j}`])).style(style)
+//                   .style({
+//                     alignment: {
+//                       horizontal: "center"
+//                     },
+//                     fill: {
+//                       type: 'pattern',
+//                       patternType: 'solid',
+//                       "bgColor": "#ffffff",
+//                       fgColor: "#ffffff"
+//                     }
+//                   })
+//               }
 
-              row_number++
-            })
+//               row_number++
+//             })
 
-            let end_row = members.length > 1 ? start_row + members.length-1 : start_row
-            ws.cell(start_row, 15,end_row, 15, true)
-            .number(parseInt(dist[g]["total"])).style(style)
-            .style({
-              alignment: {
-                horizontal: "center",
-                vertical: "center"
-              },
-              fill: {
-                type: 'pattern',
-                patternType: 'solid',
-                "bgColor": g_color,
-                fgColor: g_color
-              }
-            })
-          })
-        promises_array.push(current_promise)
-      })
+//             let end_row = members.length > 1 ? start_row + members.length-1 : start_row
+//             ws.cell(start_row, 15,end_row, 15, true)
+//             .number(parseInt(dist[g]["total"])).style(style)
+//             .style({
+//               alignment: {
+//                 horizontal: "center",
+//                 vertical: "center"
+//               },
+//               fill: {
+//                 type: 'pattern',
+//                 patternType: 'solid',
+//                 "bgColor": g_color,
+//                 fgColor: g_color
+//               }
+//             })
+//           })
+//         promises_array.push(current_promise)
+//       })
 
-      Promise.all(promises_array)
-        .then(_ => {
-          res.setHeader('Content-Type', "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet ");
-          wb.write(`distribuição_${selectedYear}.xlsx`, res)
-        })
-    })
-
-
-
-})
+//       Promise.all(promises_array)
+//         .then(_ => {
+//           res.setHeader('Content-Type', "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet ");
+//           wb.write(`distribuição_${selectedYear}.xlsx`, res)
+//         })
+//     })
+// })
 
 // GET REQUESTS 
 app.get("/api/getNumPedidos",  async (req, res) => {
@@ -503,6 +499,30 @@ app.get('/api/getPedidos',  async (req, res)=> {
   })
 });
 
+
+
+
+app.post('/api/getGrupoMembros', async  (req, res) =>{
+    const id = req.body.id
+    const membersDist = await grupos_ref.doc(id).collection("membros").get()
+    .catch(err => {
+      res.json({
+          error: true,
+          msg: String(err)
+      })
+    })
+    res.json({
+      data: membersDist.docs.map(doc=>{
+        return {
+          ...doc.data(), 
+          id: doc.id,
+        }
+      })
+    })
+});
+
+
+
 app.get('/api/getGrupos', async  (req, res) =>{
   const grupos = await grupos_ref
     .get()
@@ -511,13 +531,12 @@ app.get('/api/getGrupos', async  (req, res) =>{
           error: true,
           msg: String(err)
       })
-    })
-
+    })    
     res.json({
       data: grupos.docs.map(doc=>{
         return {
           ...doc.data(), 
-          id: doc.id
+          id: doc.id,
         }
       })
     })
@@ -543,21 +562,7 @@ app.get('/api/getFornecedores', async (req, res) =>{
     })
 });
 
-app.get("/api/getDist", async (req, res) => {
-  const year = new Date().getFullYear()
-  const dist = await distRef.doc(String(year))
-  .get()
-  .catch(err => {
-    res.json({
-        error: true,
-        msg: String(err)
-    })
-  })
 
-  res.json({
-    data: dist.data()
-  })
-})
 
 
 
@@ -698,22 +703,8 @@ app.post("/api/getEmpresaInfo", (req, res) => {
     });
 })
 
-app.post("/api/novo_pedido", async (req, res) => {
-  let pedido = req.body.pedido;
-  pedido["pedido_feito"] = false;
-  pedido["pedido_done"] = false;
-  pedido["pedido_feito_timestamp"] = "";
-  pedido["pedido_feito_formated_date"] = "";
-  const novo_pedido = await pedidos_ref
-    .add(pedido)
-    .catch(err => {
-      res.json({
-          error: true,
-          msg: String(err)
-      })
-    })
-  
-  const dist_data = await distRef.doc(String(pedido.year))
+const updateGrupoDist = async (valor_total, pedido, res,)=>{
+  const dist_data = await grupos_ref.doc(pedido.grupo_id).collection("dist")
     .get()
     .catch(err => {
       res.json({
@@ -721,62 +712,89 @@ app.post("/api/novo_pedido", async (req, res) => {
           msg: String(err)
       })
     })
-  let current_dist = dist_data.data()[pedido.grupo_abrv]
-  let current_dist_membro = current_dist.members[pedido.responsavel]
-
-  current_dist.members[pedido.responsavel][`m${pedido.mounth}`] = Number(current_dist_membro[`m${pedido.mounth}`]) + pedido.valor_total
-  current_dist.members[pedido.responsavel].total = Number(current_dist_membro.total ) + pedido.valor_total
-  current_dist.anual[`m${pedido.mounth}`]= Number( current_dist.anual[`m${pedido.mounth}`])+ pedido.valor_total
-  current_dist.total = Number(current_dist.total) + pedido.valor_total
-
-  await distRef.doc(String(pedido.year)).set({
-    [pedido.grupo_abrv]: current_dist
-  },{merge: true})
-
-  console.log(pedido)
-  pedido.fatura.forEach( async (f)=>{
-    await faturasRef.add({
-      ...f,
-      pedido: novo_pedido.id
-    })
+  const dist_data_membros = await grupos_ref.doc(pedido.grupo_id).collection("membros")
+    .get()
     .catch(err => {
       res.json({
           error: true,
           msg: String(err)
       })
     })
+  let current_dist = dist_data.docs.map(doc=>{
+    return {
+      ...doc.data(),
+      id: doc.id
+    }
+  }).filter(d=>d.year=== pedido.year)[0]
+  let current_dist_membro = dist_data_membros.docs.map(doc=>{
+    return {
+      ...doc.data(),
+      id: doc.id
+    }
+  }).filter(d=>d.name=== pedido.responsavel)[0]
+
+  
+  current_dist.anual[`m${pedido.mounth}`] = Number(current_dist.anual[`m${pedido.mounth}`]) + valor_total
+  current_dist.total = Number(current_dist.total ) + valor_total
+  
+  current_dist_membro.dist[`m${pedido.mounth}`]= Number(current_dist_membro.dist[`m${pedido.mounth}`])+ valor_total
+  current_dist_membro.dist.total = Number(current_dist_membro.dist.total) + valor_total
+
+  await grupos_ref.doc(pedido.grupo_id).collection("dist").doc(current_dist.id).set(current_dist, {merge: true})
+  .catch(err => {
+    res.json({
+        error: true,
+        msg: String(err)
+    })
   })
+
+  await grupos_ref.doc(pedido.grupo_id).collection("membros").doc(current_dist_membro.id).set(current_dist_membro, {merge: true})
+  .catch(err => {
+    res.json({
+        error: true,
+        msg: String(err)
+    })
+  })
+}
+
+
+app.post("/api/novo_pedido", async (req, res) => {
+  let pedido = req.body.pedido;
+  pedido["pedido_feito"] = false;
+  pedido["pedido_done"] = false;
+  pedido["pedido_feito_timestamp"] = "";
+  pedido["pedido_feito_formated_date"] = "";
+
+  const novo_pedido = await pedidos_ref
+  .add(pedido)
+  .catch(err => {
+    res.json({
+        error: true,
+        msg: String(err)
+    })
+  })
+  if(pedido.faturas.length > 0){
+    pedido.faturas.forEach( async (f, i)=>{
+      await faturasRef.add({
+        ...f,
+        pedido: novo_pedido.id
+      })
+      .catch(err => {
+        res.json({
+          error: true,
+          msg: String(err)
+        })
+      })
+    })
+  }
+  
+  await updateGrupoDist(Number(pedido.valor_total), pedido, res)
 
   res.json({
     error: false
   })
 
 });
-
-const addGroupData = (year) => {
-  grupos_ref.once("value",  (data) => {
-    Object.keys(data.val()).map(id => {
-      let current_group = data.val()[id].abrv;
-      let membros_list = data.val()[id].membros
-
-      if (membros_list) {
-        membros_list.map(m => {
-          for (let i = 1; i < 13; i++) {
-            distRef.child(year).child(current_group).child("members").child(m).child(`m${i}`).set(0)
-            distRef.child(year).child(current_group).child("members").child(m).child("total").set(0)
-          }
-        })
-        for (let i = 1; i < 13; i++) {
-          distRef.child(year).child(current_group).child("anual").child(`m${i}`).set(0)
-          distRef.child(year).child(current_group).child("total").set(0)
-        }
-      }
-    })
-  }, function (err) {
-    console.log(err);
-  });
-
-}
 
 app.post("/api/addArticleToDb", (req, res) => {
   artigosRef.push(req.body.data, () => {
@@ -795,22 +813,66 @@ app.post("/api/artigo_faturado", (req, res) => {
   })
 })
 
-app.post("/api/novo_grupo", (req, res) => {
-  let grupo = req.body;
-  if (grupo.membros) {
-    grupo.membros.map(m => {
-      for (let i = 1; i < 13; i++)
-        distRef.child(new Date().getYear()).child(grupo.abrv).child("members").child(m).child(`m${i}`).set(0)
-      distRef.child(new Date().getYear()).child(grupo.abrv).child("members").child(m).child("total").set(0)
+app.post("/api/novo_grupo", async (req, res) => {
+  let grupo = req.body.grupo;
+  const year = new Date().getFullYear()
+  const new_group = await grupos_ref.add({
+    ...grupo, 
+    dist: {
+      year: year, 
+      anual: {
+        "m1": 0,
+        "m2": 0,
+        "m3": 0,
+        "m4": 0,
+        "m5": 0,
+        "m6": 0,
+        "m7": 0,
+        "m8": 0,
+        "m9": 0,
+        "m10": 0,
+        "m11": 0,
+        "m12": 0,
+      },
+      total: 0
+    }
+  })
+  .catch(err => {
+    res.json({
+        error: true,
+        msg: String(err)
     })
-    for (let i = 1; i < 13; i++)
-      distRef.child(new Date().getYear()).child(grupo.abrv).child("anual").child(`m${i}`).set(0)
-    distRef.child(new Date().getYear()).child(grupo.abrv).child("total").set(0)
-  }
-  grupos_ref.push(grupo, () => {
-    res.send({
-      "msg": "Success"
+  })
+  grupo.membros.forEach(async m=>{
+    await grupos_ref.doc(new_group.id).collection("membros").add({
+      name: m,
+      dist: {
+        "m1": 0,
+        "m2": 0,
+        "m3": 0,
+        "m4": 0,
+        "m5": 0,
+        "m6": 0,
+        "m7": 0,
+        "m8": 0,
+        "m9": 0,
+        "m10": 0,
+        "m11": 0,
+        "m12": 0,
+        total: 0
+      }
     })
+    .catch(err => {
+      res.json({
+          error: true,
+          msg: String(err)
+      })
+    })
+  })
+
+
+  res.json({
+    error: false
   })
 });
 
@@ -890,27 +952,15 @@ app.post("/api/getEmpresasByRubrica", async (req, res) => {
       })
     })
     res.json({
-      data: {
-        empresas:[...new Set(empresas.docs.map(doc=>doc.data().empresa))],
-        ne: empresas.docs.map(doc=>{
-          return {
-            ...doc.data(),
-            id: doc.id
-          }
-        })
-      }
+      data: empresas.docs.map(doc=>{
+        return {
+          ...doc.data(),
+          id: doc.id
+        }
+      })
     })
 
 });
-
-app.post("/api/getFaturacao",  (req, res) => {
-  pedidos_ref.orderByChild('empresa').equalTo(req.body.name).once("value", sanpshot => {
-    res.send({
-      "result": sanpshot.val()
-    })
-  })
-
-})
 
 app.post("/api/editEmpresa",  (req, res) => {
   let id = req.body.id;
@@ -978,27 +1028,28 @@ app.delete("/api/deletePedido", async (req, res) => {
         msg: String(err)
     })
   })
-  const pedido_data = pedido_doc.data()
-  const dist_data = await distRef.doc(String(pedido_data.year))
-    .get()
+  const pedido_data = {
+    ...pedido_doc.data(),
+    id
+  }
+
+  if(pedido_data.faturas.length !== 0){
+    const faturas = await faturasRef.where("pedido", "==", pedido_data.id).get()
     .catch(err => {
       res.json({
           error: true,
           msg: String(err)
       })
     })
-  let current_dist = dist_data.data()[pedido_data.grupo_abrv]
-  let current_dist_membro = current_dist.members[pedido_data.responsavel]
 
-  current_dist.members[pedido_data.responsavel][`m${pedido_data.mounth}`] = Number(current_dist_membro[`m${pedido_data.mounth}`]) - pedido_data.valor_total
-  current_dist.members[pedido_data.responsavel].total = Number(current_dist_membro.total ) - pedido_data.valor_total
-  current_dist.anual[`m${pedido_data.mounth}`]= Number( current_dist.anual[`m${pedido_data.mounth}`])- pedido_data.valor_total
-  current_dist.total = Number(current_dist.total) - pedido_data.valor_total
+    faturas.forEach(async (doc)=>{
+      await faturasRef.doc(doc.id).delete()
+    })
+  
+  }
 
-  await distRef.doc(String(pedido_data.year)).set({
-    [pedido_data.grupo_abrv]: current_dist
-  },{merge: true})
-
+  await updateGrupoDist(Number(pedido_data.valor_total)*-1, pedido_data, res)
+ 
   await pedidos_ref.doc(id).delete()
   .catch(err => {
     res.json({
@@ -1007,39 +1058,78 @@ app.delete("/api/deletePedido", async (req, res) => {
     })
   })
 
+  
   res.json({
     error: false
   })
 
 });
 
-app.post("/api/deleteGrupo",  (req, res) => {
-  let id = req.body.id;
-  grupos_ref.child(id).remove()
-  grupos_ref.once('value', (grupos) => {
-    res.send({
-      "new_data": grupos.val()
+app.delete("/api/deleteGrupo", async (req, res) => {
+  const id = req.body.id;  
+  await grupos_ref.doc(id).collection("dist").delete()
+  .catch(err => {
+    res.json({
+        error: true,
+        msg: String(err)
     })
-  });
+  })
+  await grupos_ref.doc(id).collection("membros").delete()
+  .catch(err => {
+    res.json({
+        error: true,
+        msg: String(err)
+    })
+  })
+
+  await grupos_ref.doc(id).delete()
+  .catch(err => {
+    res.json({
+        error: true,
+        msg: String(err)
+    })
+  })
+  res.json({
+    error: false
+  })
 
 });
 
-app.post("/api/editGrupo",  (req, res) => {
-  let id = req.body.id;
-  grupos_ref.child(id).set(req.body.data, () => {
-    res.send({
-      "msg": "Success"
+app.patch("/api/editGrupo", async (req, res) => {
+  const id = req.body.id;
+  const data = req.body.data
+
+  await grupos_ref.doc(id).set(data, {merge: true})
+  .catch(err => {
+    res.json({
+        error: true,
+        msg: String(err)
     })
+  })
+  res.json({
+    error: false
   })
 });
 
-app.post("/api/getGrupoById",  (req, res) => {
+app.post("/api/getGrupoById", async (req, res) => {
   let id = req.body.id;
-  grupos_ref.child(id).once("value", (grupo) => {
-    res.send({
-      "data": grupo.val()
+  if(id){
+    const grupo = await grupos_ref.doc(id)
+      .get()
+      .catch(err => {
+        res.json({
+            error: true,
+            msg: String(err)
+        })
+      })
+      res.json({
+        data: grupo.data()
+      })
+  }else{
+    res.json({
+      data: null
     })
-  });
+  }
 });
 
 app.post("/api/getPedidoById", async (req, res) => {
@@ -1163,53 +1253,6 @@ app.post("/api/editPedido", async (req, res) => {
 
 });
 
- const updateDistGrupoValue = (del, ano, mes, grupo, membro, valor) =>{
-  let dist_grupo_membro_ref = distRef.child(ano).child(grupo).child("members").child(membro).child(mes)
-  dist_grupo_membro_ref.once("value")
-    .then( (value) =>{
-      dist_grupo_membro_ref.set(getValue(del, value.val(), valor))
-    }).catch(err => console.log(err));
-
-  let dist_grupo_membro_cumulativo_ref = distRef.child(ano).child(grupo).child("members").child(membro).child("total")
-  dist_grupo_membro_cumulativo_ref.once("value")
-    .then( (value) =>{
-      dist_grupo_membro_cumulativo_ref.set(getValue(del, value.val(), valor))
-    }).catch(err => console.log(err))
-
-  let dist_grupo = distRef.child(ano).child(grupo).child("anual").child(mes)
-  dist_grupo.once("value")
-    .then( (value) =>{
-      dist_grupo.set(getValue(del, value.val(), valor))
-    }).catch(err => console.log(err))
-
-  let dist_grupo_cumulativo = distRef.child(ano).child(grupo).child("total")
-  dist_grupo_cumulativo.once("value")
-    .then( (value) =>{
-      dist_grupo_cumulativo.set(getValue(del, value.val(), valor))
-    }).catch(err => console.log(err))
-}
-
-const updateValorDisponivel = (subtract, fornecedor, rubrica, ne, valor) =>{
-  if (rubrica == "sequenciação") {
-    rubrica = "sequenciacao"
-  }
-  empresas_ref.orderByChild("empresa").equalTo(fornecedor).once("value", snap => {
-    let id = Object.keys(snap.val())[0]
-    let index = snap.val()[id][rubrica]["ne"].indexOf(ne)
-    let current_value = snap.val()[id][rubrica]["saldo_diponivel"][index]
-    empresas_ref.child(id).child(rubrica).child("saldo_diponivel").child(index).set(getValue(subtract, current_value, valor))
-  });
-}
-
-const getValue = (del, current_value, new_value) => {
-  let result;
-  if (del) {
-    result = parseFloat(current_value) - parseFloat(new_value)
-  } else {
-    result = parseFloat(current_value) + parseFloat(new_value)
-  }
-  return result.toFixed(2)
-}
 
 
 app.listen(port, () => {

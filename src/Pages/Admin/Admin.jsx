@@ -77,9 +77,9 @@ const Admin = () => {
                                 </Link>
                             </li>
                             <li onClick={closeMenu}>
-                                <Link to="/dist">
+                                <Link to="/gerirGrupos">
                                     <EuroIcon/>
-                                      Distribuição Monetária
+                                      Grupos de Investigação
                                 </Link>
                             </li>
                             <li onClick={closeMenu}>
