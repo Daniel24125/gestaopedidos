@@ -7,26 +7,73 @@ import {CircularProgress,
     TableHead,
     TableRow,
     TableCell,
-    TableBody,} from "@material-ui/core"
+    TableBody,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogContentText,
+    DialogActions,
+    Button
+} from "@material-ui/core"
 import DeleteIcon from '@material-ui/icons/Delete';
+import DeleteFatura from "../PedidosFormPage/DeleteFatura"
+
 const GetFaturasPedido = ({
     pedidoID
 }) => {
 
+    const [openDelete, setOpenDelete] = React.useState(false);
+    const [deleteFatura, setDeleteFatura] = React.useState(false);
+    const [deleteResult, setDeleteResult] = React.useState(null);
+    const [selectedFaturaID, setSelectedFaturaID] = React.useState(null);
+
     const {
         data: faturas, 
-        isFetching
+        isFetching,
+        refetch
     } = useGetFaturasByPedido(pedidoID)
 
-    console.log(faturas)
-    if(isFetching) return <CircularProgress />
+
+    if(isFetching) return <div style={{
+        minWidth: 600,
+        display: "flex", 
+        justifyContent: "center",
+        alignItems: "center"
+    }}><CircularProgress /></div>
     return (
        <>
+            <Dialog onClose={()=>{
+                setOpenDelete(false)
+                setDeleteResult(null)
+            }} aria-labelledby="simple-dialog-title" open={openDelete}>
+            <DialogTitle id="alert-dialog-title">{"Tem a certeza que pretende apagar a fatura"}</DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                        A fatura será apagada permanentemente da base de dados. Tem a certeza que pretende continuar?
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    {!deleteFatura && <Button style={{color: "#e74c3c"}}onClick={()=>{setDeleteFatura(true)}}>
+                        apagar
+                    </Button>}
+                    {deleteFatura && <DeleteFatura
+                        id={selectedFaturaID} 
+                        setDeleteResult={setDeleteResult}
+                        setOpenDelete={setOpenDelete}
+                        refetch={refetch}
+                        setDeleteFatura={setDeleteFatura}
+                        />}
+                    <Button onClick={()=>setOpenDelete(false)} autoFocus>
+                        cancelar
+                    </Button>
+                </DialogActions>
+
+            </Dialog>
             {faturas.data.length > 0 &&<Table size="small">
                 <TableHead>
                     <TableRow >
-                        <TableCell align="right">Data de Emissão</TableCell>
                         <TableCell align="right">Códido</TableCell>
+                        <TableCell align="right">Data de Emissão</TableCell>
                         <TableCell align="right">Valor</TableCell>
                         <TableCell align="right">Notas</TableCell>
                         <TableCell align="right"></TableCell>
@@ -36,12 +83,15 @@ const GetFaturasPedido = ({
                     {faturas.data.map((f,i)=>{
                         return (
                             <TableRow key={`fatura_${f.id}`}>
-                                    <TableCell align="right">{f.data_emissao}</TableCell>
                                     <TableCell align="right">{f.name}</TableCell>
+                                    <TableCell align="right">{f.data_emissao.substring(0,10)}</TableCell>
                                     <TableCell align="right">{f.valor_fatura} €</TableCell>
                                     <TableCell align="right">{f.notas}</TableCell>
                                     <TableCell align="center">
-                                        <IconButton style={{color: "#e74c3c"}}>
+                                        <IconButton onClick={()=>{
+                                            setOpenDelete(true)
+                                            setSelectedFaturaID(f.id)   
+                                        }} style={{color: "#e74c3c"}}>
                                             <DeleteIcon/>
                                         </IconButton>
                                     </TableCell>
@@ -51,6 +101,7 @@ const GetFaturasPedido = ({
                 </TableBody>
             </Table>}
             {faturas.data.length === 0 && <Typography style={{padding: "10px 20px"}}>Não foram emitidas faturas</Typography>}
+
         </>
     )
 }

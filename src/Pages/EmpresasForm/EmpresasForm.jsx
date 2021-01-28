@@ -5,7 +5,7 @@ import {List ,Dialog,DialogTitle,DialogContent,DialogContentText,DialogActions, 
 import Loading from "../../Components/Loading"
 import DeleteIcon from '@material-ui/icons/Delete';
 import SubmitForm from "./SubmitForm"
-import {useAddEmpresa, useGetEmpresaById, useEditEmpresa} from "../../Domain/useCases"
+import {useAddEmpresa, useGetEmpresaById, useEditEmpresa, useGetRubricasByEmppresa} from "../../Domain/useCases"
 import WidgetsIcon from '@material-ui/icons/Widgets';
 import WhatshotIcon from '@material-ui/icons/Whatshot';
 import GestureIcon from '@material-ui/icons/Gesture';
@@ -19,6 +19,11 @@ const EmpresasForm = () => {
         isFetching
     } = useGetEmpresaById(id)
     
+    const {
+        data: nes, 
+        isFetching: fetchingNES
+    } = useGetRubricasByEmppresa(id)
+
     const [submitForm, setSubmitForm] = React.useState(false);
     const [addNE, setAddNe] = React.useState(false);
     
@@ -58,21 +63,22 @@ const EmpresasForm = () => {
 
     
     React.useEffect(()=>{
-        if(!isFetching ){
+        if(!isFetching  && !fetchingNES){
             if(id){
                 setSubmitData({
                     ...submitData, 
-                    ...empresa.data
+                    ...empresa.data,
+                    nes: nes.data
                 })
             }
         }
-    }, [isFetching])
+    }, [isFetching, fetchingNES])
 
     if(isFetching) return <Loading msg="A carregar dados da empresa" />
     if(submitForm)  return <SubmitForm data={submitData}  id={id} submitFunction={id? useEditEmpresa: useAddEmpresa}/>
     return (
         <FormComponent title={id? `Editar a empresa ${empresa.data.empresa}`: "Registo de Novo Fornecedor"}>
-            <Dialog open={addNE} onClose={()=>setAddNe(false)} aria-labelledby="form-dialog-title">
+            {id && <Dialog open={addNE} onClose={()=>setAddNe(false)} aria-labelledby="form-dialog-title">
                 <DialogTitle id="form-dialog-title">Adicionar Nota de Encomenda</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
@@ -173,7 +179,7 @@ const EmpresasForm = () => {
                             Adicionar
                         </Button>
                 </DialogActions>
-            </Dialog>
+            </Dialog>}
             <TextField
                 error={error}
                 required
@@ -220,11 +226,11 @@ const EmpresasForm = () => {
                 variant="filled"
             />
 
-            <Button onClick={()=>{
+           {id && <Button onClick={()=>{
                 setAddNe(true)
-            }} color="primary" >adicionar nota de encomenda</Button>
+            }} color="primary" >adicionar nota de encomenda</Button>}
 
-            <List dense={true}>
+            {id && <List dense={true}>
                 {
                     submitData.nes.map((n, index)=>{
                         return (
@@ -253,7 +259,7 @@ const EmpresasForm = () => {
                         )
                     })
                 }
-            </List>
+            </List>}
             <Button
                 variant="contained"
                 color="primary"

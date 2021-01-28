@@ -106,7 +106,7 @@ const SaldosPage = () => {
                     setContext("faturacao")
                     setAnchorEl(null)
                 }}>FATURAÇÃO</MenuItem>
-                <MenuItem onClick={()=>setAnchorEl(null)}>EDITAR</MenuItem>
+                <MenuItem component={Link} to={`/empresas/${selectedElementID}`} onClick={()=>{setAnchorEl(null)}}>EDITAR</MenuItem>
                 <MenuItem onClick={()=>setAnchorEl(null)}>ELIMINAR</MenuItem>
             </Menu>
         </div>

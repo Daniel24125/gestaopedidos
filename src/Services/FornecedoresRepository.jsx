@@ -163,4 +163,32 @@ export default class FornecedoresRepository  {
             })
         return response.then(res =>res.json())
     }
+
+    addNE = (ne, empresaID, empresa) =>{
+        let url = this.apiBaseUrl().toString()
+        url += `addNE`
+        const response =  fetch(url,{
+            method: "POST", 
+            headers:{
+                "content-type": "application/json", 
+                },
+                body: JSON.stringify({ne,empresaID, empresa}),
+                json: true
+            })
+        return response.then(res =>res.json())
+    }
+
+    deleteNE = (neID) =>{
+        let url = this.apiBaseUrl().toString()
+        url += `deleteNE`
+        const response =  fetch(url,{
+            method: "DELETE", 
+            headers:{
+                "content-type": "application/json", 
+                },
+                body: JSON.stringify({neID}),
+                json: true
+            })
+        return response.then(res =>res.json())
+    }
 }

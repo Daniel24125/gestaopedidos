@@ -99,12 +99,12 @@ const PedidosPage = () => {
                 setOpenDelete(false)
                 setDeleteResult(null)
                 setDeletePedido(false)
-                refetch()
+                if (!deletePedido) refetch()
             }} aria-labelledby="simple-dialog-title" open={openDelete}>
             <DialogTitle id="alert-dialog-title">{"Tem a certeza que pretende apagar o pedido"}</DialogTitle>
                 <DialogContent>
                     <DialogContentText id="alert-dialog-description">
-                    O pedido será apagado permanentemente da base de dados. Tem a certeza que pretende continuar?
+                        O pedido será apagado permanentemente da base de dados. Tem a certeza que pretende continuar?
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions>

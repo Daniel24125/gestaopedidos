@@ -915,20 +915,11 @@ app.post("/api/novo_grupo", async (req, res) => {
 
 app.post("/api/nova_empresa", async (req, res) => {
   const empresa = req.body.empresa;
-  const notasEncomenda = empresa.nes
-  delete empresa.nes
-  const added_empresa = await empresas_ref.add(empresa)
+  await empresas_ref.add(empresa)
   .catch(err => {
     res.json({
         error: true,
         msg: String(err)
-    })
-  })
-  notasEncomenda.forEach(async (n)=>{
-    await notasEncomendaRef.add({
-      ...n,
-      empresa: empresa.empresa,
-      "empresa_id": added_empresa.id
     })
   })
   
@@ -938,27 +929,70 @@ app.post("/api/nova_empresa", async (req, res) => {
 
 });
 
+app.post("/api/addNE", async (req, res) => {
+  const ne = req.body.ne;
+  const empresaID = req.body.empresaID
+  const empresa = req.body.empresa
+
+  await notasEncomendaRef.add({
+    ...ne,
+    empresa: empresa,
+    "empresa_id": empresaID
+  })
+  .catch(err => {
+    res.json({
+        error: true,
+        msg: String(err)
+    })
+  })
+  res.json({
+    error: false
+  })
+
+});
+
+app.post("/api/deleteNE", async (req, res) => {
+  const neID = req.body.neID;
+  
+  await notasEncomendaRef.doc(neID).delete()
+  .catch(err => {
+    res.json({
+        error: true,
+        msg: String(err)
+    })
+  })
+
+  res.json({
+    error: false
+  })
+});
 
 app.post("/api/getRubricasByEmpresa", async (req, res) => {
   let e = req.body.empresa;
-  const notasEncomenda = await notasEncomendaRef
-    .where("empresa", "==", e)
-    .get()
-    .catch(err => {
+  if(e){
+    const notasEncomenda = await notasEncomendaRef
+      .where("empresa", "==", e)
+      .get()
+      .catch(err => {
+        res.json({
+            error: true,
+            msg: String(err)
+        })
+      })
+      
       res.json({
-          error: true,
-          msg: String(err)
+        data: notasEncomenda.docs.map(doc=>{
+          return {
+            ...doc.data(),
+            id: doc.id
+          }
+        })
       })
-    })
-    
+  }else{
     res.json({
-      data: notasEncomenda.docs.map(doc=>{
-        return {
-          ...doc.data(),
-          id: doc.id
-        }
-      })
+      data: null
     })
+  }
 
 });
 
@@ -1017,7 +1051,7 @@ app.post("/api/getFaturasByEmpresa", async (req, res) => {
 
 app.post("/api/addFatura", async (req, res) => {
   let data = req.body.fatura;
-  const faturas = await faturasRef.add(data)
+  await faturasRef.add(data)
     .catch(err => {
       res.json({
           error: true,
@@ -1031,8 +1065,8 @@ app.post("/api/addFatura", async (req, res) => {
 
 });
 
-app.post("/api/deleteFatura", async (req, res) => {
-  let id = req.body.fatura;
+app.delete("/api/deleteFatura", async (req, res) => {
+  let id = req.body.id;
   await faturasRef.doc(id).delete()
     .catch(err => {
       res.json({
@@ -1093,11 +1127,9 @@ app.post("/api/getEmpresaById", async (req, res) => {
 
 app.post("/api/editEmpresa",  (req, res) => {
   let id = req.body.id;
-  empresas_ref.child(id).set(req.body.data, () => {
-    res.send({
-      "msg": "Success"
-    })
-  })
+  const neID = req.body.empresa.ne_id
+  console.log(neID)
+
 });
 
 app.delete("/api/deleteEmpresa",  (req, res) => {

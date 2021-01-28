@@ -44,7 +44,10 @@ const PedidosForm = () => {
     const [addArtigo, setAddArtigo] = React.useState(false);
     const [addFat, setAddFat] = React.useState(false);
     const [submitFatura, setSubmitFatura] = React.useState(false);
+    const [openDelete, setOpenDelete] = React.useState(false);
     const [deleteFatura, setDeleteFatura] = React.useState(false);
+    const [deleteResult, setDeleteResult] = React.useState(null);
+    const [selectedFaturaID, setSelectedFaturaID] = React.useState(null);
 
     const [articleSearchTerm, setArticlesSearchTerm] = React.useState([])
     const [performSearch, setPerformSearch] = React.useState(false)
@@ -149,6 +152,7 @@ const PedidosForm = () => {
 
     React.useEffect(()=>{
         if(!isLoading){
+            console.log(empresasList)
                 setSubmitData({
                     rubrica:id?  pedido.data.rubrica: {
                             code: "PM", 
@@ -167,6 +171,7 @@ const PedidosForm = () => {
                     responsavel:id?  pedido.data.responsavel :  grupos.data[0].membros[0],
                     empresa: id? pedido.data.empresa : empresasList.length > 0? empresasList[0].empresas: "",
                     ne: id?  pedido.data.ne : empresasList.length > 0? empresasList.filter(n=>n.empresa===empresasList[0].empresas)[0].ne: "",
+                    ne_id: id?  pedido.data.ne_id : empresasList.length > 0? empresasList.filter(n=>n.empresa===empresasList[0].empresas)[0].id: "",
                     cabimento: id? pedido.cabimento: empresasList.length > 0? empresasList.filter(n=>n.empresa===empresasList[0].empresas)[0].cabimento: "",
                     proposta:id?  pedido.data.proposta : "",
                     notas:id?  pedido.data.notas: "",
@@ -362,7 +367,6 @@ const PedidosForm = () => {
                         }}
                         onChange={(e)=>{
                             const selectedDate = new Date(e.target.value)
-                            console.log(selectedDate.toJSON().substring(0,10))
                             setTempFatura({
                                 ...tempFatura, 
                                 data_emissao: selectedDate.toJSON(),
@@ -425,6 +429,35 @@ const PedidosForm = () => {
                                 
                 </DialogActions>
             </Dialog>}
+
+            <Dialog onClose={()=>{
+                setOpenDelete(false)
+                setDeleteResult(null)
+            }} aria-labelledby="simple-dialog-title" open={openDelete}>
+                <DialogTitle id="alert-dialog-title">{"Tem a certeza que pretende apagar a fatura"}</DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                        A fatura será apagada permanentemente da base de dados. Tem a certeza que pretende continuar?
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    {!deleteFatura && <Button style={{color: "#e74c3c"}}onClick={()=>{setDeleteFatura(true)}}>
+                        apagar
+                    </Button>}
+                    {deleteFatura && <DeleteFatura
+                        id={selectedFaturaID} 
+                        setDeleteResult={setDeleteResult}
+                        setOpenDelete={setOpenDelete}
+                        refetch={refetchFaturas}
+                        setDeleteFatura={setDeleteFatura}
+                        />}
+                    <Button onClick={()=>setOpenDelete(false)} autoFocus>
+                        cancelar
+                    </Button>
+                </DialogActions>
+
+            </Dialog>
+            
             <div style={{display: "flex"}}>
                 <RubricasComponent 
                         submitData={submitData}
@@ -545,6 +578,7 @@ const PedidosForm = () => {
                         empresa: e.target.value, 
                         empresa_id:  empresasList.filter(n=>n.empresa===e.target.value)[0].id,
                         ne: empresasList.filter(n=>n.empresa===e.target.value)[0].ne,
+                        ne_id: empresasList.filter(n=>n.empresa===e.target.value)[0].id,
                         cabimento: empresasList.filter(n=>n.empresa===e.target.value)[0].cabimento
                     })
                 }}
@@ -555,7 +589,6 @@ const PedidosForm = () => {
                             {e.empresa}
                         </MenuItem>
                     )
-                    
                 })}
             </TextField>
            
@@ -572,7 +605,8 @@ const PedidosForm = () => {
                     setSubmitData({
                         ...submitData, 
                         ne: evt.target.value,
-                        cabimento: name.props.name
+                        cabimento: name.props.name,
+                        ne_id: name.props.key
                     })
                 }}
             >
@@ -648,12 +682,8 @@ const PedidosForm = () => {
                                     <ListItemText primary={`${f.name} com o valor de ${f.valor_fatura}€`} secondary={`Emitida a ${f.data_emissao.substring(0,10)}`} />
                                     <ListItemSecondaryAction>
                                         <IconButton onClick={()=>{
-                                                let tempFat = submitData.fatura
-                                                tempFat.splice(index,1)
-                                                setSubmitData({
-                                                    ...submitData,
-                                                    faturas: tempFat
-                                                })
+                                                setOpenDelete(true)
+                                                setSelectedFaturaID(f.id) 
                                         }} style={{color: "#e74c3c"}}>
                                             <DeleteIcon/>
                                         </IconButton>
