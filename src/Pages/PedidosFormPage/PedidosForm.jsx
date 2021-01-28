@@ -48,7 +48,6 @@ const PedidosForm = () => {
     const [deleteFatura, setDeleteFatura] = React.useState(false);
     const [deleteResult, setDeleteResult] = React.useState(null);
     const [selectedFaturaID, setSelectedFaturaID] = React.useState(null);
-
     const [articleSearchTerm, setArticlesSearchTerm] = React.useState([])
     const [performSearch, setPerformSearch] = React.useState(false)
     const [anchorEl, setAnchorEl] = React.useState(null);
@@ -140,7 +139,6 @@ const PedidosForm = () => {
         
     }
 
-    console.log(faturas)
     const isLoading = React.useMemo(() => {
         return  fetchingGrupos 
             || fetchingPedido
@@ -152,7 +150,6 @@ const PedidosForm = () => {
 
     React.useEffect(()=>{
         if(!isLoading){
-            console.log(empresasList)
                 setSubmitData({
                     rubrica:id?  pedido.data.rubrica: {
                             code: "PM", 
@@ -169,10 +166,10 @@ const PedidosForm = () => {
                     grupo_abrv:id?  pedido.data.grupo_abrv : grupos.data[0].abrv,
                     grupo_id :id?  pedido.data.grupo_id : grupos.data[0].id,
                     responsavel:id?  pedido.data.responsavel :  grupos.data[0].membros[0],
-                    empresa: id? pedido.data.empresa : empresasList.length > 0? empresasList[0].empresas: "",
-                    ne: id?  pedido.data.ne : empresasList.length > 0? empresasList.filter(n=>n.empresa===empresasList[0].empresas)[0].ne: "",
-                    ne_id: id?  pedido.data.ne_id : empresasList.length > 0? empresasList.filter(n=>n.empresa===empresasList[0].empresas)[0].id: "",
-                    cabimento: id? pedido.cabimento: empresasList.length > 0? empresasList.filter(n=>n.empresa===empresasList[0].empresas)[0].cabimento: "",
+                    empresa: id? pedido.data.empresa : empresasList.length > 0? empresasList[0].empresa: "",
+                    ne: id?  pedido.data.ne : empresasList.length > 0? empresasList[0].ne: "",
+                    ne_id: id?  pedido.data.ne_id : empresasList.length > 0? empresasList[0].id: "",
+                    cabimento: id? pedido.cabimento: empresasList.length > 0? empresasList[0].cabimento: "",
                     proposta:id?  pedido.data.proposta : "",
                     notas:id?  pedido.data.notas: "",
                     valor_total: id?  pedido.data.valor_total: "",
@@ -183,7 +180,7 @@ const PedidosForm = () => {
                 }
         }
     }, [isLoading])
-
+    console.log(submitData, empresasList)
     if((isLoading || Object.keys(submitData).length=== 0)) return <Loading msg="A carregar dados necessários..." />
     if(submitForm)  return <SubmitForm data={submitData}  id={id} submitFunction={id? useEditPedido: useSendPedidos}/>
     return (
@@ -606,14 +603,14 @@ const PedidosForm = () => {
                         ...submitData, 
                         ne: evt.target.value,
                         cabimento: name.props.name,
-                        ne_id: name.props.key
+                        ne_id: name.key.substring(2,name.key.length)
                     })
                 }}
             >
                 {empresasList.filter(n=>n.empresa===submitData.empresa).map(n =>{
                     
                     return (
-                        <MenuItem name={n.cabimento} key={n.id} value={n.ne}>
+                        <MenuItem id={n.id} name={n.cabimento} key={n.id} value={n.ne}>
                             {n.ne}
                         </MenuItem>
                     )

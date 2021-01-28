@@ -21,7 +21,6 @@ import { Paper,
     DialogActions, 
     DialogContent,
     DialogContentText, 
-    Snackbar
 } from '@material-ui/core'
 import {
     useGetPedidos
@@ -49,11 +48,9 @@ const PedidosPage = () => {
     const [anchorFaturacao, setAnchorFaturacao] = React.useState(null);
     const [selectedPedido, setSelectedPedido] = React.useState(null);
     const [openCollapsePedido, setOpenCollapsePedido] = React.useState(null);
-    const [faturacaoData, setFaturacaoData] = React.useState(null)
     const [showComment, setShowComment] = React.useState(null)
     const [openDelete, setOpenDelete] = React.useState(false);
     const [deletePedido, setDeletePedido] = React.useState(false);
-    const [deleteResult, setDeleteResult] = React.useState(null);
 
     const Rubricas = {
         "gestures": ()=> <GestureIcon style={{color: "#9b59b6"}}/>, 
@@ -73,16 +70,6 @@ const PedidosPage = () => {
         }
     }, [fetchingPedidos])
 
-    
-    const handleClose = (event, reason) => {
-        if (reason === 'clickaway') {
-          return;
-        } 
-        refetch()
-        setOpenDelete(false)
-
-    };
-
     if(fetchingPedidos || !pedidosList) return <Loading msg="A carregar os pedidos" />
     return (
         <>
@@ -97,9 +84,6 @@ const PedidosPage = () => {
                 
             <Dialog onClose={()=>{
                 setOpenDelete(false)
-                setDeleteResult(null)
-                setDeletePedido(false)
-                if (!deletePedido) refetch()
             }} aria-labelledby="simple-dialog-title" open={openDelete}>
             <DialogTitle id="alert-dialog-title">{"Tem a certeza que pretende apagar o pedido"}</DialogTitle>
                 <DialogContent>
@@ -113,7 +97,10 @@ const PedidosPage = () => {
                     </Button>}
                     {deletePedido && <DeletePedido
                         id={selectedPedido} 
-                        setDeleteResult={setDeleteResult}/>}
+                        setOpenDelete={setOpenDelete}
+                        setDeletePedido={setDeletePedido}
+                        refetch={refetch}
+                        />}
                     <Button onClick={()=>setOpenDelete(false)} autoFocus>
                         cancelar
                     </Button>
@@ -338,11 +325,6 @@ const PedidosPage = () => {
                     setOpenDelete(true)
                 }}>ELIMINAR</MenuItem>
             </Menu>
-            {Boolean(deleteResult) &&<Snackbar open={true} autoHideDuration={5000} onClose={handleClose}>
-                <Alert onClose={handleClose} severity={deleteResult.error? "error": "success"}>
-                    {deleteResult.error? deleteResult.msg: "O pedido foi eliminado com sucesso!"}
-                </Alert>
-            </Snackbar>}
         </div>}
         </>
     )

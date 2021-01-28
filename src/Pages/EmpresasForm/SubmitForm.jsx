@@ -6,12 +6,13 @@ import { Link } from 'react-router-dom';
 const SubmitForm = ({
     data,
     id,
-    submitFunction
+    submitFunction,
+    nesIDs
 }) => {
     const {
         data: response, 
         isFetching
-    } = submitFunction(data, id)
+    } = submitFunction(data, id, nesIDs)
     console.log(response)
     if(isFetching) return <Loading msg="A submeter dados do formulário..." />
     return (

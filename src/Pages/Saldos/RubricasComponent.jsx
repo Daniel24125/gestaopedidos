@@ -28,7 +28,6 @@ import DeleteIcon from '@material-ui/icons/Delete';
         },
     }
 
-    console.log(ne)
     return (
         <div className="optionsContainer">
             {isFetching && <CircularProgress size={60} color="primary" />}

@@ -1,28 +1,57 @@
 import React from 'react'
 import {useGetFornecedores} from "../../Domain/useCases"
 import Loading from "../../Components/Loading"
-import { Avatar,Collapse , Menu, MenuItem, Paper,Button,  IconButton,  Table, TableBody, TableCell, TableContainer,TableHead, TableRow, Tooltip, Typography } from '@material-ui/core'
+import { Avatar,Collapse ,Dialog,DialogTitle,DialogContent,DialogContentText,DialogActions, Menu, MenuItem, Paper,Button,  IconButton,  Table, TableBody, TableCell, TableContainer,TableHead, TableRow, Tooltip, Typography } from '@material-ui/core'
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import CloseIcon from '@material-ui/icons/Close';
 import RubricasComponent from "./RubricasComponent"
 import FaturasComponent from "./FaturasComponent"
 import {Link} from "react-router-dom"
+import DeleteEmpresa from "./DeleteEmpresa"
 
 const SaldosPage = () => {
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [selectedElementID, setSelectedElementID] = React.useState(null);
     const [collapse, setCollapse] = React.useState(null);
     const [context, setContext] = React.useState(null);
-    
+    const [openDelete, setOpenDelete] = React.useState(false);
+    const [deleteEmpresa, setDeleteEmpresa] = React.useState(false);
+
     const {
         data: fornecedores, 
-        isFetching
+        isFetching,
+        refetch
     } = useGetFornecedores()
 
     if(isFetching) return <Loading msg="A carregar dados de fornecedores..."/>
 
     return (
         <div className="fornecedoresContainer">
+            <Dialog onClose={()=>{
+                setOpenDelete(false)
+            }} aria-labelledby="simple-dialog-title" open={openDelete}>
+                <DialogTitle id="alert-dialog-title">{"Tem a certeza que pretende apagar o fornecedor?"}</DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                        Os dados do fornecedor assim como as suas notas de encomenda serão apagados permanentemente da base de dados. Tem a certeza que pretende continuar?
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    {!deleteEmpresa && <Button style={{color: "#e74c3c"}}onClick={()=>{setDeleteEmpresa(true)}}>
+                        apagar
+                    </Button>}
+                    {deleteEmpresa && <DeleteEmpresa
+                        id={selectedElementID} 
+                        setOpenDelete={setOpenDelete}
+                        refetch={refetch}
+                        setDeleteEmpresa={setDeleteEmpresa}
+                        />}
+                    <Button onClick={()=>setOpenDelete(false)} autoFocus>
+                        cancelar
+                    </Button>
+                </DialogActions>
+
+            </Dialog>
             <div className="titleContainer">
                 <Typography color="primary" variant="h6">Fornecedores Registados</Typography>
                 <Button component={Link} to="/empresas/registo" color="primary" variant="contained">adicionar fornecedor</Button>
@@ -42,7 +71,7 @@ const SaldosPage = () => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {fornecedores.data.map(f=>{
+                        {fornecedores.data.sort((a,b)=> a.empresa < b.empresa? -1 : a.empresa > b.empresa? 1: 0).map(f=>{
                             return( <>
                                 <TableRow kew={f.id}>
                                     <TableCell style={{paddingLeft: 50}} align="right">
@@ -77,8 +106,8 @@ const SaldosPage = () => {
                                                         <CloseIcon/>
                                                     </IconButton>
                                                 </div>
-                                                {context=== "rubricas" && <RubricasComponent empresa={f.empresa} />}
-                                                {context=== "faturacao" && <FaturasComponent empresa={f.empresa} />}
+                                                {context=== "rubricas" && <RubricasComponent empresa={f.id} />}
+                                                {context=== "faturacao" && <FaturasComponent empresa={f.id} />}
                                             </div>
                                         </Collapse>
                                     </TableCell>
@@ -107,7 +136,10 @@ const SaldosPage = () => {
                     setAnchorEl(null)
                 }}>FATURAÇÃO</MenuItem>
                 <MenuItem component={Link} to={`/empresas/${selectedElementID}`} onClick={()=>{setAnchorEl(null)}}>EDITAR</MenuItem>
-                <MenuItem onClick={()=>setAnchorEl(null)}>ELIMINAR</MenuItem>
+                <MenuItem onClick={()=>{
+                    setAnchorEl(null)
+                    setOpenDelete(true)
+                }}>ELIMINAR</MenuItem>
             </Menu>
         </div>
     )

@@ -801,27 +801,19 @@ app.post("/api/novo_pedido", async (req, res) => {
         msg: String(err)
     })
   })
-  // const faturasList = []
-  // if(pedido.faturas.length > 0){
-  //   pedido.faturas.forEach( async (f, i)=>{
-  //     const fatura = await faturasRef.add({
-  //       ...f,
-  //       pedido: novo_pedido.id
-  //     })
-  //     .catch(err => {
-  //       res.json({
-  //         error: true,
-  //         msg: String(err)
-  //       })
-  //     })
-  //     faturasList.push(fatura.id)
-  //   })
-  //   await pedidos_ref.doc(novo_pedido.id).set({
-  //     faturas_ids: faturasList
-  //   },{merge: true})
-  // }
   
   await updateGrupoDist(Number(pedido.valor_total), pedido, res)
+
+  const notaE = await notasEncomendaRef.doc(pedido.ne_id).get()
+  .catch(err => {
+    res.json({
+        error: true,
+        msg: String(err)
+    })
+  })
+  await notasEncomendaRef.doc(pedido.ne_id).set({
+    saldo_disponivel: notaE.data().saldo_disponivel - pedido.valor_total
+  })
 
   res.json({
     error: false
@@ -931,14 +923,8 @@ app.post("/api/nova_empresa", async (req, res) => {
 
 app.post("/api/addNE", async (req, res) => {
   const ne = req.body.ne;
-  const empresaID = req.body.empresaID
-  const empresa = req.body.empresa
 
-  await notasEncomendaRef.add({
-    ...ne,
-    empresa: empresa,
-    "empresa_id": empresaID
-  })
+  await notasEncomendaRef.add(ne)
   .catch(err => {
     res.json({
         error: true,
@@ -951,7 +937,7 @@ app.post("/api/addNE", async (req, res) => {
 
 });
 
-app.post("/api/deleteNE", async (req, res) => {
+app.delete("/api/deleteNE", async (req, res) => {
   const neID = req.body.neID;
   
   await notasEncomendaRef.doc(neID).delete()
@@ -971,7 +957,7 @@ app.post("/api/getRubricasByEmpresa", async (req, res) => {
   let e = req.body.empresa;
   if(e){
     const notasEncomenda = await notasEncomendaRef
-      .where("empresa", "==", e)
+      .where("empresa_id", "==", e)
       .get()
       .catch(err => {
         res.json({
@@ -979,7 +965,7 @@ app.post("/api/getRubricasByEmpresa", async (req, res) => {
             msg: String(err)
         })
       })
-      
+
       res.json({
         data: notasEncomenda.docs.map(doc=>{
           return {
@@ -999,7 +985,6 @@ app.post("/api/getRubricasByEmpresa", async (req, res) => {
 app.post("/api/getFaturasByPedido", async (req, res) => {
   let pedidoID = req.body.pedidoID;
   if(pedidoID){
-
     const faturas = await faturasRef
       .where("pedido", "==", pedidoID)
       .get()
@@ -1125,22 +1110,65 @@ app.post("/api/getEmpresaById", async (req, res) => {
  
 });
 
-app.post("/api/editEmpresa",  (req, res) => {
-  let id = req.body.id;
-  const neID = req.body.empresa.ne_id
-  console.log(neID)
+app.post("/api/editEmpresa", async  (req, res) => {
+  let id_empresa = req.body.id;
+  const nesIDs = req.body.nesIDs
+  const empresa = req.body.data
+  nesIDs.forEach(async (id)=>{
+    await notasEncomendaRef.doc(id).set({
+      empresa: empresa.empresa
+    }, {merge: true})
+    .catch(err => {
+      res.json({
+          error: true,
+          msg: String(err)
+      })
+    })
+  })
+  await empresas_ref.doc(id_empresa).set(empresa, {merge: true})
+    .catch(err => {
+      res.json({
+          error: true,
+          msg: String(err)
+      })
+    })
+  
+  res.json({
+    error: false
+  })
 
 });
 
-app.delete("/api/deleteEmpresa",  (req, res) => {
+app.delete("/api/deleteEmpresa",  async (req, res) => {
   let id = req.body.id;
-  empresas_ref.child(id).remove()
-  empresas_ref.once('value', (empresas) => {
-    res.send({
-      "new_data": empresas.val()
+  const fetchNES = await notasEncomendaRef.where("empresa_id", "==", id)
+  .get()
+  .catch(err => {
+    res.json({
+        error: true,
+        msg: String(err)
     })
-  });
+  })
 
+  fetchNES.forEach(async (doc)=>{
+     await notasEncomendaRef.doc(doc.id).delete()
+     .catch(err => {
+      res.json({
+          error: true,
+          msg: String(err)
+      })
+    }) 
+  })
+  await empresas_ref.doc(id).delete()
+  .catch(err => {
+    res.json({
+        error: true,
+        msg: String(err)
+    })
+  })
+  res.json({
+    error: false
+  })
 });
 
 app.post("/api/getEmpresaStats",  (req, res) => {
@@ -1194,21 +1222,22 @@ app.delete("/api/deletePedido", async (req, res) => {
     id
   }
 
-  if(pedido_data.faturas.length !== 0){
-    const faturas = await faturasRef.where("pedido", "==", pedido_data.id).get()
+  const faturas = await faturasRef.where("pedido", "==", id).get()
+  .catch(err => {
+    res.json({
+        error: true,
+        msg: String(err)
+    })
+  })
+  faturas.forEach(async (doc)=>{
+    await faturasRef.doc(doc.id).delete()
     .catch(err => {
       res.json({
           error: true,
           msg: String(err)
       })
     })
-
-    faturas.forEach(async (doc)=>{
-      await faturasRef.doc(doc.id).delete()
-    })
-  
-  }
-
+  })
   await updateGrupoDist(Number(pedido_data.valor_total)*-1, pedido_data, res)
  
   await pedidos_ref.doc(id).delete()
@@ -1219,7 +1248,17 @@ app.delete("/api/deletePedido", async (req, res) => {
     })
   })
 
-  
+  const notaE = await notasEncomendaRef.doc(pedido_data.ne_id).get()
+  .catch(err => {
+    res.json({
+        error: true,
+        msg: String(err)
+    })
+  })
+  await notasEncomendaRef.doc(pedido_data.ne_id).set({
+    saldo_disponivel: notaE.data().saldo_disponivel + pedido_data.valor_total
+  })
+
   res.json({
     error: false
   })
@@ -1401,6 +1440,16 @@ app.post("/api/editPedido", async (req, res) => {
     let valor_atualizar = Number(pedido.valor_total - old_pedido.data().valor_total)
     if(Boolean(valor_atualizar)){
       updateGrupoDist(valor_atualizar, pedido, res)
+      const notaE = await notasEncomendaRef.doc(pedido.ne_id).get()
+        .catch(err => {
+          res.json({
+              error: true,
+              msg: String(err)
+          })
+        })
+        await notasEncomendaRef.doc(pedido.ne_id).set({
+          saldo_disponivel: notaE.data().saldo_disponivel + (valor_atualizar*-1)
+        })
     }
     await pedidos_ref.doc(id)
       .set(pedido, {merge: true})

@@ -503,12 +503,12 @@ export const useAddEmpresa = (empresa) =>{
 }
 
 
-export const useEditEmpresa = (id, empresa) =>{
+export const useEditEmpresa = (data, id, nesIDs) =>{
     const fornecedores = Container.get(Fornecedores)
     return useQuery({
         queryKey: ['edit_empresa'],
         queryFn: async () => {
-            const info =  await fornecedores.editEmpresa(id, empresa)
+            const info =  await fornecedores.editEmpresa(data, id, nesIDs)
             return info
         },
         config: { 
@@ -545,6 +545,40 @@ export const useGetEmpresaById = (id) =>{
         queryKey: ['get_empresa_by_id'],
         queryFn: async () => {
             const info =  await fornecedores.getEmpresaById(id)
+            return info
+        },
+        config: { 
+          refetchOnWindowFocus: false,
+          refetchInterval: false,
+          refetchIntervalInBackground: false,
+          cacheTime: 0
+        }
+    })
+}
+
+export const useAddNE = (ne) =>{
+    const fornecedores = Container.get(Fornecedores)
+    return useQuery({
+        queryKey: ['add_ne'],
+        queryFn: async () => {
+            const info =  await fornecedores.addNE(ne)
+            return info
+        },
+        config: { 
+          refetchOnWindowFocus: false,
+          refetchInterval: false,
+          refetchIntervalInBackground: false,
+          cacheTime: 0
+        }
+    })
+}
+
+export const useDeleteNES = (id) =>{
+    const fornecedores = Container.get(Fornecedores)
+    return useQuery({
+        queryKey: ['delete_ne'],
+        queryFn: async () => {
+            const info =  await fornecedores.deleteNE(id)
             return info
         },
         config: { 

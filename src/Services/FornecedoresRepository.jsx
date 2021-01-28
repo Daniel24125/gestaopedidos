@@ -122,7 +122,7 @@ export default class FornecedoresRepository  {
         return response.then(res =>res.json())
     }
 
-    editEmpresa = (id, empresa) =>{
+    editEmpresa = (data, id, nesIDs) =>{
         let url = this.apiBaseUrl().toString()
         url += `editEmpresa`
         const response =  fetch(url,{
@@ -130,7 +130,7 @@ export default class FornecedoresRepository  {
             headers:{
                 "content-type": "application/json", 
                 },
-                body: JSON.stringify({id,empresa}),
+                body: JSON.stringify({data, id, nesIDs}),
                 json: true
             })
         return response.then(res =>res.json())
@@ -164,7 +164,7 @@ export default class FornecedoresRepository  {
         return response.then(res =>res.json())
     }
 
-    addNE = (ne, empresaID, empresa) =>{
+    addNE = (ne) =>{
         let url = this.apiBaseUrl().toString()
         url += `addNE`
         const response =  fetch(url,{
@@ -172,7 +172,7 @@ export default class FornecedoresRepository  {
             headers:{
                 "content-type": "application/json", 
                 },
-                body: JSON.stringify({ne,empresaID, empresa}),
+                body: JSON.stringify({ne}),
                 json: true
             })
         return response.then(res =>res.json())

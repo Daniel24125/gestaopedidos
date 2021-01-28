@@ -9,7 +9,8 @@ import {useAddEmpresa, useGetEmpresaById, useEditEmpresa, useGetRubricasByEmppre
 import WidgetsIcon from '@material-ui/icons/Widgets';
 import WhatshotIcon from '@material-ui/icons/Whatshot';
 import GestureIcon from '@material-ui/icons/Gesture';
-
+import AddNE from "./AddNE"
+import DeleteNES from "./DeleteNES"
 
 const EmpresasForm = () => {
     let { id } = useParams();
@@ -21,12 +22,17 @@ const EmpresasForm = () => {
     
     const {
         data: nes, 
-        isFetching: fetchingNES
+        isFetching: fetchingNES,
+        refetch
     } = useGetRubricasByEmppresa(id)
 
     const [submitForm, setSubmitForm] = React.useState(false);
     const [addNE, setAddNe] = React.useState(false);
-    
+    const [submitAddNE, setSubmitAddNE] = React.useState(false);
+    const [openDelete, setOpenDelete] = React.useState(false);
+    const [deleteNE, setDeleteNE] = React.useState(false);
+    const [selectedNEID, setSelectedNEID] = React.useState(null);
+
     const [tempNE, setTempNE] = React.useState({
         ne: "",
         cabimento: "",
@@ -36,6 +42,7 @@ const EmpresasForm = () => {
         data_registo: "",
         data_registo_timestamp: "",
     });
+
     const [submitData, setSubmitData] = React.useState({
         empresa: "",
         nif: "",
@@ -43,7 +50,6 @@ const EmpresasForm = () => {
         cp: "", 
         localidade: "",
         distrito: "",
-        nes: []
     })
     const [error, setError] = React.useState(false)
 
@@ -61,21 +67,19 @@ const EmpresasForm = () => {
         })
     }
 
-    
     React.useEffect(()=>{
         if(!isFetching  && !fetchingNES){
             if(id){
                 setSubmitData({
                     ...submitData, 
                     ...empresa.data,
-                    nes: nes.data
                 })
             }
         }
     }, [isFetching, fetchingNES])
 
-    if(isFetching) return <Loading msg="A carregar dados da empresa" />
-    if(submitForm)  return <SubmitForm data={submitData}  id={id} submitFunction={id? useEditEmpresa: useAddEmpresa}/>
+    if(isFetching || fetchingNES) return <Loading msg="A carregar dados da empresa" />
+    if(submitForm)  return <SubmitForm data={submitData} nesIDs={nes? nes.data.map(n=>n.id): null} id={id} submitFunction={id? useEditEmpresa: useAddEmpresa}/>
     return (
         <FormComponent title={id? `Editar a empresa ${empresa.data.empresa}`: "Registo de Novo Fornecedor"}>
             {id && <Dialog open={addNE} onClose={()=>setAddNe(false)} aria-labelledby="form-dialog-title">
@@ -154,32 +158,49 @@ const EmpresasForm = () => {
                         <Button onClick={()=>setAddNe(false)} color="primary">
                             Cancelar
                         </Button>
-                        <Button onClick={()=>{
+                        {submitAddNE && <AddNE 
+                            ne={tempNE}
+                            empresa={submitData.empresa}
+                            empresaID={id}
+                            refetch={refetch}
+                            setAddNe={setAddNe}
+                            setSubmitAddNE={setSubmitAddNE}
+                            setTempNE={setTempNE}
+                        />}
+                        {!submitAddNE && <Button onClick={()=>{
                             if(tempNE.ne !== ""){
-                                let addData = tempNE
-                                addData["data_registo"] = new Date().toJSON()
-                                addData["data_registo_timestamp"] = Date.now()
-                                addData["saldo_disponível"] = tempNE.saldo_abertura
-                                setSubmitData({
-                                    ...submitData,
-                                    nes: [...submitData.nes, tempNE]
-                                })
-                                setTempNE({
-                                    ne: "",
-                                    cabimento: "",
-                                    compromisso: "",
-                                    rubrica: "PM",
-                                    saldo_abertura: 0,
-                                    data_registo: "",
-                                    data_registo_timestamp: "",
-                                })
-                                setAddNe(false)
+                               setSubmitAddNE(true)
                             }
                         }} color="primary">
                             Adicionar
-                        </Button>
+                        </Button>}
                 </DialogActions>
             </Dialog>}
+            <Dialog onClose={()=>{
+                setOpenDelete(false)
+            }} aria-labelledby="simple-dialog-title" open={openDelete}>
+                <DialogTitle id="alert-dialog-title">{"Tem a certeza que pretende apagar a nota de encomenda"}</DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                        A nota de encomenda será apagada permanentemente da base de dados. Tem a certeza que pretende continuar?
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    {!deleteNE && <Button style={{color: "#e74c3c"}}onClick={()=>{setDeleteNE(true)}}>
+                        apagar
+                    </Button>}
+                    {deleteNE && <DeleteNES
+                        id={selectedNEID} 
+                        setOpenDelete={setOpenDelete}
+                        refetch={refetch}
+                        setDeleteNE={setDeleteNE}
+                        />}
+                    <Button onClick={()=>setOpenDelete(false)} autoFocus>
+                        cancelar
+                    </Button>
+                </DialogActions>
+
+            </Dialog>
             <TextField
                 error={error}
                 required
@@ -231,8 +252,7 @@ const EmpresasForm = () => {
             }} color="primary" >adicionar nota de encomenda</Button>}
 
             {id && <List dense={true}>
-                {
-                    submitData.nes.map((n, index)=>{
+                {nes.data.map((n, index)=>{
                         return (
                             <ListItem style={{
                                 background: "#D1E9FF"
@@ -245,20 +265,15 @@ const EmpresasForm = () => {
                                 <ListItemText primary={`${n.ne}`} secondary={`Saldo de abertura: ${n.saldo_abertura}`} />
                                 <ListItemSecondaryAction>
                                     <IconButton onClick={()=>{
-                                            let tempNES = submitData.nes
-                                            tempNES.splice(index,1)
-                                            setSubmitData({
-                                                ...submitData,
-                                                nes: tempNES,
-                                            })
+                                           setOpenDelete(true)
+                                           setSelectedNEID(n.id)
                                     }} style={{color: "#e74c3c"}}>
                                         <DeleteIcon/>
                                     </IconButton>
                                 </ListItemSecondaryAction>
                             </ListItem>
                         )
-                    })
-                }
+                    })}
             </List>}
             <Button
                 variant="contained"
