@@ -59,6 +59,8 @@ const notasEncomendaRef = admin.firestore().collection("notasEncomenda")
 const faturasRef = admin.firestore().collection("faturas")
 const distAnualRef = admin.firestore().collection("distAnual")
 
+app.use(express.static('/build'));
+
 
 // GET REQUESTS 
 app.get("/api/getNumPedidos",jwtCheck,  async (req, res) => {
@@ -1291,7 +1293,7 @@ app.post("/api/editPedido",jwtCheck, async (req, res) => {
 
 
 app.get('*', (req, res, next) => {
-  res.sendFile(path.join(__dirname, "build/index.html"))     
+  res.sendFile(path.join(__dirname, "/index.html"))     
 });
 
 app.listen(port, () => {
