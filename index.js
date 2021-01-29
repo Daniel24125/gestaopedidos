@@ -42,7 +42,7 @@ var jwtCheck = jwt({
   algorithms: ['RS256']
 });
 
-app.use(jwtCheck);
+// app.use(jwtCheck);
 
 
 app.use(bodyParser.urlencoded({
@@ -61,16 +61,14 @@ const distAnualRef = admin.firestore().collection("distAnual")
 
 
 // GET REQUESTS 
-app.get("/api/getNumPedidos",  async (req, res) => {
+app.get("/api/getNumPedidos",jwtCheck,  async (req, res) => {
   const pedidos = await pedidos_ref.get().then(res=>res).catch(err => res.send(err))
   res.send({
     "num": pedidos.size
   })
 });
 
-
-
-app.get("/api/getConfig", async  (req, res) => {
+app.get("/api/getConfig", jwtCheck, async  (req, res) => {
   const configs = await configRef.doc("config").get()
   .catch(err => {
     res.json({
@@ -84,7 +82,7 @@ app.get("/api/getConfig", async  (req, res) => {
   })
 });
 
-app.get("/api/queryPedidos", (req, res) => {
+app.get("/api/queryPedidos",jwtCheck, (req, res) => {
   let pedidos_selected = [];
   let pedidos_fatura = []
   pedidos_ref.get()
@@ -116,7 +114,7 @@ app.get("/api/queryPedidos", (req, res) => {
   })
 });
 
-app.get("/api/getPedidosAnual", async (req, res) => {
+app.get("/api/getPedidosAnual", jwtCheck,async (req, res) => {
   let send_data = {};
   const pedidos = await pedidos_ref.where("year", "==", new Date().getFullYear())
     .get()
@@ -170,7 +168,7 @@ app.get("/api/getPedidosAnual", async (req, res) => {
   res.json(send_data)
 });
 
-app.get("/api/getPedidosNaoEncomendados", async (req, res) => {
+app.get("/api/getPedidosNaoEncomendados", jwtCheck,async (req, res) => {
   const pedidos = await pedidos_ref.where("pedido_feito", "==", false)
     .get()
     .catch(err => {
@@ -190,7 +188,7 @@ app.get("/api/getPedidosNaoEncomendados", async (req, res) => {
 });
 
 
-app.get("/api/getPedidosAtrasados", async (req, res) => {
+app.get("/api/getPedidosAtrasados",jwtCheck, async (req, res) => {
   const configs = await configRef.doc("config")
     .get()
     .catch(err => {
@@ -222,7 +220,7 @@ app.get("/api/getPedidosAtrasados", async (req, res) => {
 });
 
 
-app.get("/api/getFornecedoresStats", async  (req, res) => {
+app.get("/api/getFornecedoresStats", jwtCheck,async  (req, res) => {
   const configs = await configRef.doc("config")
   .get()
   .catch(err => {
@@ -247,7 +245,7 @@ app.get("/api/getFornecedoresStats", async  (req, res) => {
 });
 
 
-app.get('/api/getPedidos',  async (req, res)=> {
+app.get('/api/getPedidos', jwtCheck, async (req, res)=> {
   const pedidos = await pedidos_ref
   .get()
   .catch(err => {
@@ -267,7 +265,7 @@ app.get('/api/getPedidos',  async (req, res)=> {
   })
 });
 
-app.post('/api/getGrupoMembros', async  (req, res) =>{
+app.post('/api/getGrupoMembros',jwtCheck, async  (req, res) =>{
     const id = req.body.id
     const membersDist = await grupos_ref.doc(id).collection("membros").get()
     .catch(err => {
@@ -286,7 +284,7 @@ app.post('/api/getGrupoMembros', async  (req, res) =>{
     })
 });
 
-app.get('/api/getGrupos', async  (req, res) =>{
+app.get('/api/getGrupos', jwtCheck, async  (req, res) =>{
   const grupos = await grupos_ref
     .get()
     .catch(err => {
@@ -306,7 +304,7 @@ app.get('/api/getGrupos', async  (req, res) =>{
  
 });
 
-app.get('/api/getFornecedores', async (req, res) =>{
+app.get('/api/getFornecedores',jwtCheck, async (req, res) =>{
   const formecedores = await empresas_ref
     .get()
     .catch(err => {
@@ -325,7 +323,7 @@ app.get('/api/getFornecedores', async (req, res) =>{
     })
 });
 
-app.get("/api/fetchArticles",  async (req, res) => {
+app.get("/api/fetchArticles", jwtCheck, async (req, res) => {
   const artigos = await artigosRef
   .get()
   .catch(err => {
@@ -347,7 +345,7 @@ app.get("/api/fetchArticles",  async (req, res) => {
 
 // POST REQUESTS 
 
-app.post('/api/getArticle', async (req, res) => {
+app.post('/api/getArticle', jwtCheck,async (req, res) => {
   const result = await artigosRef.where("code", ">=", req.body.term)
     .where("code", "<", req.body.term+ "\uf8ff")
     .get()
@@ -367,7 +365,7 @@ app.post('/api/getArticle', async (req, res) => {
     })
 })
 
-app.post('/api/searchPedidos', async  (req, res) => {
+app.post('/api/searchPedidos', jwtCheck,async  (req, res) => {
   const word = req.body.word 
   const field = req.body.field 
   const pedidos = await pedidos_ref.where(field, ">=", word)
@@ -389,7 +387,7 @@ app.post('/api/searchPedidos', async  (req, res) => {
   })
 })
 
-app.post("/api/saveConfig", async (req, res) => {
+app.post("/api/saveConfig",jwtCheck, async (req, res) => {
     const configData = req.body.configs
     await configRef.doc("config").set(configData, {merge: true})
     .catch(err => {
@@ -405,7 +403,7 @@ app.post("/api/saveConfig", async (req, res) => {
 });
 
 
-app.post("/api/downloadPDF",async (req, res)=>{
+app.post("/api/downloadPDF",jwtCheck, async (req, res)=>{
   const template = req.body.template; 
   const pedidoID = req.body.pedidoID
 
@@ -464,15 +462,7 @@ app.post("/api/downloadPDF",async (req, res)=>{
   
 })
 
-
-app.post("/api/getEmpresaInfo", (req, res) => {
-  empresas_ref.orderByChild("empresa").equalTo(req.body.empresa).once("value")
-    .then(data => {
-      res.send(data.val())
-    });
-})
-
-app.post("/api/getDistAnual", async (req, res) => {
+app.post("/api/getDistAnual",jwtCheck, async (req, res) => {
   const year = req.body.year
   const distAnual = await  distAnualRef.where("year", "==", year)
     .get()
@@ -552,7 +542,7 @@ const updateGrupoDist = async (valor_total, pedido, res)=>{
   })
 }
 
-app.post("/api/novo_pedido", async (req, res) => {
+app.post("/api/novo_pedido", jwtCheck, async (req, res) => {
   let pedido = req.body.pedido;
   pedido["pedido_feito"] = false;
   pedido["pedido_done"] = false;
@@ -587,7 +577,7 @@ app.post("/api/novo_pedido", async (req, res) => {
 
 });
 
-app.post("/api/addArtigoToDB", async (req, res) => {
+app.post("/api/addArtigoToDB",jwtCheck, async (req, res) => {
   const artigo = req.body.artigo
   await artigosRef.add(artigo)
   .catch(err => {
@@ -601,7 +591,7 @@ app.post("/api/addArtigoToDB", async (req, res) => {
   })
 });
 
-app.delete("/api/deleteArtigo", async (req, res) => {
+app.delete("/api/deleteArtigo", jwtCheck, async (req, res) => {
   const id = req.body.id
   await artigosRef.doc(id).delete()
   .catch(err => {
@@ -615,7 +605,7 @@ app.delete("/api/deleteArtigo", async (req, res) => {
   })
 });
 
-app.post("/api/setArticleStatus", async (req, res) => {
+app.post("/api/setArticleStatus",jwtCheck, async (req, res) => {
   const index = req.body.index 
   const pedidoID = req.body.pedidoID
   const chegada_data = req.body.chegada_data
@@ -649,7 +639,7 @@ app.post("/api/setArticleStatus", async (req, res) => {
   })
 })
 
-app.post("/api/setArtigoFaturado", async (req, res) => {
+app.post("/api/setArtigoFaturado", jwtCheck,async (req, res) => {
   const index = req.body.index 
   const pedidoID = req.body.pedidoID
   const faturado = req.body.faturado
@@ -676,10 +666,7 @@ app.post("/api/setArtigoFaturado", async (req, res) => {
   })
 })
 
-
-
-
-app.post("/api/novo_grupo", async (req, res) => {
+app.post("/api/novo_grupo", jwtCheck,async (req, res) => {
   let grupo = req.body.grupo;
   const year = new Date().getFullYear()
 
@@ -745,7 +732,7 @@ app.post("/api/novo_grupo", async (req, res) => {
   })
 });
 
-app.post("/api/nova_empresa", async (req, res) => {
+app.post("/api/nova_empresa", jwtCheck, async (req, res) => {
   const empresa = req.body.empresa;
   await empresas_ref.add(empresa)
   .catch(err => {
@@ -761,7 +748,7 @@ app.post("/api/nova_empresa", async (req, res) => {
 
 });
 
-app.post("/api/addNE", async (req, res) => {
+app.post("/api/addNE",  jwtCheck, async (req, res) => {
   const ne = req.body.ne;
 
   await notasEncomendaRef.add(ne)
@@ -777,7 +764,7 @@ app.post("/api/addNE", async (req, res) => {
 
 });
 
-app.delete("/api/deleteNE", async (req, res) => {
+app.delete("/api/deleteNE", jwtCheck, async (req, res) => {
   const neID = req.body.neID;
   
   await notasEncomendaRef.doc(neID).delete()
@@ -793,7 +780,7 @@ app.delete("/api/deleteNE", async (req, res) => {
   })
 });
 
-app.post("/api/getRubricasByEmpresa", async (req, res) => {
+app.post("/api/getRubricasByEmpresa", jwtCheck, async (req, res) => {
   let e = req.body.empresa;
   if(e){
     const notasEncomenda = await notasEncomendaRef
@@ -822,7 +809,7 @@ app.post("/api/getRubricasByEmpresa", async (req, res) => {
 
 });
 
-app.post("/api/getFaturasByPedido", async (req, res) => {
+app.post("/api/getFaturasByPedido", jwtCheck,async (req, res) => {
   let pedidoID = req.body.pedidoID;
   if(pedidoID){
     const faturas = await faturasRef
@@ -851,7 +838,7 @@ app.post("/api/getFaturasByPedido", async (req, res) => {
 
 });
 
-app.post("/api/getFaturasByEmpresa", async (req, res) => {
+app.post("/api/getFaturasByEmpresa",jwtCheck, async (req, res) => {
   let e = req.body.empresa;
   const faturas = await faturasRef
     .where("empresa", "==", e)
@@ -874,7 +861,7 @@ app.post("/api/getFaturasByEmpresa", async (req, res) => {
 
 });
 
-app.post("/api/addFatura", async (req, res) => {
+app.post("/api/addFatura",jwtCheck, async (req, res) => {
   let data = req.body.fatura;
   await faturasRef.add(data)
     .catch(err => {
@@ -890,7 +877,7 @@ app.post("/api/addFatura", async (req, res) => {
 
 });
 
-app.delete("/api/deleteFatura", async (req, res) => {
+app.delete("/api/deleteFatura",jwtCheck, async (req, res) => {
   let id = req.body.id;
   await faturasRef.doc(id).delete()
     .catch(err => {
@@ -906,7 +893,7 @@ app.delete("/api/deleteFatura", async (req, res) => {
 
 });
 
-app.post("/api/getEmpresasByRubrica", async (req, res) => {
+app.post("/api/getEmpresasByRubrica", jwtCheck,async (req, res) => {
   let r = req.body.rubrica;
   const empresas = await notasEncomendaRef
     .where("rubrica", "==", r)
@@ -928,7 +915,7 @@ app.post("/api/getEmpresasByRubrica", async (req, res) => {
 
 });
 
-app.post("/api/getEmpresaById", async (req, res) => {
+app.post("/api/getEmpresaById",jwtCheck, async (req, res) => {
   let id = req.body.id;
   if(id){
     const result = await empresas_ref.doc(id).get()
@@ -949,7 +936,7 @@ app.post("/api/getEmpresaById", async (req, res) => {
  
 });
 
-app.post("/api/editEmpresa", async  (req, res) => {
+app.post("/api/editEmpresa", jwtCheck,async  (req, res) => {
   let id_empresa = req.body.id;
   const nesIDs = req.body.nesIDs
   const empresa = req.body.data
@@ -978,7 +965,7 @@ app.post("/api/editEmpresa", async  (req, res) => {
 
 });
 
-app.delete("/api/deleteEmpresa",  async (req, res) => {
+app.delete("/api/deleteEmpresa", jwtCheck, async (req, res) => {
   let id = req.body.id;
   const fetchNES = await notasEncomendaRef.where("empresa_id", "==", id)
   .get()
@@ -1010,7 +997,7 @@ app.delete("/api/deleteEmpresa",  async (req, res) => {
   })
 });
 
-app.post("/api/getEmpresaStats",  (req, res) => {
+app.post("/api/getEmpresaStats", jwtCheck, (req, res) => {
   let stats = {
     "materiais": {},
     "reagentes": {},
@@ -1046,7 +1033,7 @@ app.post("/api/getEmpresaStats",  (req, res) => {
     }).catch(err => res.send(err))
 });
 
-app.delete("/api/deletePedido", async (req, res) => {
+app.delete("/api/deletePedido", jwtCheck,async (req, res) => {
   let id = req.body.id;
   const pedido_doc = await pedidos_ref.doc(id)
   .get()
@@ -1104,7 +1091,7 @@ app.delete("/api/deletePedido", async (req, res) => {
 
 });
 
-app.delete("/api/deleteGrupo", async (req, res) => {
+app.delete("/api/deleteGrupo",jwtCheck, async (req, res) => {
   const id = req.body.id;  
   const distID = req.body.selectedDistID
   const members = await grupos_ref.doc(id).collection("membros").get()
@@ -1140,7 +1127,7 @@ app.delete("/api/deleteGrupo", async (req, res) => {
   
 });
 
-app.patch("/api/editGrupo", async (req, res) => {
+app.patch("/api/editGrupo",jwtCheck, async (req, res) => {
   const id = req.body.id;
   const data = req.body.data
   const old_data = await grupos_ref.doc(id).get()
@@ -1221,7 +1208,7 @@ app.patch("/api/editGrupo", async (req, res) => {
   })
 });
 
-app.post("/api/getGrupoById", async (req, res) => {
+app.post("/api/getGrupoById",jwtCheck, async (req, res) => {
   let id = req.body.id;
   if(id){
     const grupo = await grupos_ref.doc(id)
@@ -1242,7 +1229,7 @@ app.post("/api/getGrupoById", async (req, res) => {
   }
 });
 
-app.post("/api/getPedidoById", async (req, res) => {
+app.post("/api/getPedidoById",jwtCheck, async (req, res) => {
   let id = req.body.id;
   if(!id){
     res.json({
@@ -1264,7 +1251,7 @@ app.post("/api/getPedidoById", async (req, res) => {
   }
 });
 
-app.post("/api/editPedido", async (req, res) => {
+app.post("/api/editPedido",jwtCheck, async (req, res) => {
     let pedido = req.body.data;
     const id = req.body.id
     const old_pedido = await pedidos_ref.doc(id)
