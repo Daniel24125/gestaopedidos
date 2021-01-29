@@ -4,17 +4,260 @@ import Pedidos from "../Services/PedidosRepository"
 import Fornecedores from "../Services/FornecedoresRepository"
 import Grupos from "../Services/GruposRepository"
 import Artigos from "../Services/ArtigosRepository"
+import Configs from "../Services/ConfigsRepository"
 
 let accessToken 
 
 export const useSetAccessToken =  at => accessToken = at
+
+
+export const getPedidoTemplate = (pedido, empresa) =>{ 
+    return `
+<!doctype html>
+ <html>
+
+ <head>
+   <title>Pedido ${pedido.id}</title>
+   <style>
+     .wrapper {
+       max-width: 800px;
+       background: white;
+       min-height: 900px;
+       font-size: 12px;
+       padding: 20px;
+
+     }
+
+     .wrapper .rowContainer {
+       width: 95%;
+       position: relative;
+       min-height: 150px
+     }
+
+     .wrapper .rowContainer .noteContainer {
+       width: 100%;
+       text-align: center;
+
+     }
+
+     .wrapper .rowContainer .noteContainer .note {
+       width: 50%;
+       font-weight: bold;
+       margin: 30px auto
+     }
+
+     .wrapper .rowContainer table {
+       width: 100%;
+       border-collapse: collapse;
+       margin-top: 50px;
+     }
+
+     .wrapper .rowContainer table th {
+       text-align: left !important;
+       padding: 15px 10px;
+     }
+
+     .wrapper .rowContainer table td {
+       padding: 10px;
+     }
+
+     .wrapper .rowContainer .propostasContainer {
+       width: 70%;
+       display: inline-block;
+       position: absolute;
+       left: 0
+     }
+
+     .wrapper .rowContainer .propostasContainer span {
+       padding: 5px 20px 5px 10px;
+       font-weight: bold;
+       text-decoration: underline;
+       background: #d9d9d9;
+       position: absolute;
+
+     }
+
+     .wrapper .rowContainer .propostasContainer .propostasList {
+       padding: 5px 20px 5px 10px;
+       display: inline-block;
+       position: absolute;
+       left: 80px
+     }
+
+     .wrapper .rowContainer .totalContainer {
+       width: 25%;
+       position: absolute;
+       right: 0
+     }
+
+     .wrapper .rowContainer .totalContainer .totalRow {
+       font-weight: bold;
+     }
+
+
+     .wrapper .rowContainer .column {
+       width: 48%;
+       display: inline-block
+     }
+
+     .wrapper .rowContainer .column .empresaInfoContainer {
+       width: 100%;
+       border: 1px solid black;
+       margin-left: -20px;
+     }
+
+     .wrapper .rowContainer .column .empresaInfoContainer p {
+       padding-left: 20px;
+     }
+
+     .wrapper .rowContainer .column p {
+       color: #848484;
+     }
+
+     .wrapper .rowContainer .column p strong {
+       color: black;
+     }
+
+     .wrapper .rowContainer img {
+       width: auto;
+       height: 100px;
+       margin-left: 10px;
+
+     }
+
+     .wrapper .rowContainer .infoContainer {
+       width: 45%;
+       border: 1px solid black;
+       height: 120px;
+       margin-right: 20px;
+       position: absolute;
+       right: 0%;
+       top: 0;
+       font-size: 12px
+     }
+
+     .wrapper .rowContainer .infoContainer .infoRow {
+       width: 100%;
+       height: 25%;
+       padding-left: 20px;
+     }
+
+     .wrapper .rowContainer .infoContainer .infoRow .infoCol {
+       width: 49%;
+       display: inline-block;
+       padding-top: 15px
+     }
+   </style>
+ </head>
+
+ <body>
+   <div class="wrapper">
+     <div class="rowContainer">
+       <img src="https://www.eng.uminho.pt/SiteAssets/Logo.PNG" alt="">
+       <img style="height: 50px" src="https://www.ceb.uminho.pt/Content/images/logoceb.png" alt="">
+       <div class="infoContainer">
+         <div class="infoRow">
+           <div class="infoCol"> <strong>REQUISIÇÃO</strong></div>
+           <div class="infoCol">${pedido.id}</div>
+         </div>
+         <div class="infoRow">
+           <div class="infoCol"> <strong>Nº CABIMENTO</strong></div>
+           <div class="infoCol"> ${pedido.cabimento}</div>
+         </div>
+         <div class="infoRow">
+           <div class="infoCol"> <strong>NOTA DE ENCOMENDA Nº</strong></div>
+           <div class="infoCol"> ${pedido.ne}</div>
+         </div>
+
+       </div>
+     </div>
+     <div class="rowContainer">
+
+       <div style="padding: 20px 0 20px 10px" class="column">
+         <p>Departamento de Engenharia Biológica</p>
+         <p>Campus de Gualtar</p>
+         <p>4710-057 Braga – P</p>
+         <p>tel: 253 604 400 </p>
+         <p><strong>NIF: 502 011 378</strong></p>
+       </div>
+       <div class="column">
+         <p><strong>Requisita-se à entidade:</strong></p>
+         <div class="empresaInfoContainer">
+           <p><strong>${pedido.empresa}</strong></p>
+           <p><strong>${empresa.morada?empresa.morada: "ND"}</strong></p>
+           <p><strong>${empresa.cp?empresa.cp: "ND"} - ${empresa.localidade}, ${pedido.distrito?pedido.distrito: "ND"}</strong></p>
+           <p><strong>NIF: ${empresa.nif?empresa.nif: "ND"}</strong></p>
+         </div>
+       </div>
+     </div>
+     <div class="rowContainer">
+       <table>
+         <tr style="background: #d9d9d9">
+           <th>Referência</th>
+           <th style="min-width: 300px">Artigo</th>
+           <th>Qt</th>
+           <th>Preço Unitário</th>
+           <th>Total</th>
+         </tr>
+         ${pedido.artigos.map(a=>{
+             return (
+                 `<tr>
+                 <td>${a.referencia_artigo}</td>
+                 <td>${a.artigo}</td>
+                 <td>${a.quantidade}</td>
+                 <td>${a.preco}</td>
+                 <td>${a.quantidade*a.preco}</td>
+               </tr>`
+             )
+         })}
+
+       </table>
+     </div>
+     <div class="rowContainer">
+       <div class="propostasContainer">
+           <span>Propostas</span>
+         <div class="propostasList">
+           <div class="proposta">
+             ${pedido.proposta}
+           </div>
+         </div>
+       </div>
+       <div class="totalContainer">
+         <div class="totalRow">
+           <span>Total</span>
+           <span>${Number(pedido.valor_total).toFixed(2)} €</span>
+         </div>
+         <div class="totalRow">
+           <span>IVA</span>
+           <span>23%</span>
+           <span>${(Number(pedido.valor_total)*0.23).toFixed(2)} €</span>
+
+         </div>
+         <div class="totalRow">
+           <span>Total fatura</span>
+           <span>${(Number(pedido.valor_total)*1.23).toFixed(2)} €</span>
+         </div>
+       </div>
+     </div>
+     <div class="rowContainer">
+       <div class="noteContainer">
+         <p class="note">As faturas devem mencionar o número e data de compromisso e o número da nota de encomenda.</p>
+
+       </div>
+     </div>
+   </div>
+ </body>
+
+ </html>
+ `
+}
 
 export const useGetNumPedidos = () =>{
     const pedidos = Container.get(Pedidos)
     return useQuery({
         queryKey: ['get_num_pedidos'],
         queryFn: async () => {
-            const info =  await pedidos.getNumPedidos()
+            const info =  await pedidos.getNumPedidos(accessToken )
             return info
         },
         config: { 
@@ -31,7 +274,7 @@ export const useQueryPedidos = () =>{
     return useQuery({
         queryKey: ['query_pedidos'],
         queryFn: async () => {
-            const info =  await pedidos.queryPedidos()
+            const info =  await pedidos.queryPedidos(accessToken)
             return info
         },
         config: { 
@@ -46,7 +289,7 @@ export const useGetPedidosAnual = () =>{
     return useQuery({
         queryKey: ['get_pedidos_anual'],
         queryFn: async () => {
-            const info =  await pedidos.getPedidosAnual()
+            const info =  await pedidos.getPedidosAnual(accessToken)
             return info
         },
         config: { 
@@ -61,7 +304,7 @@ export const useGetPedidosNaoEncomendados = () =>{
     return useQuery({
         queryKey: ['get_pedidos_nao_encomendados'],
         queryFn: async () => {
-            const info =  await pedidos.getPedidosNaoEncomendados()
+            const info =  await pedidos.getPedidosNaoEncomendados(accessToken)
             return info
         },
         config: { 
@@ -76,7 +319,7 @@ export const useGetPedidosAtrasados = () =>{
     return useQuery({
         queryKey: ['get_pedidos_atrasados'],
         queryFn: async () => {
-            const info =  await pedidos.getPedidosAtrasados()
+            const info =  await pedidos.getPedidosAtrasados(accessToken, )
             return info
         },
         config: { 
@@ -92,7 +335,7 @@ export const useGetFornecedoresStats = () =>{
     return useQuery({
         queryKey: ['get_fornecedores_stats'],
         queryFn: async () => {
-            const info =  await fornecedores.getFornecedoresStats()
+            const info =  await fornecedores.getFornecedoresStats(accessToken, )
             return info
         },
         config: { 
@@ -109,7 +352,7 @@ export const useGetPedidos = () =>{
     return useQuery({
         queryKey: ['get_pedidos'],
         queryFn: async () => {
-            const info =  await pedidos.getPedidos()
+            const info =  await pedidos.getPedidos(accessToken, )
             return info
         },
         config: { 
@@ -125,7 +368,7 @@ export const useGetGrupos = () =>{
     return useQuery({
         queryKey: ['get_grupos'],
         queryFn: async () => {
-            const info =  await grupos.getGrupos()
+            const info =  await grupos.getGrupos(accessToken, )
             return info
         },
         config: { 
@@ -141,7 +384,7 @@ export const useGetFornecedores = () =>{
     return useQuery({
         queryKey: ['get_fornecedores'],
         queryFn: async () => {
-            const info =  await fornecedores.getFornecedores()
+            const info =  await fornecedores.getFornecedores(accessToken, )
             return info
         },
         config: { 
@@ -157,7 +400,7 @@ export const useGetArticle = term =>{
     return useQuery({
         queryKey: ['get_article'],
         queryFn: async () => {
-            const info =  await artigos.getArticle(term)
+            const info =  await artigos.getArticle(accessToken, term)
             return info
         },
         config: { 
@@ -173,7 +416,7 @@ export const useSendPedidos = data =>{
     return useQuery({
         queryKey: ['send_pedido'],
         queryFn: async () => {
-            const info =  await pedidos.sendPedidos(data)
+            const info =  await pedidos.sendPedidos(accessToken, data)
             return info
         },
         config: { 
@@ -189,7 +432,7 @@ export const useGetDist = () =>{
     return useQuery({
         queryKey: ['get_dist'],
         queryFn: async () => {
-            const info =  await grupos.getDist()
+            const info =  await grupos.getDist(accessToken, )
             return info
         },
         config: { 
@@ -205,7 +448,7 @@ export const useGetRubricasByEmppresa = (empresa) =>{
     return useQuery({
         queryKey: ['get_rub_by_empresa'],
         queryFn: async () => {
-            const info =  await fornecedores.getRubricasByEmpresa(empresa)
+            const info =  await fornecedores.getRubricasByEmpresa(accessToken, empresa)
             return info
         },
         config: { 
@@ -222,7 +465,7 @@ export const useGetEmpresasByRubrica = (rubrica) =>{
     return useQuery({
         queryKey: ['get_emp_by_rub'],
         queryFn: async () => {
-            const info =  await fornecedores.getEmpresasByRubrica(rubrica)
+            const info =  await fornecedores.getEmpresasByRubrica(accessToken, rubrica)
             return info
         },
         config: { 
@@ -239,13 +482,14 @@ export const useGetFaturasByPedido = (pedidoID) =>{
     return useQuery({
         queryKey: ['get_fat_by_pedido'],
         queryFn: async () => {
-            const info =  await fornecedores.getFaturasByPedido(pedidoID)
+            const info =  await fornecedores.getFaturasByPedido(accessToken, pedidoID)
             return info
         },
         config: { 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
+          cacheTime: 0
         }
     })
 }
@@ -255,7 +499,7 @@ export const useAddFatura = (fatura) =>{
     return useQuery({
         queryKey: ['add_fatura'],
         queryFn: async () => {
-            const info =  await fornecedores.addFatura(fatura)
+            const info =  await fornecedores.addFatura(accessToken, fatura)
             return info
         },
         config: { 
@@ -271,7 +515,7 @@ export const useDeleteFatura = (id) =>{
     return useQuery({
         queryKey: ['delete_fatura'],
         queryFn: async () => {
-            const info =  await fornecedores.deleteFatura(id)
+            const info =  await fornecedores.deleteFatura(accessToken, id)
             return info
         },
         config: { 
@@ -287,7 +531,7 @@ export const useGetFaturasByEmppresa = (empresa) =>{
     return useQuery({
         queryKey: ['get_fat_by_empresa'],
         queryFn: async () => {
-            const info =  await fornecedores.getFaturasByEmpresa(empresa)
+            const info =  await fornecedores.getFaturasByEmpresa(accessToken, empresa)
             return info
         },
         config: { 
@@ -303,7 +547,7 @@ export const useGetArtigos = () =>{
     return useQuery({
         queryKey: ['get_articles'],
         queryFn: async () => {
-            const info =  await artigos.fetchArticles()
+            const info =  await artigos.fetchArticles(accessToken, )
             return info
         },
         config: { 
@@ -319,7 +563,7 @@ export const useSearchPedidos = (word, field) =>{
     return useQuery({
         queryKey: ['search_pedidos'],
         queryFn: async () => {
-            const info =  await pedidos.searchPedidos(word, field)
+            const info =  await pedidos.searchPedidos(accessToken, word, field)
             return info
         },
         config: { 
@@ -336,7 +580,7 @@ export const useGetPedidoByID = (id) =>{
     return useQuery({
         queryKey: ['get_pedido_by_id'],
         queryFn: async () => {
-            const info =  await pedidos.getPedidoById(id)
+            const info =  await pedidos.getPedidoById(accessToken, id)
             return info
         },
         config: { 
@@ -353,7 +597,7 @@ export const useEditPedido = (data, id) =>{
     return useQuery({
         queryKey: ['edit_pedido'],
         queryFn: async () => {
-            const info =  await pedidos.editPedido(data, id)
+            const info =  await pedidos.editPedido(accessToken, data, id)
             return info
         },
         config: { 
@@ -370,7 +614,7 @@ export const useDeletePedido = (id) =>{
     return useQuery({
         queryKey: ['delete_pedido'],
         queryFn: async () => {
-            const info =  await pedidos.deletePedido(id)
+            const info =  await pedidos.deletePedido(accessToken, id)
             return info
         },
         config: { 
@@ -387,7 +631,7 @@ export const useNovoGrupo = (grupo) =>{
     return useQuery({
         queryKey: ['novo_grupo'],
         queryFn: async () => {
-            const info =  await grupos.novoGrupo(grupo)
+            const info =  await grupos.novoGrupo(accessToken, grupo)
             return info
         },
         config: { 
@@ -404,7 +648,7 @@ export const useGetGrupoByID = (id) =>{
     return useQuery({
         queryKey: ['grupo_by_id'],
         queryFn: async () => {
-            const info =  await grupos.getGrupoById(id)
+            const info =  await grupos.getGrupoById(accessToken, id)
             return info
         },
         config: { 
@@ -421,7 +665,7 @@ export const useEditGrupo = (data, id) =>{
     return useQuery({
         queryKey: ['edit_grupo'],
         queryFn: async () => {
-            const info =  await grupos.editGrupo(data, id)
+            const info =  await grupos.editGrupo(accessToken, data, id)
             return info
         },
         config: { 
@@ -438,7 +682,7 @@ export const useDeleteGrupo = (id,selectedDistID) =>{
     return useQuery({
         queryKey: ['delete_grupo'],
         queryFn: async () => {
-            const info =  await grupos.deleteGrupo(id,selectedDistID)
+            const info =  await grupos.deleteGrupo(accessToken,id,selectedDistID)
             return info
         },
         config: { 
@@ -455,7 +699,7 @@ export const useGetGrupoMembros = (id) =>{
     return useQuery({
         queryKey: ['get_grupo_membros'],
         queryFn: async () => {
-            const info =  await grupos.getGrupoMembros(id)
+            const info =  await grupos.getGrupoMembros(accessToken,id)
             return info
         },
         config: { 
@@ -472,7 +716,7 @@ export const useGetDistAnual = (year) =>{
     return useQuery({
         queryKey: ['get_dist_anual'],
         queryFn: async () => {
-            const info =  await grupos.getDistAnual(year)
+            const info =  await grupos.getDistAnual(accessToken,year)
             return info
         },
         config: { 
@@ -490,7 +734,7 @@ export const useAddEmpresa = (empresa) =>{
     return useQuery({
         queryKey: ['add_empresa'],
         queryFn: async () => {
-            const info =  await fornecedores.addEmpresa(empresa)
+            const info =  await fornecedores.addEmpresa(accessToken,empresa)
             return info
         },
         config: { 
@@ -508,7 +752,7 @@ export const useEditEmpresa = (data, id, nesIDs) =>{
     return useQuery({
         queryKey: ['edit_empresa'],
         queryFn: async () => {
-            const info =  await fornecedores.editEmpresa(data, id, nesIDs)
+            const info =  await fornecedores.editEmpresa(accessToken,data, id, nesIDs)
             return info
         },
         config: { 
@@ -526,7 +770,7 @@ export const useDeleteEmpresa = (id) =>{
     return useQuery({
         queryKey: ['delete_empresa'],
         queryFn: async () => {
-            const info =  await fornecedores.deleteEmpresa(id)
+            const info =  await fornecedores.deleteEmpresa(accessToken,id)
             return info
         },
         config: { 
@@ -544,7 +788,7 @@ export const useGetEmpresaById = (id) =>{
     return useQuery({
         queryKey: ['get_empresa_by_id'],
         queryFn: async () => {
-            const info =  await fornecedores.getEmpresaById(id)
+            const info =  await fornecedores.getEmpresaById(accessToken,id)
             return info
         },
         config: { 
@@ -561,7 +805,7 @@ export const useAddNE = (ne) =>{
     return useQuery({
         queryKey: ['add_ne'],
         queryFn: async () => {
-            const info =  await fornecedores.addNE(ne)
+            const info =  await fornecedores.addNE(accessToken,ne)
             return info
         },
         config: { 
@@ -578,7 +822,127 @@ export const useDeleteNES = (id) =>{
     return useQuery({
         queryKey: ['delete_ne'],
         queryFn: async () => {
-            const info =  await fornecedores.deleteNE(id)
+            const info =  await fornecedores.deleteNE(accessToken,id)
+            return info
+        },
+        config: { 
+          refetchOnWindowFocus: false,
+          refetchInterval: false,
+          refetchIntervalInBackground: false,
+          cacheTime: 0
+        }
+    })
+}
+
+export const useDownloadPDF = (template, pedidoID) =>{
+    const pedidos = Container.get(Pedidos)
+    return useQuery({
+        queryKey: ['delete_ne'],
+        queryFn: async () => {
+            const info =  await pedidos.downloadPDF(accessToken, template,pedidoID)
+            return info
+        },
+        config: { 
+          refetchOnWindowFocus: false,
+          refetchInterval: false,
+          refetchIntervalInBackground: false,
+          cacheTime: 0
+        }
+    })
+}
+
+export const useSetArtigoState = (pedidoID, index, chegada_data) =>{
+    const artigos = Container.get(Artigos)
+    return useQuery({
+        queryKey: ['set_artigo_state'],
+        queryFn: async () => {
+            const info =  await artigos.setArticleStatus(accessToken, pedidoID, index, chegada_data)
+            return info
+        },
+        config: { 
+          refetchOnWindowFocus: false,
+          refetchInterval: false,
+          refetchIntervalInBackground: false,
+          cacheTime: 0
+        }
+    })
+}
+
+export const useSetArtigoFaturado = (pedidoID, index, faturado) =>{
+    const artigos = Container.get(Artigos)
+    return useQuery({
+        queryKey: ['set_artigo_faturado'],
+        queryFn: async () => {
+            const info =  await artigos.setArtigoFaturado(accessToken, pedidoID, index, faturado)
+            return info
+        },
+        config: { 
+          refetchOnWindowFocus: false,
+          refetchInterval: false,
+          refetchIntervalInBackground: false,
+          cacheTime: 0
+        }
+    })
+}
+
+export const useAddArtigoToDB = (artigo) =>{
+    const artigos = Container.get(Artigos)
+    return useQuery({
+        queryKey: ['add_artigo'],
+        queryFn: async () => {
+            const info =  await artigos.addArtigoToDB(accessToken, artigo)
+            return info
+        },
+        config: { 
+          refetchOnWindowFocus: false,
+          refetchInterval: false,
+          refetchIntervalInBackground: false,
+          cacheTime: 0
+        }
+    })
+}
+
+export const useDeleteArtigo = (id) =>{
+    const artigos = Container.get(Artigos)
+    return useQuery({
+        queryKey: ['delete_artigo'],
+        queryFn: async () => {
+            const info =  await artigos.deleteArtigo(accessToken, id)
+            return info
+        },
+        config: { 
+          refetchOnWindowFocus: false,
+          refetchInterval: false,
+          refetchIntervalInBackground: false,
+          cacheTime: 0
+        }
+    })
+}
+
+
+export const useGetConfigs = () =>{
+    const configs = Container.get(Configs)
+    return useQuery({
+        queryKey: ['get_config'],
+        queryFn: async () => {
+            const info =  await configs.getConfig(accessToken, )
+            return info
+        },
+        config: { 
+          refetchOnWindowFocus: false,
+          refetchInterval: false,
+          refetchIntervalInBackground: false,
+        }
+    })
+}
+
+
+export const useSaveConfig = (configsData) =>{
+    const configs = Container.get(Configs)
+    return useQuery({
+        queryKey: ['save_configs'],
+        queryFn: async () => {
+            const info =  await configs.saveConfig(accessToken, configsData)
             return info
         },
         config: { 

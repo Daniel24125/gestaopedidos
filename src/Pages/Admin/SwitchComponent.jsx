@@ -3,8 +3,6 @@ import { MountTransition } from '../../Components/MountTransition';
 import { Switch, Route, Redirect, useLocation } from 'react-router-dom'
 import loadable from '@loadable/component'
 
-
-
 const SwitchComponent = ()=>{
     const location = useLocation()
     const Dashboard = loadable(() => import('../Dashboard/Dashboard'))

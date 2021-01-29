@@ -48,7 +48,6 @@ const GerirGruposPage = () => {
         || fetchingDistAnual
     }, [fetchingGrupos, fetchingDistAnual])
 
-    console.log(distAnual)
     
     React.useEffect(()=>{
         let tempAnualDatasets=[]

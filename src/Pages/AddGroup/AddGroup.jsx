@@ -1,5 +1,5 @@
 import React from 'react'
-import {useParams, Link} from "react-router-dom"
+import {useParams} from "react-router-dom"
 import FormComponent from "../../Components/FormComponent"
 import {List , ListItem,Button,ListItemText,ListItemSecondaryAction, TextField,  Typography, IconButton,  Popover, ListItemIcon} from "@material-ui/core"
 import Loading from "../../Components/Loading"
@@ -65,7 +65,6 @@ const AddGroup = () => {
             ...error, 
             ...tempError
         })
-        // console.log(Object.values(tempError))
         if(Object.values(tempError).length === 0){
             setSubmitForm(true)
         }

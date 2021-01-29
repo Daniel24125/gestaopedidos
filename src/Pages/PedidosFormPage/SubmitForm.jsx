@@ -12,7 +12,7 @@ const SubmitForm = ({
         data: response, 
         isFetching
     } = submitFunction(data, id)
-    console.log(response)
+    
     if(isFetching) return <Loading msg="A registar pedido..." />
     return (
         <div className="formSubmitedContainer">

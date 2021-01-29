@@ -24,7 +24,6 @@ const MembersComponent = ({
                 const orderedDataMembers = []
                 const rc = RandomColor()
                 const currentMembroDist = m.dist.filter(d=>d.year=== selectedYear)[0]
-                console.log(currentMembroDist)
                 for (let j = 1; j< 13; j++){
                     orderedDataMembers.push(Number(currentMembroDist[`m${j}`]))
                 }

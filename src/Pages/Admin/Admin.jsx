@@ -23,7 +23,6 @@ const Admin = () => {
     const closeMenu = ()=> setHideMenu(true)
     const { getAccessTokenSilently } = useAuth0();
     const [accessToken, setAccessToken] = React.useState(null) 
-    const switchComponent = <SwitchComponent />
     const history = React.useMemo(() => {
         return createBrowserHistory()
       }, [])
@@ -50,60 +49,62 @@ const Admin = () => {
      
     return (
         <BrowserRouter history={history}>
-            <Drawer
-                variant="temporary"
-                anchor="left"
-                open={!hideMenu}
-                className="drawerContainer">
-                    <div className="drawerHeader">
-                        <Typography variant="h6">Gestão de Pedidos</Typography>
-                        <IconButton onClick={closeMenu}>
-                            <ArrowBackIcon/>
-                        </IconButton>
-                    </div>
-                    <Divider />
-                    <div className="navListContainer">
-                        <ul>
-                            <li onClick={closeMenu}>
-                                <Link to="/dashboard">
-                                    <DashboardIcon/>
-                                     Resumo
-                                </Link>
-                            </li>
-                            <li onClick={closeMenu}>
-                                <Link to="/pedidos">
-                                    <LocalShippingIcon/>
-                                      Pedidos de Encomendas
-                                </Link>
-                            </li>
-                            <li onClick={closeMenu}>
-                                <Link to="/gerirGrupos">
-                                    <GroupIcon/>
-                                      Grupos de Investigação
-                                </Link>
-                            </li>
-                            <li onClick={closeMenu}>
-                                <Link to="/empresas">
-                                    <CreditCardIcon/>
-                                      Saldo Empresarial
-                                </Link>
-                            </li>
-                            <li onClick={closeMenu}>
-                                <Link to="/artigos">
-                                    <AllInboxIcon/>
-                                      Gestão de Artigos
-                                </Link>
-                            </li>
-                        </ul>
-                    </div>
-            </Drawer>
-            <Nav hideMenu={hideMenu} setHideMenu={setHideMenu} height={appBarHeight}/>
-            <main  style={{marginTop: appBarHeight}}>
-              <AnimatePresence exitBeforeEnter={true} initial={false}>
-                {switchComponent}
-              </AnimatePresence>
-            </main>
-            <Footer />
+            {accessToken && <>
+                <Drawer
+                    variant="temporary"
+                    anchor="left"
+                    open={!hideMenu}
+                    className="drawerContainer">
+                        <div className="drawerHeader">
+                            <Typography variant="h6">Gestão de Pedidos</Typography>
+                            <IconButton onClick={closeMenu}>
+                                <ArrowBackIcon/>
+                            </IconButton>
+                        </div>
+                        <Divider />
+                        <div className="navListContainer">
+                            <ul>
+                                <li onClick={closeMenu}>
+                                    <Link to="/dashboard">
+                                        <DashboardIcon/>
+                                        Resumo
+                                    </Link>
+                                </li>
+                                <li onClick={closeMenu}>
+                                    <Link to="/pedidos">
+                                        <LocalShippingIcon/>
+                                        Pedidos de Encomendas
+                                    </Link>
+                                </li>
+                                <li onClick={closeMenu}>
+                                    <Link to="/gerirGrupos">
+                                        <GroupIcon/>
+                                        Grupos de Investigação
+                                    </Link>
+                                </li>
+                                <li onClick={closeMenu}>
+                                    <Link to="/empresas">
+                                        <CreditCardIcon/>
+                                        Saldo Empresarial
+                                    </Link>
+                                </li>
+                                <li onClick={closeMenu}>
+                                    <Link to="/artigos">
+                                        <AllInboxIcon/>
+                                        Gestão de Artigos
+                                    </Link>
+                                </li>
+                            </ul>
+                        </div>
+                </Drawer>
+                <Nav hideMenu={hideMenu} setHideMenu={setHideMenu} height={appBarHeight}/>
+                <AnimatePresence exitBeforeEnter={true} initial={false}>
+                    <main  style={{marginTop: appBarHeight}}>
+                        <SwitchComponent />
+                    </main>
+                </AnimatePresence>
+                <Footer />
+            </>}
         </BrowserRouter>
     )
 }

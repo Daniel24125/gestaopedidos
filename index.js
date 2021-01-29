@@ -1,12 +1,11 @@
 const express = require('express');
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const fs = require('fs');
 const admin = require('firebase-admin');
-const pdf = require("html-pdf")
 const xl = require('excel4node');
 const app = express();
 const jwt = require('express-jwt');
+const puppeteer = require('puppeteer');
 const jwks = require('jwks-rsa');
 const port = process.env.PORT || 8000;
 
@@ -18,8 +17,8 @@ admin.initializeApp({
 
 app.use(cors({
   origin: [
-      "http://localhost:3000", 
-      // "http://192.168.2.18"
+      // "http://localhost:3000", 
+      "https://gestaopedidos.herokuapp.com"
   ],
   methods: "GET,PATCH,POST,DELETE",
   allowedHeaders: [
@@ -43,8 +42,7 @@ var jwtCheck = jwt({
   algorithms: ['RS256']
 });
 
-// app.use(jwtCheck);
-
+app.use(jwtCheck);
 
 
 app.use(bodyParser.urlencoded({
@@ -54,7 +52,6 @@ app.use(bodyParser.json());
 
 const artigosRef = admin.firestore().collection("artigos")
 const pedidos_ref = admin.firestore().collection("pedidos")
-const pedido_codigos_ref = admin.firestore().collection("codigo_pedidos")
 const empresas_ref = admin.firestore().collection("fornecedores")
 const grupos_ref = admin.firestore().collection("grupos")
 const configRef = admin.firestore().collection("utils")
@@ -62,146 +59,6 @@ const notasEncomendaRef = admin.firestore().collection("notasEncomenda")
 const faturasRef = admin.firestore().collection("faturas")
 const distAnualRef = admin.firestore().collection("distAnual")
 
-
-// app.post("/api/exportExcelData",  (req, res) => {
-//   var wb = new xl.Workbook();
-//   var ws = wb.addWorksheet('Distribuição Mensal');
-//   var titles = ["Grupo", "Responsável", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro", "Total"]
-//   var style = wb.createStyle({
-//     fill: {
-//       type: 'pattern',
-//       patternType: 'solid',
-//       bgColor: '#FFFFFF',
-//       // fgColor: '#FFFF00',
-//     },
-//     font: {
-//       color: '#000000',
-//       size: 11,
-//     }, 
-    
-//   });
-//   var titleStyle = wb.createStyle({
-//     fill: {
-//       type: 'pattern',
-//       patternType: 'solid',
-//       bgColor: "#000000"
-//     },
-//     font: {
-//       color: '#ffffff',
-//       size: 12,
-//     },
-//     alignment: {
-//       horizontal: "center"
-//     }
-//   });
-
-//   var selectedYear = req.body.year
-
-//   ws.cell(1, 1, 1, titles.length, true)
-//     .string("Valores Mensais (S/IVA)")
-//     .style(titleStyle);
-
-//   for (var i = 0; i < titles.length; i++) {
-//     ws.cell(2, i + 1)
-//       .string(titles[i])
-//       .style(titleStyle)
-//   }
-
-//   distRef.child(selectedYear).once("value")
-//     .then(dist => {
-//       dist = dist.val()
-//       let row_number = 3;
-//       let promises_array = []
-//       Object.keys(dist).map(g => {
-//         let current_promise = grupos_ref.orderByChild("abrv").equalTo(g).once("value")
-//           .then(result => {
-//             let g_color = result.val()[Object.keys(result.val())[0]].color
-//             let members = Object.keys(dist[g]["members"]);
-//             let start_row = row_number;
-//             members.map((m) => {
-//               ws.cell(row_number, 1).string(g).style(style)
-//                 .style({
-//                   fill: {
-//                     type: 'pattern',
-//                     patternType: 'solid',
-//                     "bgColor": g_color,
-//                     fgColor: g_color
-//                   }, 
-//                   border: {
-//                     top: {
-//                       style:"thin", 
-//                       color: "#000000"
-//                     }, 
-//                     bottom: {
-//                       style:"thin", 
-//                       color: "#000000"
-//                     }
-//                   }
-//                 })
-//               ws.cell(row_number, 2).string(m).style(style)
-//                 .style({
-//                   fill: {
-//                     type: 'pattern',
-//                     patternType: 'solid',
-//                     "bgColor": g_color,
-//                     fgColor: g_color
-//                   }, 
-//                   border: {
-//                     top: {
-//                       style:"thin", 
-//                       color: "#000000"
-//                     }, 
-//                     bottom: {
-//                       style:"thin", 
-//                       color: "#000000"
-//                     }
-//                   }
-//                 })
-
-//               for (var j = 1; j <= 12; j++) {
-//                 ws.cell(row_number, 2 + j).number(parseInt(dist[g]["members"][m][`m${j}`])).style(style)
-//                   .style({
-//                     alignment: {
-//                       horizontal: "center"
-//                     },
-//                     fill: {
-//                       type: 'pattern',
-//                       patternType: 'solid',
-//                       "bgColor": "#ffffff",
-//                       fgColor: "#ffffff"
-//                     }
-//                   })
-//               }
-
-//               row_number++
-//             })
-
-//             let end_row = members.length > 1 ? start_row + members.length-1 : start_row
-//             ws.cell(start_row, 15,end_row, 15, true)
-//             .number(parseInt(dist[g]["total"])).style(style)
-//             .style({
-//               alignment: {
-//                 horizontal: "center",
-//                 vertical: "center"
-//               },
-//               fill: {
-//                 type: 'pattern',
-//                 patternType: 'solid',
-//                 "bgColor": g_color,
-//                 fgColor: g_color
-//               }
-//             })
-//           })
-//         promises_array.push(current_promise)
-//       })
-
-//       Promise.all(promises_array)
-//         .then(_ => {
-//           res.setHeader('Content-Type', "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet ");
-//           wb.write(`distribuição_${selectedYear}.xlsx`, res)
-//         })
-//     })
-// })
 
 // GET REQUESTS 
 app.get("/api/getNumPedidos",  async (req, res) => {
@@ -211,18 +68,20 @@ app.get("/api/getNumPedidos",  async (req, res) => {
   })
 });
 
-app.get("/api/getCodigoPedidos", (req, res) => {
-  pedido_codigos_ref.once("value")
-    .then(codigos => {
-      res.send(codigos)
-    });
-});
 
-app.get("/api/getConfig",  (req, res) => {
-  configRef.once("value")
-    .then(configs => {
-      res.send(configs.val())
+
+app.get("/api/getConfig", async  (req, res) => {
+  const configs = await configRef.doc("config").get()
+  .catch(err => {
+    res.json({
+        error: true,
+        msg: String(err)
     })
+  })
+
+  res.json({
+    data: configs.data()
+  })
 });
 
 app.get("/api/queryPedidos", (req, res) => {
@@ -232,10 +91,16 @@ app.get("/api/queryPedidos", (req, res) => {
   .then(pedidos=>{
     pedidos.forEach(p=>{
       if (p.data()["fatura"] === undefined) {
-        pedidos_fatura.push(p.id)
+        pedidos_fatura.push({
+          ...p.data(),
+          id: p.id
+        })
       }
-      if(p.data()["artigos"].filter(art => art["quantidade_chegada"] < art["quantidade"]).length !== 0){
-        pedidos_selected.push(p.id)
+      if(p.data()["artigos"].filter(art => art.entrega.quantidade < art["quantidade"]).length !== 0){
+        pedidos_selected.push({
+          ...p.data(),
+          id: p.id
+        })
       }    
     })
     res.json({
@@ -316,7 +181,10 @@ app.get("/api/getPedidosNaoEncomendados", async (req, res) => {
     })
     res.json({
       "data": pedidos.docs.map(doc=> {
-       return{ [doc.id]: doc.data()}
+       return{ 
+         ...doc.data(),
+         id: doc.id
+        }
       })
     })
 });
@@ -344,7 +212,12 @@ app.get("/api/getPedidosAtrasados", async (req, res) => {
       })
     })
   res.send({
-    "data": pedidos.docs.map(doc=> doc.id)
+    "data": pedidos.docs.map(doc=>{
+      return {
+        ...doc.data(), 
+        id: doc.id
+      }
+    })
   });
 });
 
@@ -358,8 +231,9 @@ app.get("/api/getFornecedoresStats", async  (req, res) => {
         msg: String(err)
     })
   })
+  const saldo_th = configs.data()["saldo_th"]
   
-  const fornecedores = await empresas_ref.get()
+  const notasEncomenda = await notasEncomendaRef.where("saldo_disponivel", "<",saldo_th ).get()
     .catch(err => {
       res.json({
           error: true,
@@ -367,117 +241,10 @@ app.get("/api/getFornecedoresStats", async  (req, res) => {
       })
     })
   
-  const saldo_th = configs.data()["saldo_th"]
-  let materiais = fornecedores.docs.map(doc=>doc.data()).filter(f=>"materiais" in f).length > 0 ? fornecedores.docs.map(doc=>doc.data()).filter(f=>"materiais" in f).filter(f=> f["materiais"]["saldo_disponivel"].slice(-1)[0] < saldo_th): []
-  let reagentes = fornecedores.docs.map(doc=>doc.data()).filter(f=>"reagentes" in f).length > 0 ? fornecedores.docs.map(doc=>doc.data()).filter(f=>"reagentes" in f).filter(f=> f["reagentes"]["saldo_disponivel"].slice(-1)[0] < saldo_th): []
-  let seq = fornecedores.docs.map(doc=>doc.data()).filter(f=>"sequenciacao" in f).length > 0 ? fornecedores.docs.map(doc=>doc.data()).filter(f=>"sequenciacao" in f).filter(f=>  f["sequenciacao"]["saldo_disponivel"].slice(-1)[0] < saldo_th): []
   res.json({
-    num: materiais.length + reagentes.length + seq.length,
-    materiais: materiais,
-    reagentes: reagentes,
-    seq: seq,
+    nes: notasEncomenda.docs.map(doc=>doc.data())
   })
 });
-
-// ["SANTA CRUZ BIOTECHNOLOGY", 
-// "STAB VIDA - INVESTIG. E SERV. CIÊNCIAS BIOL., LDA",
-// "ENZYMATIC, S.A.",
-// "Waters",
-// "VWR",
-// "DIAS DE SOUSA - INST.ANAL.CIENTIFICA",
-// "BIORAD LABORATÓRIOS, LDA",
-// "Manuel Guerra, Testes Equip. Veterinários, LDA.",
-// "BIOPORTUGAL QUIMICO FARMACEUTICA, LDA",
-// "JOSE MANUEL GOMES DOS SANTOS, LDA",
-// "ILC",
-// "IZASA II SCIENTIFIC, UNIP. LDA",
-// "SARSTEDT - TECNOLOGIA DE LABORATORIO, S.A."
-// ].forEach((e,index)=>{
-//   faturasRef.add({
-//     empresa: e,
-//     data_emissao_timestamp: Date.now(),
-//     data_emissao: new Date().toJSON(),
-//     codigo_fatura: "FT.2021.195955",
-//     valor: 1000,
-//     pedido: "7wXaeOmNyU3DpZlsmQAP",
-//     notas: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean maximus, nibh a faucibus dapibus, diam dolor blandit quam, sit amet dictum est nisi accumsan ligula. Sed vel porttitor nulla. Aenean mollis ullamcorper auctor. Curabitur vitae nisi posuere, cursus lorem ac, vestibulum neque. Nulla tempus imperdiet rhoncus. Integer laoreet dui sapien, ut sollicitudin sem congue eget. Etiam fermentum luctus ultricies."
-//   })
-// })
-
-// ["SANTA CRUZ BIOTECHNOLOGY", 
-// "STAB VIDA - INVESTIG. E SERV. CIÊNCIAS BIOL., LDA",
-// "ENZYMATIC, S.A.",
-// "Waters",
-// "VWR",
-// "DIAS DE SOUSA - INST.ANAL.CIENTIFICA",
-// "BIORAD LABORATÓRIOS, LDA",
-// "Manuel Guerra, Testes Equip. Veterinários, LDA.",
-// "BIOPORTUGAL QUIMICO FARMACEUTICA, LDA",
-// "JOSE MANUEL GOMES DOS SANTOS, LDA",
-// "ILC",
-// "IZASA II SCIENTIFIC, UNIP. LDA",
-// "SARSTEDT - TECNOLOGIA DE LABORATORIO, S.A."
-// ].forEach((e,index)=>{
-//   notasEncomendaRef.add({
-//     empresa: e,
-//     cabimento: "2021.85796",
-//     comprimisso: "5465156410",
-//     data_registo: new Date().toJSON(), 
-//     data_registo_timestamp: Date.now(), 
-//     ne: "NE.9519.7169851985.7481"+index,
-//     rubrica: "PR",
-//     saldo_abertura: 15522,
-//     saldo_disponível: 5456
-//   })
-// })
-
-
-// for(let i in [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,11,1,1,1,1,1]){
-
-// pedidos_ref.add({
-//   "artigos" : [ {
-//     "artigo" : "AMYLOSE FROM POTATO, USED AS AMYLASE SU&",
-//     "entrega" : {
-//       "chegada" : true,
-//       "data_chegada" : "23/01/2020",
-//       "guia" : "sdfwsdfwef",
-//       "quantidade_chegada" : "2"
-//     },
-//     "faturado" : false,
-//     "preco" : "12",
-//     "quantidade" : "2",
-//     "referencia_artigo" : "A0512-1G"
-//   } ],
-//   "cabimento" : "2019.7093",
-//   "codigo" : "SEQ_4",
-//   "data_pedido" : 1611402411985,
-//   "day" : 23,
-//   "empresa" : "STAB VIDA - INVESTIG. E SERV. CIÊNCIAS BIOL., LDA",
-//   "fatura" : [ {
-//     "data_emissao" : "21/02/2021",
-//     "name" : "FT.95549841.91981",
-//     "notas" : "Uma fatura",
-//     "valor_fatura" : "24"
-//   } ],
-//   "grupo" : "AMG",
-//   "mounth" : 1,
-//   "ne" : "NE.001.2019.0005718",
-//   "notas" : "23er23er23",
-//   "pedido_done" : true,
-//   "pedido_feito" : true,
-//   "pedido_feito_formated_date" : "23/ 0/2021",
-//   "proposta" : "UM.156465.54968498",
-//   "remetente" : "Daniel Madalena",
-//   "responsavel" : "Nelson Lima",
-//   "rubrica" : {
-//     "code" : "SEQ",
-//     "icon" : "gestures",
-//     "name" : "Sequenciação"
-//   },
-//   "valor_total" : 24,
-//   "year" : 2021
-// })
-// }
 
 
 app.get('/api/getPedidos',  async (req, res)=> {
@@ -500,9 +267,6 @@ app.get('/api/getPedidos',  async (req, res)=> {
   })
 });
 
-
-
-
 app.post('/api/getGrupoMembros', async  (req, res) =>{
     const id = req.body.id
     const membersDist = await grupos_ref.doc(id).collection("membros").get()
@@ -521,8 +285,6 @@ app.post('/api/getGrupoMembros', async  (req, res) =>{
       })
     })
 });
-
-
 
 app.get('/api/getGrupos', async  (req, res) =>{
   const grupos = await grupos_ref
@@ -562,10 +324,6 @@ app.get('/api/getFornecedores', async (req, res) =>{
       })
     })
 });
-
-
-
-
 
 app.get("/api/fetchArticles",  async (req, res) => {
   const artigos = await artigosRef
@@ -631,71 +389,81 @@ app.post('/api/searchPedidos', async  (req, res) => {
   })
 })
 
-app.post("/api/saveConfig", (req, res) => {
-  configRef.set(req.body)
-  res.send({
-    "msg": "success"
-  })
+app.post("/api/saveConfig", async (req, res) => {
+    const configData = req.body.configs
+    await configRef.doc("config").set(configData, {merge: true})
+    .catch(err => {
+      res.json({
+          error: true,
+          msg: String(err)
+      })
+    })
+  
+    res.json({
+      error: false
+    })
 });
 
-app.post('/api/searchCP', (req, res) => {
-  pedidos_ref.orderByChild("codigo").equalTo(req.body.search).once("value", sanpshot => {
-    res.send({
-      "result": sanpshot.val()
-    })
-  })
-})
 
-var pdf_template = require("./pdf_templates/template");
+app.post("/api/downloadPDF",async (req, res)=>{
+  const template = req.body.template; 
+  const pedidoID = req.body.pedidoID
 
-app.post("/api/createPdf", (req, res) => {
-  let config = {
-    "format": "A4",
-    "directory": "./tmp",
-  }
-  pdf.create(pdf_template(req.body), config).toFile("./tmp/" + req.body.codigo + ".pdf", (err) => {
-    if (err) {
-      res.send({
-        "error": err
+  const browser = await puppeteer.launch({ args: ['--no-sandbox'],headless: true })
+  .catch(err => {
+      res.json({
+          error: true,
+          msg: String(err)
       })
-    } else {
-      res.send({
-        "error": false
+  }) 
+  
+  const page = await browser.newPage()
+  .catch(err => {
+      res.json({
+          error: true,
+          msg: String(err)
       })
-    }
-  })
+  }) 
+  await page.setContent(template, {waitUntil: 'load'})
+  .catch(err => {
+      res.json({
+          error: true,
+          msg: String(err)
+      })
+  }) 
 
+  const pdf = await page.pdf({
+      format: "A4", 
+      // preferCSSPageSize: true
+  }).catch(err => {
+      res.json({
+          error: true,
+          msg: String(err)
+      })
+  }) 
+
+
+  const file =  `Content-Disposition': 'attachment; filename=pedido_${pedidoID}.pdf`
+  res.writeHead(200, {
+    'Content-Type': 'application/pdf',
+    file
+  });
+
+  await pedidos_ref.doc(pedidoID).set({
+    pedido_feito: true,
+    pedido_feito_formated_date: new Date().toJSON(),
+    pedido_feito_timestamp: Date.now()
+  }, {merge: true})
+  res.end(pdf, err=> {
+      if (err) {
+          console.log("Error");
+          console.log(err);
+      }   
+  });
+  await browser.close()
+  
 })
 
-app.get("/api/getPdf", (req, res) => {
-  fs.readdir(__dirname + "/tmp", (err, files) => {
-    files.forEach(file_name => {
-      try {
-        res.setHeader('Content-Type', 'application/pdf');
-        res.sendFile(__dirname + "/tmp/" + file_name, () => {
-          fs.unlink("./tmp/" + file_name, err => console.log(err))
-          pedidos_ref.orderByChild("codigo").equalTo(file_name.split(".")[0]).once("value")
-            .then(snap => {
-              let time = new Date()
-              let today = `${time.getDate()}/ ${time.getMonth()}/${time.getFullYear()}`;
-              Object.keys(snap.val()).forEach(key => {
-                pedidos_ref.child(key).child("pedido_feito_timestamp").set(time.getTime())
-                pedidos_ref.child(key).child("pedido_feito_formated_date").set(today)
-                pedidos_ref.child(key).child("pedido_feito").set(true)
-              })
-            })
-        })
-      } catch (error) {
-        res.send({
-          "error": "Houve um problema com o Download"
-        })
-      }
-
-
-    });
-  })
-  // res.send({err:false})
-})
 
 app.post("/api/getEmpresaInfo", (req, res) => {
   empresas_ref.orderByChild("empresa").equalTo(req.body.empresa).once("value")
@@ -706,7 +474,6 @@ app.post("/api/getEmpresaInfo", (req, res) => {
 
 app.post("/api/getDistAnual", async (req, res) => {
   const year = req.body.year
-  console.log(year)
   const distAnual = await  distAnualRef.where("year", "==", year)
     .get()
     .catch(err => {
@@ -785,7 +552,6 @@ const updateGrupoDist = async (valor_total, pedido, res)=>{
   })
 }
 
-
 app.post("/api/novo_pedido", async (req, res) => {
   let pedido = req.body.pedido;
   pedido["pedido_feito"] = false;
@@ -813,7 +579,7 @@ app.post("/api/novo_pedido", async (req, res) => {
   })
   await notasEncomendaRef.doc(pedido.ne_id).set({
     saldo_disponivel: notaE.data().saldo_disponivel - pedido.valor_total
-  })
+  }, {merge: true})
 
   res.json({
     error: false
@@ -821,21 +587,95 @@ app.post("/api/novo_pedido", async (req, res) => {
 
 });
 
-app.post("/api/addArticleToDb", (req, res) => {
-  artigosRef.push(req.body.data, () => {
-    res.send({
-      "msg": `O artigo com a referência ${req.body.data.code} foi adicionado à base de dados`
+app.post("/api/addArtigoToDB", async (req, res) => {
+  const artigo = req.body.artigo
+  await artigosRef.add(artigo)
+  .catch(err => {
+    res.json({
+        error: true,
+        msg: String(err)
     })
+  })
+  res.json({
+    error: false
   })
 });
 
-app.post("/api/artigo_faturado", (req, res) => {
-  let artigo_status = req.body;
-  pedidos_ref.child(artigo_status.id).child("artigos").child(artigo_status.index).child("faturado").set(artigo_status.status)
-  res.send({
-    "msg": "Status updated"
+app.delete("/api/deleteArtigo", async (req, res) => {
+  const id = req.body.id
+  await artigosRef.doc(id).delete()
+  .catch(err => {
+    res.json({
+        error: true,
+        msg: String(err)
+    })
+  })
+  res.json({
+    error: false
+  })
+});
+
+app.post("/api/setArticleStatus", async (req, res) => {
+  const index = req.body.index 
+  const pedidoID = req.body.pedidoID
+  const chegada_data = req.body.chegada_data
+  const pedido = await pedidos_ref.doc(pedidoID).get()
+  .catch(err => {
+    res.json({
+        error: true,
+        msg: String(err)
+    })
+  })
+  let artigos = pedido.data().artigos
+  artigos[index].entrega = {
+    ...chegada_data,
+    chegada: true, 
+    data_chegada: new Date().toJSON(),
+    data_chegada_timestamp: Date.now()
+  }
+
+  pedidos_ref.doc(pedidoID).set({
+    artigos, 
+    pedido_done: !Boolean(artigos.filter(a=>a.quantidade > a.entrega.quantidade).length)
+  }, {merge: true})
+  .catch(err => {
+    res.json({
+        error: true,
+        msg: String(err)
+    })
+  })
+  res.json({
+    error: false
   })
 })
+
+app.post("/api/setArtigoFaturado", async (req, res) => {
+  const index = req.body.index 
+  const pedidoID = req.body.pedidoID
+  const faturado = req.body.faturado
+  const pedido = await pedidos_ref.doc(pedidoID).get()
+  .catch(err => {
+    res.json({
+        error: true,
+        msg: String(err)
+    })
+  })
+  let artigos = pedido.data().artigos
+  artigos[index].faturado=faturado
+  pedidos_ref.doc(pedidoID).set({
+    artigos, 
+  }, {merge: true})
+  .catch(err => {
+    res.json({
+        error: true,
+        msg: String(err)
+    })
+  })
+  res.json({
+    error: false
+  })
+})
+
 
 
 
@@ -994,7 +834,7 @@ app.post("/api/getFaturasByPedido", async (req, res) => {
             msg: String(err)
         })
       })
-      
+     
       res.json({
         data: faturas.docs.map(doc=>{
           return {
@@ -1065,7 +905,6 @@ app.delete("/api/deleteFatura", async (req, res) => {
     })
 
 });
-
 
 app.post("/api/getEmpresasByRubrica", async (req, res) => {
   let r = req.body.rubrica;
@@ -1257,7 +1096,7 @@ app.delete("/api/deletePedido", async (req, res) => {
   })
   await notasEncomendaRef.doc(pedido_data.ne_id).set({
     saldo_disponivel: notaE.data().saldo_disponivel + pedido_data.valor_total
-  })
+  }, {merge: true})
 
   res.json({
     error: false
@@ -1300,7 +1139,6 @@ app.delete("/api/deleteGrupo", async (req, res) => {
 
   
 });
-
 
 app.patch("/api/editGrupo", async (req, res) => {
   const id = req.body.id;

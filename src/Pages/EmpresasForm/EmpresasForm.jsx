@@ -1,5 +1,5 @@
 import React from 'react'
-import {useParams, Link} from "react-router-dom"
+import {useParams} from "react-router-dom"
 import FormComponent from "../../Components/FormComponent"
 import {List ,Dialog,DialogTitle,DialogContent,DialogContentText,DialogActions, ListItem, Button,ListItemText,ListItemSecondaryAction, TextField,  Typography, IconButton,  Popover, ListItemIcon, MenuItem} from "@material-ui/core"
 import Loading from "../../Components/Loading"
@@ -79,7 +79,7 @@ const EmpresasForm = () => {
     }, [isFetching, fetchingNES])
 
     if(isFetching || fetchingNES) return <Loading msg="A carregar dados da empresa" />
-    if(submitForm)  return <SubmitForm data={submitData} nesIDs={nes? nes.data.map(n=>n.id): null} id={id} submitFunction={id? useEditEmpresa: useAddEmpresa}/>
+    if(submitForm)  return <SubmitForm data={submitData} nesIDs={nes.data? nes.data.map(n=>n.id): null} id={id} submitFunction={id? useEditEmpresa: useAddEmpresa}/>
     return (
         <FormComponent title={id? `Editar a empresa ${empresa.data.empresa}`: "Registo de Novo Fornecedor"}>
             {id && <Dialog open={addNE} onClose={()=>setAddNe(false)} aria-labelledby="form-dialog-title">

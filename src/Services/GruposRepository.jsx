@@ -6,31 +6,38 @@ export default class GruposRepository  {
         return url
       }
   
-    getGrupos = () =>{
+    getGrupos = (accessToken,) =>{
         let url = this.apiBaseUrl().toString()
         url += `getGrupos`
         const response =  fetch(url,{
             method: "GET", 
+            headers: {
+                Authorization: accessToken ? `Bearer ${accessToken}`: ""
+            }
         })
         return response.then(res =>res.json())
     }
 
-    getDist = ()=>{
+    getDist = (accessToken,)=>{
         let url = this.apiBaseUrl().toString()
         url += `getDist`
         const response =  fetch(url,{
             method: "GET", 
+            headers: {
+                Authorization: accessToken ? `Bearer ${accessToken}`: ""
+            }
         })
         return response.then(res =>res.json())
     }
 
-    novoGrupo = (grupo) =>{
+    novoGrupo = (accessToken,grupo) =>{
         let url = this.apiBaseUrl().toString()
         url += `novo_grupo`
         const response =  fetch(url,{
             method: "POST", 
             headers:{
-            "content-type": "application/json", 
+                Authorization: accessToken ? `Bearer ${accessToken}`: "",
+                "content-type": "application/json", 
             },
             body: JSON.stringify({grupo}),
             json: true
@@ -39,12 +46,13 @@ export default class GruposRepository  {
     }
 
     
-    getGrupoById = (id) =>{
+    getGrupoById = (accessToken,id) =>{
         let url = this.apiBaseUrl().toString()
         url += `getGrupoById`
         const response =  fetch(url,{
             method: "POST", 
             headers:{
+            Authorization: accessToken ? `Bearer ${accessToken}`: "",
             "content-type": "application/json", 
             },
             body: JSON.stringify({id}),
@@ -53,12 +61,13 @@ export default class GruposRepository  {
         return response.then(res =>res.json())
     }
 
-    getGrupoMembros = (id) =>{
+    getGrupoMembros = (accessToken,id) =>{
         let url = this.apiBaseUrl().toString()
         url += `getGrupoMembros`
         const response =  fetch(url,{
             method: "POST", 
             headers:{
+            Authorization: accessToken ? `Bearer ${accessToken}`: "",
             "content-type": "application/json", 
             },
             body: JSON.stringify({id}),
@@ -67,12 +76,13 @@ export default class GruposRepository  {
         return response.then(res =>res.json())
     }
     
-    editGrupo = (data, id) =>{
+    editGrupo = (accessToken,data, id) =>{
         let url = this.apiBaseUrl().toString()
         url += `editGrupo`
         const response =  fetch(url,{
             method: "PATCH", 
             headers:{
+            Authorization: accessToken ? `Bearer ${accessToken}`: "",
             "content-type": "application/json", 
             },
             body: JSON.stringify({data, id}),
@@ -81,12 +91,13 @@ export default class GruposRepository  {
         return response.then(res =>res.json())
     }
     
-    deleteGrupo = (id,selectedDistID) =>{
+    deleteGrupo = (accessToken,id,selectedDistID) =>{
         let url = this.apiBaseUrl().toString()
         url += `deleteGrupo`
         const response =  fetch(url,{
             method: "DELETE", 
             headers:{
+            Authorization: accessToken ? `Bearer ${accessToken}`: "",
             "content-type": "application/json", 
             },
             body: JSON.stringify({id,selectedDistID}),
@@ -95,12 +106,13 @@ export default class GruposRepository  {
         return response.then(res =>res.json())
     }
 
-    getDistAnual = (year) =>{
+    getDistAnual = (accessToken,year) =>{
         let url = this.apiBaseUrl().toString()
         url += `getDistAnual`
         const response =  fetch(url,{
             method: "POST", 
             headers:{
+            Authorization: accessToken ? `Bearer ${accessToken}`: "",
             "content-type": "application/json", 
             },
             body: JSON.stringify({year}),

@@ -21,6 +21,12 @@ const EmpresasComponent = () => {
         data: fornecedoresStats, 
         isFetching: fetchingFornecedoresStats
     } = useGetFornecedoresStats()
+    
+    const Rubricas = {
+        "PM": ()=> <WidgetsIcon style={{color: "#3498db"}}/>,
+        "PR":()=>  <WhatshotIcon style={{color: "#e74c3c"}}/>,
+        "SEQ": ()=> <GestureIcon style={{color: "#9b59b6"}}/>, 
+    }
 
     return (
         <>
@@ -35,8 +41,8 @@ const EmpresasComponent = () => {
             
 
             {!fetchingFornecedoresStats && <>
-                {fornecedoresStats.num === 0 && <Typography>Neste momento não se encontra nenhuma empresa com o saldo a esgotar-se</Typography>}
-                {fornecedoresStats.num > 0 && <div style={{
+                {fornecedoresStats.nes.length === 0 && <Typography>Neste momento não se encontra nenhuma empresa com o saldo a esgotar-se</Typography>}
+                {fornecedoresStats.nes.length  > 0 && <div style={{
                     display: "flex", 
                     color: "#e74c3c", 
                     flexDirection: "column"
@@ -46,7 +52,7 @@ const EmpresasComponent = () => {
                         color: "#e74c3c"
                     }}>
                         <ArrowDownwardIcon/>
-                        <Typography variant="h6" >Fornecedores com saldo a esgotar ({fornecedoresStats.num})</Typography>
+                        <Typography variant="h6" >Fornecedores com saldo a esgotar ({fornecedoresStats.nes.length})</Typography>
                     </div>
                     <TableContainer>
                         <Table>
@@ -61,87 +67,34 @@ const EmpresasComponent = () => {
                             </TableRow>
                             </TableHead>
                             <TableBody>
-                                {fornecedoresStats.materiais.map(emp=>{
+                                {fornecedoresStats.nes.map(emp=>{
                                     return (
                                         <TableRow key={"Materiais_" + emp.empresa}>
                                             <TableCell component="th" scope="row">
                                                 {emp.empresa}
                                             </TableCell>
                                             <TableCell align="right">
-                                                <Tooltip title="Materiais" >
-                                                    <WidgetsIcon style={{color: "#2980b9"}} />
+                                                <Tooltip title={emp.rubrica=== "PM"? "Materiais": emp.rubrica === "PR"? "Reagentes": "Sequenciação"} >
+                                                   {Rubricas[emp.rubrica]()}
                                                 </Tooltip>
                                             </TableCell>
                                             <TableCell align="right">
-                                                {emp.materiais.cabimento.slice(-1)[0]}
+                                                {emp.cabimento}
                                             </TableCell>
                                             <TableCell align="right">
-                                                {emp.materiais.comprimisso.slice(-1)[0]}
+                                                {emp.compromisso}
 
                                             </TableCell>
                                             <TableCell align="right">
-                                                {emp.materiais.ne.slice(-1)[0]}
+                                                {emp.ne}
                                             </TableCell>
                                             <TableCell align="right">
-                                                {emp.materiais.saldo_disponivel.slice(-1)[0]}
+                                                {emp.saldo_disponivel}
                                             </TableCell>
                                         </TableRow>
                                     )
                                 })}
-                                 {fornecedoresStats.reagentes.map(emp=>{
-                                     return (
-                                        <TableRow key={"Reagentes" + emp.empresa}>
-                                            <TableCell component="th" scope="row">
-                                                {emp.empresa}
-                                            </TableCell>
-                                            <TableCell align="right">
-                                                <Tooltip title="Reagentes" >
-                                                    <WhatshotIcon style={{color: "#e74c3c"}} />
-                                                </Tooltip>
-                                            </TableCell>
-                                            <TableCell align="right">
-                                                {emp.reagentes.cabimento.slice(-1)[0]}
-                                            </TableCell>
-                                            <TableCell align="right">
-                                                {emp.reagentes.comprimisso.slice(-1)[0]}
-
-                                            </TableCell>
-                                            <TableCell align="right">
-                                                {emp.reagentes.ne.slice(-1)[0]}
-                                            </TableCell>
-                                            <TableCell align="right">
-                                                {emp.reagentes.saldo_disponivel.slice(-1)[0]}
-                                            </TableCell>
-                                        </TableRow>
-                                    )
-                                })}
-                                 {fornecedoresStats.seq.map(emp=>{
-                                     return (
-                                        <TableRow key={"Seq" + emp.empresa}>
-                                            <TableCell component="th" scope="row">
-                                                {emp.empresa}
-                                            </TableCell>
-                                            <TableCell align="right">
-                                                <Tooltip title="Sequenciação" >
-                                                    <GestureIcon style={{color: "#9b59b6"}} />
-                                                </Tooltip>
-                                            </TableCell>
-                                            <TableCell align="right">
-                                                {emp.sequenciacao.cabimento.slice(-1)[0]}
-                                            </TableCell>
-                                            <TableCell align="right">
-                                                {emp.sequenciacao.compromisso.slice(-1)[0]}
-
-                                            </TableCell>
-                                            <TableCell align="right">
-                                                {emp.sequenciacao.ne.slice(-1)[0]}
-                                            </TableCell>
-                                            <TableCell align="right">
-                                                {emp.sequenciacao.saldo_disponivel.slice(-1)[0]} €
-                                            </TableCell>
-                                        </TableRow>
-                                    )
-                                })}
+                                
                                 
                             </TableBody>
                         </Table>

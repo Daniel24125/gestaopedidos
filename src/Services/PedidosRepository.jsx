@@ -7,88 +7,103 @@ export default class PedidosRepository  {
       }
 
    
-    getNumPedidos = () =>{
+    getNumPedidos = (accessToken) =>{
         let url = this.apiBaseUrl().toString()
         url += `getNumPedidos`
         const response =  fetch(url,{
             method: "GET", 
+            headers: {
+                Authorization: accessToken ? `Bearer ${accessToken}`: ""
+            }
+        
         })
         return response.then(res =>res.json())
     }
 
-    queryPedidos = () =>{
+    queryPedidos = (accessToken) =>{
         let url = this.apiBaseUrl().toString()
         url += `queryPedidos`
         const response =  fetch(url,{
             method: "GET", 
+            headers: {
+                Authorization: accessToken ? `Bearer ${accessToken}`: ""
+            }
+        
         })
         return response.then(res =>res.json())
     }
 
-    getPedidosNaoEncomendados = () =>{
+    getPedidosNaoEncomendados = (accessToken) =>{
         let url = this.apiBaseUrl().toString()
         url += `getPedidosNaoEncomendados`
         const response =  fetch(url,{
             method: "GET", 
+            headers: {
+                Authorization: accessToken ? `Bearer ${accessToken}`: ""
+            }
+        
         })
         return response.then(res =>res.json())
     } 
     
-    getPedidosAtrasados = () =>{
+    getPedidosAtrasados = (accessToken) =>{
         let url = this.apiBaseUrl().toString()
         url += `getPedidosAtrasados`
         const response =  fetch(url,{
             method: "GET", 
+            headers: {
+                Authorization: accessToken ? `Bearer ${accessToken}`: ""
+            }
+        
         })
         return response.then(res =>res.json())
     }
     
-    getPedidosAnual = () =>{
+    getPedidosAnual = (accessToken) =>{
         let url = this.apiBaseUrl().toString()
         url += `getPedidosAnual`
         const response =  fetch(url,{
             method: "GET", 
+            headers: {
+                Authorization: accessToken ? `Bearer ${accessToken}`: ""
+            }
         })
         return response.then(res =>res.json())
     }
 
-    getPedidos = () =>{
+    getPedidos = (accessToken) =>{
         let url = this.apiBaseUrl().toString()
         url += `getPedidos`
         const response =  fetch(url,{
             method: "GET", 
+            headers: {
+                Authorization: accessToken ? `Bearer ${accessToken}`: ""
+            }
+        
         })
         return response.then(res =>res.json())
     }
     
-    // getCodigoPedidos = () =>{
-    //     let url = this.apiBaseUrl().toString()
-    //     url += `getCodigoPedidos`
-    //     const response =  fetch(url,{
-    //         method: "GET", 
-    //     })
-    //     return response.then(res =>res.json())
-    // }  
-    
-    downloadPfd = () =>{
+    downloadPfd = (accessToken) =>{
         let url = this.apiBaseUrl().toString()
         url += `downloadPfd`
         const response =  fetch(url,{
             method: "GET", 
             headers:{
+                Authorization: accessToken ? `Bearer ${accessToken}`: "",
                 "Accept": "application/pdf", 
-                },
+            },
         })
         return response.then(res =>res.json())
     }
 
-    searchPedidos = (word, field) =>{
-        console.log(word, field)
+    searchPedidos = (accessToken,word, field) =>{
         let url = this.apiBaseUrl().toString()
         url += `searchPedidos`
         const response =  fetch(url,{
             method: "POST", 
             headers:{
+            Authorization: accessToken ? `Bearer ${accessToken}`: "",
             "content-type": "application/json", 
             },
             body: JSON.stringify({word,field}),
@@ -97,12 +112,13 @@ export default class PedidosRepository  {
         return response.then(res =>res.json())
     }
 
-    sendPedidos = (pedido) =>{
+    sendPedidos = (accessToken,pedido) =>{
         let url = this.apiBaseUrl().toString()
         url += `novo_pedido`
         const response =  fetch(url,{
             method: "POST", 
             headers:{
+            Authorization: accessToken ? `Bearer ${accessToken}`: "",
             "content-type": "application/json", 
             },
             body: JSON.stringify({pedido}),
@@ -111,12 +127,13 @@ export default class PedidosRepository  {
         return response.then(res =>res.json())
     }
 
-    getPedidoById = (id) =>{
+    getPedidoById = (accessToken,id) =>{
         let url = this.apiBaseUrl().toString()
         url += `getPedidoById`
         const response =  fetch(url,{
             method: "POST", 
             headers:{
+            Authorization: accessToken ? `Bearer ${accessToken}`: "",
             "content-type": "application/json", 
             },
             body: JSON.stringify({id}),
@@ -125,12 +142,13 @@ export default class PedidosRepository  {
         return response.then(res =>res.json())
     }
 
-    editPedido = (data, id) =>{
+    editPedido = (accessToken,data, id) =>{
         let url = this.apiBaseUrl().toString()
         url += `editPedido`
         const response =  fetch(url,{
             method: "POST", 
             headers:{
+            Authorization: accessToken ? `Bearer ${accessToken}`: "",
             "content-type": "application/json", 
             },
             body: JSON.stringify({id, data}),
@@ -139,12 +157,13 @@ export default class PedidosRepository  {
         return response.then(res =>res.json())
     }
     
-    deletePedido = (id) =>{
+    deletePedido = (accessToken,id) =>{
         let url = this.apiBaseUrl().toString()
         url += `deletePedido`
         const response =  fetch(url,{
             method: "DELETE", 
             headers:{
+            Authorization: accessToken ? `Bearer ${accessToken}`: "",
             "content-type": "application/json", 
             },
             body: JSON.stringify({id}),
@@ -153,18 +172,19 @@ export default class PedidosRepository  {
         return response.then(res =>res.json())
     }
     
-    createPdf = (data) =>{
+    downloadPDF = (accessToken,template, pedidoID) =>{
         let url = this.apiBaseUrl().toString()
-        url += `createPdf`
+        url += `downloadPDF`
         const response =  fetch(url,{
             method: "POST", 
             headers:{
+            Authorization: accessToken ? `Bearer ${accessToken}`: "",
             "content-type": "application/json", 
             },
-            body: JSON.stringify({data}),
+            body: JSON.stringify({template, pedidoID}),
             json: true
         })
-        return response.then(res =>res.json())
+        return response.then(res =>res.blob())
     }
     
 }

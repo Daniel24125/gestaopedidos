@@ -6,44 +6,52 @@ export default class FornecedoresRepository  {
         return url
       }
   
-    getFornecedores = () =>{
+    getFornecedores = (accessToken) =>{
         let url = this.apiBaseUrl().toString()
         url += `getFornecedores`
         const response =  fetch(url,{
             method: "GET", 
+            headers: {
+                Authorization: accessToken ? `Bearer ${accessToken}`: ""
+            }
         })
         return response.then(res =>res.json())
     }
   
 
-    getFornecedoresStats = () =>{
+    getFornecedoresStats = (accessToken) =>{
         let url = this.apiBaseUrl().toString()
         url += `getFornecedoresStats`
         const response =  fetch(url,{
             method: "GET", 
+            headers: {
+                Authorization: accessToken ? `Bearer ${accessToken}`: ""
+            }
         })
         return response.then(res =>res.json())
     }
 
-    getRubricasByEmpresa = empresa =>{
+    getRubricasByEmpresa = (accessToken,empresa) =>{
         let url = this.apiBaseUrl().toString()
         url += `getRubricasByEmpresa`
         const response =  fetch(url,{
             method: "POST", 
             headers:{
+                Authorization: accessToken ? `Bearer ${accessToken}`: "",
                 "content-type": "application/json", 
-                },
-                body: JSON.stringify({empresa}),
-                json: true
+            },
+            body: JSON.stringify({empresa}),
+            json: true
             })
             return response.then(res =>res.json())
     }
-    getFaturasByEmpresa = empresa =>{
+    getFaturasByEmpresa = (accessToken,empresa) =>{
         let url = this.apiBaseUrl().toString()
         url += `getFaturasByEmpresa`
         const response =  fetch(url,{
             method: "POST", 
             headers:{
+                Authorization: accessToken ? `Bearer ${accessToken}`: "",
                 "content-type": "application/json", 
                 },
                 body: JSON.stringify({empresa}),
@@ -52,12 +60,13 @@ export default class FornecedoresRepository  {
             return response.then(res =>res.json())
     }
 
-    getFaturasByPedido = pedidoID =>{
+    getFaturasByPedido = (accessToken,pedidoID) =>{
         let url = this.apiBaseUrl().toString()
         url += `getFaturasByPedido`
         const response =  fetch(url,{
             method: "POST", 
             headers:{
+                Authorization: accessToken ? `Bearer ${accessToken}`: "",
                 "content-type": "application/json", 
                 },
                 body: JSON.stringify({pedidoID}),
@@ -66,12 +75,13 @@ export default class FornecedoresRepository  {
             return response.then(res =>res.json())
     }
 
-    addFatura = fatura =>{
+    addFatura = (accessToken,fatura) =>{
         let url = this.apiBaseUrl().toString()
         url += `addFatura`
         const response =  fetch(url,{
             method: "POST", 
             headers:{
+                Authorization: accessToken ? `Bearer ${accessToken}`: "",
                 "content-type": "application/json", 
                 },
                 body: JSON.stringify({fatura}),
@@ -80,12 +90,13 @@ export default class FornecedoresRepository  {
             return response.then(res =>res.json())
     }
 
-    deleteFatura = id =>{
+    deleteFatura = (accessToken,id) =>{
         let url = this.apiBaseUrl().toString()
         url += `deleteFatura`
         const response =  fetch(url,{
             method: "DELETE", 
             headers:{
+                Authorization: accessToken ? `Bearer ${accessToken}`: "",
                 "content-type": "application/json", 
                 },
                 body: JSON.stringify({id}),
@@ -94,12 +105,13 @@ export default class FornecedoresRepository  {
             return response.then(res =>res.json())
     }
 
-    getEmpresasByRubrica = rubrica =>{
+    getEmpresasByRubrica = (accessToken,rubrica) =>{
         let url = this.apiBaseUrl().toString()
         url += `getEmpresasByRubrica`
         const response =  fetch(url,{
             method: "POST", 
             headers:{
+                Authorization: accessToken ? `Bearer ${accessToken}`: "",
                 "content-type": "application/json", 
                 },
                 body: JSON.stringify({rubrica}),
@@ -108,12 +120,13 @@ export default class FornecedoresRepository  {
             return response.then(res =>res.json())
     }
 
-    addEmpresa = empresa =>{
+    addEmpresa = (accessToken,empresa) =>{
         let url = this.apiBaseUrl().toString()
         url += `nova_empresa`
         const response =  fetch(url,{
             method: "POST", 
             headers:{
+                Authorization: accessToken ? `Bearer ${accessToken}`: "",
                 "content-type": "application/json", 
                 },
                 body: JSON.stringify({empresa}),
@@ -122,12 +135,13 @@ export default class FornecedoresRepository  {
         return response.then(res =>res.json())
     }
 
-    editEmpresa = (data, id, nesIDs) =>{
+    editEmpresa = (accessToken,data, id, nesIDs) =>{
         let url = this.apiBaseUrl().toString()
         url += `editEmpresa`
         const response =  fetch(url,{
             method: "POST", 
             headers:{
+                Authorization: accessToken ? `Bearer ${accessToken}`: "",
                 "content-type": "application/json", 
                 },
                 body: JSON.stringify({data, id, nesIDs}),
@@ -136,12 +150,13 @@ export default class FornecedoresRepository  {
         return response.then(res =>res.json())
     }
 
-    deleteEmpresa = (id) =>{
+    deleteEmpresa = (accessToken,id) =>{
         let url = this.apiBaseUrl().toString()
         url += `deleteEmpresa`
         const response =  fetch(url,{
             method: "DELETE", 
             headers:{
+                Authorization: accessToken ? `Bearer ${accessToken}`: "",
                 "content-type": "application/json", 
                 },
                 body: JSON.stringify({id}),
@@ -150,12 +165,13 @@ export default class FornecedoresRepository  {
         return response.then(res =>res.json())
     }
 
-    getEmpresaById = (id) =>{
+    getEmpresaById = (accessToken,id) =>{
         let url = this.apiBaseUrl().toString()
         url += `getEmpresaById`
         const response =  fetch(url,{
             method: "POST", 
             headers:{
+                Authorization: accessToken ? `Bearer ${accessToken}`: "",
                 "content-type": "application/json", 
                 },
                 body: JSON.stringify({id}),
@@ -164,12 +180,13 @@ export default class FornecedoresRepository  {
         return response.then(res =>res.json())
     }
 
-    addNE = (ne) =>{
+    addNE = (accessToken,ne) =>{
         let url = this.apiBaseUrl().toString()
         url += `addNE`
         const response =  fetch(url,{
             method: "POST", 
             headers:{
+                Authorization: accessToken ? `Bearer ${accessToken}`: "",
                 "content-type": "application/json", 
                 },
                 body: JSON.stringify({ne}),
@@ -178,12 +195,13 @@ export default class FornecedoresRepository  {
         return response.then(res =>res.json())
     }
 
-    deleteNE = (neID) =>{
+    deleteNE = (accessToken,neID) =>{
         let url = this.apiBaseUrl().toString()
         url += `deleteNE`
         const response =  fetch(url,{
             method: "DELETE", 
             headers:{
+                Authorization: accessToken ? `Bearer ${accessToken}`: "",
                 "content-type": "application/json", 
                 },
                 body: JSON.stringify({neID}),

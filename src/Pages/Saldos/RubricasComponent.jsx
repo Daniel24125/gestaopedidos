@@ -3,15 +3,20 @@ import WidgetsIcon from '@material-ui/icons/Widgets';
 import WhatshotIcon from '@material-ui/icons/Whatshot';
 import GestureIcon from '@material-ui/icons/Gesture';
 import {useGetRubricasByEmppresa} from "../../Domain/useCases"
-import {CircularProgress ,Table, TableHead, TableRow, TableBody, TableCell, Avatar, Typography, Tooltip, IconButton} from "@material-ui/core"
+import {CircularProgress ,Table, Button, Dialog,DialogTitle,DialogContent,DialogContentText,DialogActions, TableHead, TableRow, TableBody, TableCell, Avatar, Typography, Tooltip, IconButton} from "@material-ui/core"
 import DeleteIcon from '@material-ui/icons/Delete';
+import DeleteNES from "../EmpresasForm/DeleteNES"
 
  const RubricasComponent = ({empresa}) => {  
     const {
         data: ne, 
-        isFetching
+        isFetching,
+        refetch
     } = useGetRubricasByEmppresa(empresa)
 
+    const [openDelete, setOpenDelete] = React.useState(false);
+    const [deleteNE, setDeleteNE] = React.useState(false);
+    const [selectedNEID, setSelectedNEID] = React.useState(null);
     
     const RubricasIcons = {
         "SEQ": {
@@ -30,6 +35,31 @@ import DeleteIcon from '@material-ui/icons/Delete';
 
     return (
         <div className="optionsContainer">
+            <Dialog onClose={()=>{
+                setOpenDelete(false)
+            }} aria-labelledby="simple-dialog-title" open={openDelete}>
+                <DialogTitle id="alert-dialog-title">{"Tem a certeza que pretende apagar a nota de encomenda"}</DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                        A nota de encomenda será apagada permanentemente da base de dados. Tem a certeza que pretende continuar?
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    {!deleteNE && <Button style={{color: "#e74c3c"}}onClick={()=>{setDeleteNE(true)}}>
+                        apagar
+                    </Button>}
+                    {deleteNE && <DeleteNES
+                        id={selectedNEID} 
+                        setOpenDelete={setOpenDelete}
+                        refetch={refetch}
+                        setDeleteNE={setDeleteNE}
+                        />}
+                    <Button onClick={()=>setOpenDelete(false)} autoFocus>
+                        cancelar
+                    </Button>
+                </DialogActions>
+
+            </Dialog>
             {isFetching && <CircularProgress size={60} color="primary" />}
             {!isFetching && <>
                 {ne.data.length === 0 && <Typography style={{marginBottom: 20}}>Não se encontra registada nenhuma nota de encomenda para esta empresa</Typography>}
@@ -49,7 +79,7 @@ import DeleteIcon from '@material-ui/icons/Delete';
                     <TableBody>
                         {ne.data.map(n => {
                             return (
-                            <TableRow>
+                            <TableRow key={n.id}>
                                 <TableCell>
                                     <Tooltip title={n.rubrica === "PR"? "Reagentes": n.rubrica=== "PM"? "Materiais": "Sequenciação"}>
                                         <Avatar style={{
@@ -73,7 +103,10 @@ import DeleteIcon from '@material-ui/icons/Delete';
                                 </TableCell>
                             <TableCell>
                                 <Tooltip title="Apagar Nota de Encomenda">
-                                    <IconButton style={{color: "#e74c3c"}}>
+                                    <IconButton onClick={()=> {
+                                        setSelectedNEID(n.id)
+                                        setOpenDelete(true)
+                                    }}style={{color: "#e74c3c"}}>
                                         <DeleteIcon />
                                     </IconButton>
                                 </Tooltip>

@@ -10,10 +10,8 @@ const SubmitForm = ({
     nesIDs
 }) => {
     const {
-        data: response, 
         isFetching
     } = submitFunction(data, id, nesIDs)
-    console.log(response)
     if(isFetching) return <Loading msg="A submeter dados do formulário..." />
     return (
         <div className="formSubmitedContainer">

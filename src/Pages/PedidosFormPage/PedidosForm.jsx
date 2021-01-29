@@ -1,7 +1,7 @@
 import React from 'react'
 import {useParams} from "react-router-dom"
 import FormComponent from "../../Components/FormComponent"
-import {List,Dialog,DialogTitle,DialogContent,DialogContentText,DialogActions, ListItem,FormHelperText, CircularProgress,Button,ListItemText,ListItemSecondaryAction, TextField,  MenuItem, Typography, InputAdornment , IconButton,InputLabel, Input, FormControl, Popover} from "@material-ui/core"
+import {List,Dialog,DialogTitle,DialogContent,DialogContentText,DialogActions, ListItem,FormHelperText, CircularProgress,Button,ListItemText,ListItemSecondaryAction, TextField,  MenuItem, Typography, InputAdornment , IconButton,InputLabel, Input, FormControl, Popover, Collapse, Divider} from "@material-ui/core"
 import RubricasComponent from "./RubricasComponent"
 import Loading from "../../Components/Loading"
 import {useGetGrupos, useGetEmpresasByRubrica} from "../../Domain/useCases"
@@ -13,6 +13,8 @@ import {useSendPedidos, useGetPedidoByID, useEditPedido,useGetFaturasByPedido} f
 import ErrorIcon from '@material-ui/icons/Error';
 import SubmitFatura from "./SubmitFatura"
 import DeleteFatura from "./DeleteFatura"
+import AddArtigo from "./AddArtigo"
+
 
 const getFormatedNumber = (number)=> String(number).length === 1 ? `0${number}`: number 
 
@@ -48,10 +50,13 @@ const PedidosForm = () => {
     const [deleteFatura, setDeleteFatura] = React.useState(false);
     const [deleteResult, setDeleteResult] = React.useState(null);
     const [selectedFaturaID, setSelectedFaturaID] = React.useState(null);
-    const [articleSearchTerm, setArticlesSearchTerm] = React.useState([])
+    const [articleSearchTerm, setArticlesSearchTerm] = React.useState("")
     const [performSearch, setPerformSearch] = React.useState(false)
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [submitForm, setSubmitForm] = React.useState(false);
+    const [showAddArtigoForm, setShowAddArtigoForm] = React.useState(false);
+    const [addArtigoToDB, setAddArtigoToDB] = React.useState(false);
+    
     const [tempArticle, setTempArticle] = React.useState({
         artigo: "", 
         preco: 0, 
@@ -62,7 +67,7 @@ const PedidosForm = () => {
             chegada: false, 
             data_chegada: "", 
             guia: "", 
-            quantidade_chegada: 0
+            quantidade: 0
         }
     });
     const [tempFatura, setTempFatura] = React.useState({
@@ -72,7 +77,6 @@ const PedidosForm = () => {
         valor_fatura: 0, 
        
     });
-
     const [submitData, setSubmitData] = React.useState({})
     
     const [error, setError] = React.useState({
@@ -81,7 +85,7 @@ const PedidosForm = () => {
         empresa: false,
         ne: false,
         proposta: false,
-        artigos: false
+        artigos: false,
     })
     
     const onChangeInput = (e)=>{
@@ -166,10 +170,6 @@ const PedidosForm = () => {
                     grupo_abrv:id?  pedido.data.grupo_abrv : grupos.data[0].abrv,
                     grupo_id :id?  pedido.data.grupo_id : grupos.data[0].id,
                     responsavel:id?  pedido.data.responsavel :  grupos.data[0].membros[0],
-                    empresa: id? pedido.data.empresa : empresasList.length > 0? empresasList[0].empresa: "",
-                    ne: id?  pedido.data.ne : empresasList.length > 0? empresasList[0].ne: "",
-                    ne_id: id?  pedido.data.ne_id : empresasList.length > 0? empresasList[0].id: "",
-                    cabimento: id? pedido.cabimento: empresasList.length > 0? empresasList[0].cabimento: "",
                     proposta:id?  pedido.data.proposta : "",
                     notas:id?  pedido.data.notas: "",
                     valor_total: id?  pedido.data.valor_total: "",
@@ -178,9 +178,10 @@ const PedidosForm = () => {
                 if(id){
                     setSelectedRubrica(pedido.data.rubrica.code)
                 }
-        }
-    }, [isLoading])
-    console.log(submitData, empresasList)
+            }
+        }, [isLoading])
+        
+
     if((isLoading || Object.keys(submitData).length=== 0)) return <Loading msg="A carregar dados necessários..." />
     if(submitForm)  return <SubmitForm data={submitData}  id={id} submitFunction={id? useEditPedido: useSendPedidos}/>
     return (
@@ -197,7 +198,7 @@ const PedidosForm = () => {
                         margin="normal"
                         error={error.artigos}
                         style={{
-                            marginBottom: 40
+                            marginBottom: 20
                         }}
                     > 
                         <InputLabel htmlFor="standard-adornment-password">Pesquisar referência do artigo</InputLabel>
@@ -277,11 +278,48 @@ const PedidosForm = () => {
                                 {!performSearch&& articlesResult.length === 0 && <Typography style={{
                                     padding: 20
                                 }}>
-                                    O artigo não se encontra na base de dados. <Button color="primary">adicionar artigo</Button>    
+                                    O artigo não se encontra na base de dados. <Button onClick={()=>{
+                                        setShowAddArtigoForm(true)
+                                        setAnchorEl(null)
+                                    }} color="primary">adicionar artigo</Button>    
                                 </Typography>}
                             </div>
                         </Popover>
-                
+                        
+                        <Collapse in={showAddArtigoForm} timeout="auto" unmountOnExit > 
+                            <TextField
+                                id="artigo"
+                                label="Artigo"
+                                value={tempArticle.artigo}
+                                onChange={onChangeInputArticle}
+                                variant="filled"
+                                fullWidth
+                                margin="normal"
+                            />
+                            <div style={{
+                                display: "flex",
+                                justifyContent: "flex-end"
+                                }}
+                            >
+                            
+                                {!addArtigoToDB && <Button disabled={tempArticle.artigo === "" || articleSearchTerm=== ""} onClick={()=>{
+                                    setAddArtigoToDB(true)
+                                }} color="primary">guardar</Button>}
+                                {addArtigoToDB && <AddArtigo
+                                    setAddArtigoToDB={setAddArtigoToDB}
+                                    setTempArticle={setTempArticle}
+                                    setShowAddArtigoForm={setShowAddArtigoForm}
+                                    tempArticle={tempArticle}
+                                    artigo={{
+                                        code: articleSearchTerm,
+                                        name: tempArticle.artigo
+                                    }}
+                                />}
+                            </div>
+
+                        </Collapse>
+
+
                 <TextField
                     id="quantidade"
                     label="Quantidade"
@@ -314,7 +352,7 @@ const PedidosForm = () => {
                                 setSubmitData({
                                     ...submitData,
                                     artigos: tempArtigo,
-                                    valor_total: submitData.valor_total + (tempArticle.quantidade * tempArticle.preco)
+                                    valor_total: Number(submitData.valor_total) + Number(tempArticle.quantidade * tempArticle.preco)
                                 })
                                 setTempArticle({
                                     artigo: "", 
@@ -326,7 +364,7 @@ const PedidosForm = () => {
                                         chegada: false, 
                                         data_chegada: "", 
                                         guia: "", 
-                                        quantidade_chegada: 0
+                                        quantidade: 0
                                     }
                                 })
                                 setArticlesSearchTerm("")
@@ -411,13 +449,6 @@ const PedidosForm = () => {
                         {!submitFatura && <Button
                             disabled={tempFatura.name==="" ||tempFatura.data_emissao=== "" || tempFatura.valor_fatura === 0 }
                             onClick={()=>{
-                                // setAddFat(false)
-                                // let tempFat = submitData.faturas
-                                // tempFat.push(tempFatura)
-                                // setSubmitData({
-                                //     ...submitData,
-                                //     faturas: tempFat
-                                // })
                                 setSubmitFatura(true)
                             }}
                         >
@@ -469,6 +500,8 @@ const PedidosForm = () => {
                         submitData={submitData}
                         selectedRubrica={selectedRubrica}
                         setEmpresasList={setEmpresasList}
+                        id={id}
+                        pedido={pedido}
                     />}
             </div>
             {empresasList.length === 0 && <Typography style={{
@@ -560,7 +593,7 @@ const PedidosForm = () => {
                 })}
             </TextField>}
             
-            <TextField
+           {submitData.empresa && <TextField
                 variant="filled"
                 id="empresa"
                 required
@@ -580,16 +613,16 @@ const PedidosForm = () => {
                     })
                 }}
             >
-                {empresasList.map(e=>{
+                {[...new Set(empresasList.map(e=>e.empresa))].map(e=>{
                     return (
-                        <MenuItem key={e.empresa} value={e.empresa}>
-                            {e.empresa}
+                        <MenuItem key={e} value={e}>
+                            {e}
                         </MenuItem>
                     )
                 })}
-            </TextField>
+            </TextField>}
            
-             <TextField
+             {submitData.ne && <TextField
                 variant="filled"
                 id="ne"
                 required
@@ -597,7 +630,7 @@ const PedidosForm = () => {
                 select
                 label="Nota de Encomenda"
                 value={submitData.ne}
-                helperText={submitData.ne!== "" ? `Cabimento: ${submitData.cabimento}`: ""}
+                helperText={submitData.ne !== "" && empresasList.length > 0 ? `Saldo disponível: ${empresasList.filter(e=> e.ne === submitData.ne)[0].saldo_disponivel}€`: ""}
                 onChange={(evt, name)=>{
                     setSubmitData({
                         ...submitData, 
@@ -615,7 +648,7 @@ const PedidosForm = () => {
                         </MenuItem>
                     )
                 })}
-            </TextField>
+            </TextField>}
 
             <TextField
                 required
@@ -691,6 +724,14 @@ const PedidosForm = () => {
                 }
             </List>}
 
+            {empresasList.length > 0 && !id &&<>
+                {Number(empresasList.filter(e=> e.ne === submitData.ne)[0].saldo_disponivel) < submitData.valor_total && <Typography color="error">
+                    A nota de encomenda selecionada não tem saldo suficiente
+                </Typography>}
+            </>}
+
+            
+
             <Button
                 variant="contained"
                 color="primary"
@@ -698,8 +739,11 @@ const PedidosForm = () => {
                     marginTop: 30
                 }}
                 onClick={()=>onSubmitForm()}
+                disabled={
+                    !id? empresasList.length > 0? Number(empresasList.filter(e=> e.ne === submitData.ne)[0].saldo_disponivel) < Number(submitData.valor_total) : true: false
+                }
             >
-                registar pedido
+                Submeter
             </Button>
         </FormComponent>
 
@@ -709,32 +753,32 @@ const PedidosForm = () => {
 }
 
 const FetchEmpresasByRubrica = ({
+    setFetchEmpresas,
     setSubmitData,
     submitData,
     selectedRubrica,
-    setFetchEmpresas,
-    setEmpresasList
+    setEmpresasList,
+    id,
+    pedido
 })=>{
     const {
         data: empresas, 
-        isFetching, 
+        isFetching: fetchingEmpresas, 
     } = useGetEmpresasByRubrica(selectedRubrica)
-
-
+ 
     React.useEffect(()=>{
-        if(!isFetching){     
+        if(!fetchingEmpresas){    
             setSubmitData({
                 ...submitData, 
-                empresa: empresas.data.length > 0?empresas.data[0].empresa : "",
-                ne: empresas.data.length > 0? empresas.data[0].ne: "",
-                cabimento: empresas.data.length > 0? empresas.data[0].cabimento: "",
+                empresa: id? pedido.data.empresa :empresas.data.length > 0?empresas.data[0].empresa : "",
+                ne: id? pedido.data.ne :empresas.data.length > 0? empresas.data[0].ne: "",
+                cabimento: id? pedido.data.cabimento :empresas.data.length > 0? empresas.data[0].cabimento: "",
+                ne_id: id? pedido.data.ne_id :empresas.data.length > 0? empresas.data[0].id: ""
             })
-            setFetchEmpresas(false)
             setEmpresasList(empresas.data)
+            setFetchEmpresas(false)
         }
-    },[isFetching])
-    
-    console.log(empresas)
+    },[fetchingEmpresas])
     return <CircularProgress color="primary" />
 }
 

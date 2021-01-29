@@ -8,12 +8,9 @@ const SubmitForm = ({
     id,
     submitFunction
 }) => {
-    console.log(data, id, submitFunction)
     const {
-        data: response, 
         isFetching
     } = submitFunction(data, id)
-    console.log(response)
     if(isFetching) return <Loading msg="A submeter dados do formulário..." />
     return (
         <div className="formSubmitedContainer">

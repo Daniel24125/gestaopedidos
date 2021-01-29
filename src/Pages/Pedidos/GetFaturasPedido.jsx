@@ -24,7 +24,6 @@ const GetFaturasPedido = ({
 
     const [openDelete, setOpenDelete] = React.useState(false);
     const [deleteFatura, setDeleteFatura] = React.useState(false);
-    const [deleteResult, setDeleteResult] = React.useState(null);
     const [selectedFaturaID, setSelectedFaturaID] = React.useState(null);
 
     const {
@@ -33,19 +32,15 @@ const GetFaturasPedido = ({
         refetch
     } = useGetFaturasByPedido(pedidoID)
 
-
-    if(isFetching) return <div style={{
+    if(isFetching) return (<div style={{
         minWidth: 600,
         display: "flex", 
         justifyContent: "center",
         alignItems: "center"
-    }}><CircularProgress /></div>
+    }}><CircularProgress /></div>)
     return (
        <>
-            <Dialog onClose={()=>{
-                setOpenDelete(false)
-                setDeleteResult(null)
-            }} aria-labelledby="simple-dialog-title" open={openDelete}>
+            <Dialog onClose={()=>setOpenDelete(false)} aria-labelledby="simple-dialog-title" open={openDelete}>
             <DialogTitle id="alert-dialog-title">{"Tem a certeza que pretende apagar a fatura"}</DialogTitle>
                 <DialogContent>
                     <DialogContentText id="alert-dialog-description">
@@ -58,7 +53,6 @@ const GetFaturasPedido = ({
                     </Button>}
                     {deleteFatura && <DeleteFatura
                         id={selectedFaturaID} 
-                        setDeleteResult={setDeleteResult}
                         setOpenDelete={setOpenDelete}
                         refetch={refetch}
                         setDeleteFatura={setDeleteFatura}
@@ -100,7 +94,8 @@ const GetFaturasPedido = ({
                     })}
                 </TableBody>
             </Table>}
-            {faturas.data.length === 0 && <Typography style={{padding: "10px 20px"}}>Não foram emitidas faturas</Typography>}
+
+            {faturas.data.length === 0&& <Typography style={{padding: "10px 20px"}}>Não foram emitidas faturas</Typography>}
 
         </>
     )

@@ -1,32 +1,30 @@
 import React from 'react'
+import {useDeleteArtigo} from "../../Domain/useCases"
 import {CircularProgress} from "@material-ui/core"
-import { useDeleteFatura} from "../../Domain/useCases"
 
-const DeleteFatura = ({
+const  DeleteArtigo = ({
     id,
     setOpenDelete,
-    refetch,
-    setDeleteFatura
+    setDeleteArtigo,
+    refetch
 }) => {
     const {
-        data: result, 
-        isFetching,
-    } = useDeleteFatura(id)
+        isFetching 
+    } = useDeleteArtigo(id)
 
     React.useEffect(()=>{
         if(!isFetching){
             setOpenDelete(false)
             refetch()
-            setDeleteFatura(false)
+            setDeleteArtigo(false)
         }
     }, [isFetching])
-
-    if(isFetching) return <CircularProgress color="primary" />
+    
+    if(isFetching) return (<CircularProgress />)
     return (
         <div>
             
         </div>
     )
 }
-
-export default DeleteFatura
+export default DeleteArtigo
