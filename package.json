@@ -1,7 +1,6 @@
 {
   "name": "gestaopedidos",
   "version": "0.1.0",
-  "homepage": "/",
   "private": true,
   "dependencies": {
     "@auth0/auth0-react": "^1.0.0",
@@ -60,5 +59,12 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
+  }, 
+  "description": "This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).",
+  "devDependencies": {},
+  "engines": {
+    "node": "12.x"
+  },
+  "author": "Daniel Madalena",
+  "license": "MIT"
 }
