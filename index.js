@@ -2,12 +2,12 @@ const express = require('express');
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const admin = require('firebase-admin');
-const xl = require('excel4node');
 const app = express();
 const jwt = require('express-jwt');
 const puppeteer = require('puppeteer');
 const jwks = require('jwks-rsa');
 const port = process.env.PORT || 8000;
+const path = require("path");
 
 require('dotenv').config()
 admin.initializeApp({
@@ -1300,6 +1300,11 @@ app.post("/api/editPedido", async (req, res) => {
     res.json({
       error: false
     })
+});
+
+
+app.get('*', (req, res, next) => {
+  res.sendFile(path.join(__dirname, "build/index.html"))     
 });
 
 app.listen(port, () => {
