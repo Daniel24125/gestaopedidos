@@ -1293,7 +1293,7 @@ app.post("/api/editPedido",jwtCheck, async (req, res) => {
 
 
 app.get('*', (req, res, next) => {
-  res.sendFile(path.join(__dirname, "/index.html"))     
+  res.sendFile(path.join(__dirname, "/build/index.html"))     
 });
 
 app.listen(port, () => {
