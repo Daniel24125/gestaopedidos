@@ -59,7 +59,7 @@ const notasEncomendaRef = admin.firestore().collection("notasEncomenda")
 const faturasRef = admin.firestore().collection("faturas")
 const distAnualRef = admin.firestore().collection("distAnual")
 
-app.use(express.static('/build'));
+app.use(express.static(path.join(__dirname, "build")));
 
 
 // GET REQUESTS 
