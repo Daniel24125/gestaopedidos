@@ -482,15 +482,19 @@ app.post("/api/getDistAnual",jwtCheck, async (req, res) => {
     })
   })
 })
-const months = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto","Setembro", "Outubro", "Novembro", "Dezembro"]
 
-console.log(months.splice(0,new Date().getMonth()+1))
-
-app.post("/api/downloadDistCum",jwtCheck, async (req, res)=>{
+app.get("/api/downloadDistCum",jwtCheck, async (req, res)=>{
 
   const months = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto","Setembro", "Outubro", "Novembro", "Dezembro"]
+  const grupos = await grupos_ref.get()
+  .catch(err => {
+    res.json({
+        error: true,
+        msg: String(err)
+    })
+  })
 
-  const template = `
+  let template = `
   <!doctype html>
   <html>
  
@@ -535,7 +539,7 @@ app.post("/api/downloadDistCum",jwtCheck, async (req, res)=>{
             <img style="width: 60px" src="https://www.ceb.uminho.pt/Content/images/EENG2.gif" alt="">
         </div>
         <h3>
-            <strong>Distribuição Anual Cumulativa de 2021</strong>
+            <strong>Distribuição Anual Cumulativa de ${new Date().getFullYear()}</strong>
         </h3>
       </div>
       <div class="tableContainer">
@@ -551,79 +555,125 @@ app.post("/api/downloadDistCum",jwtCheck, async (req, res)=>{
                         <th>Total</th>
                       `
                     })}
-                    <th>Janeiro</th>
-                    <th>Total</th>
-                    <th>Fevereiro</th>
-                    <th>Total</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                    <td style="background-color: #ff0000;">AMG</td>
-                    <td style="background-color: #ff0000;">Membro1</td>
-                    <td style="background-color: #ff000079;">200</td>
-                    <td style="background-color: #ff000079;">200</td>
-                    <td style="background-color: #ff000079;">400</td>
-                    <td style="background-color: #ff000079;">600</td>
-                </tr>
-            
-              </tbody>
-          </table>
-      </div>
-    </div>
-  </body>
- 
-  </html>
-
   `
-
-  const browser = await puppeteer.launch({ args: ['--no-sandbox'],headless: true })
+ 
+  let distAnual = await distAnualRef.get()
   .catch(err => {
-      res.json({
-          error: true,
-          msg: String(err)
-      })
-  }) 
+    res.json({
+        error: true,
+        msg: String(err)
+    })
+  })
+
+  distAnual = distAnual.docs.map(doc=>doc.data())
+  for(let g_index = 0; g_index < grupos.docs.length; g_index++){
+    const g = grupos.docs[g_index]
+    const current_dist =distAnual.filter(d=>d.grupo === g.data().abrv)[0].anual
   
-  const page = await browser.newPage()
-  .catch(err => {
-      res.json({
-          error: true,
-          msg: String(err)
+      const membros  = await  grupos_ref.doc(g.id).collection("membros").get()
+      .catch(err => {
+        res.json({
+            error: true,
+            msg: String(err)
+        })
+      })  
+      // eslint-disable-next-line no-loop-func
+      membros.forEach((m, m_index)=>{
+        const dist = m.data().dist.filter(d=>d.year===new Date().getFullYear())[0]
+        template += `
+        <tr>
+         ${m_index=== 0? `<td style="background-color: ${g.data().color};">${g.data().abrv}</td>`:"" }
+          <td style="background-color: ${g.data().color};">${m.data().name}</td>
+        `
+        months.splice(0,new Date().getMonth()+1).forEach((_mounth,index)=>{
+          template+= `
+            <td style="background-color: ${g.data().color};">${index === 0 ?dist["m1"] : dist[`m${index}`]+ dist[`m${index+1}`]}</td>
+            <td style="background-color: ${g.data().color};">${g_index=== 0? index=== 0? current_dist["m1"]:current_dist[`m${index}`] +current_dist[`m${index+1}`]:""}</td>
+          `
+        })
+        template +="</tr>"
       })
-  }) 
-  await page.setContent(template, {waitUntil: 'load'})
-  .catch(err => {
-      res.json({
-          error: true,
-          msg: String(err)
-      })
-  }) 
-
-  const pdf = await page.pdf({
-      format: "A4", 
-      // preferCSSPageSize: true
-  }).catch(err => {
-      res.json({
-          error: true,
-          msg: String(err)
-      })
-  }) 
+  }
+      
 
 
-  const file =  `Content-Disposition': 'attachment; filename=dist_anual_cumulativa_${new Date().getFullYear()}.pdf`
-  res.writeHead(200, {
-    'Content-Type': 'application/pdf',
-    file
-  });
+    grupos.docs.forEach(async (g, g_index)=>{
+      
+    })
 
-  res.end(pdf, err=> {
-      if (err) {
-          console.log("Error");
-          console.log(err);
-      }   
-  });
-  await browser.close()
+  
+  
+    
+
+
+
+
+  template += `
+  
+  </tbody>
+  </table>
+  </div>
+  </div>
+  </body>
+
+  </html>
+`
+
+console.log(template)
+  res.json({
+    error: false,
+  })
+
+  // const browser = await puppeteer.launch({ args: ['--no-sandbox'],headless: true })
+  // .catch(err => {
+  //     res.json({
+  //         error: true,
+  //         msg: String(err)
+  //     })
+  // }) 
+  
+  // const page = await browser.newPage()
+  // .catch(err => {
+  //     res.json({
+  //         error: true,
+  //         msg: String(err)
+  //     })
+  // }) 
+  // await page.setContent(template, {waitUntil: 'load'})
+  // .catch(err => {
+  //     res.json({
+  //         error: true,
+  //         msg: String(err)
+  //     })
+  // }) 
+
+  // const pdf = await page.pdf({
+  //     format: "A4", 
+  //     // preferCSSPageSize: true
+  // }).catch(err => {
+  //     res.json({
+  //         error: true,
+  //         msg: String(err)
+  //     })
+  // }) 
+
+
+  // const file =  `Content-Disposition': 'attachment; filename=dist_anual_cumulativa_${new Date().getFullYear()}.pdf`
+  // res.writeHead(200, {
+  //   'Content-Type': 'application/pdf',
+  //   file
+  // });
+
+  // res.end(pdf, err=> {
+  //     if (err) {
+  //         console.log("Error");
+  //         console.log(err);
+  //     }   
+  // });
+  // await browser.close()
 })
 
 

@@ -121,17 +121,14 @@ export default class GruposRepository  {
         return response.then(res =>res.json())
     }
 
-    downloadDistCum = (accessToken,template) =>{
+    downloadDistCum = (accessToken) =>{
         let url = this.apiBaseUrl().toString()
         url += `downloadDistCum`
         const response =  fetch(url,{
-            method: "POST", 
+            method: "GET", 
             headers:{
-            Authorization: accessToken ? `Bearer ${accessToken}`: "",
-            "content-type": "application/json", 
+                Authorization: accessToken ? `Bearer ${accessToken}`: "",
             },
-            body: JSON.stringify({template}),
-            json: true
         })
         return response.then(res =>res.blob())
     }
