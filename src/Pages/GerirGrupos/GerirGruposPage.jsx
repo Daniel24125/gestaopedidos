@@ -40,6 +40,7 @@ const GerirGruposPage = () => {
           return;
         } 
         refetch()
+        refetchDist()
         setOpenDelete(false)
     };
 
@@ -48,7 +49,6 @@ const GerirGruposPage = () => {
         || fetchingDistAnual
     }, [fetchingGrupos, fetchingDistAnual])
 
-    
     React.useEffect(()=>{
         let tempAnualDatasets=[]
         if(!isLoading){
@@ -111,16 +111,15 @@ const GerirGruposPage = () => {
             </Dialog>
              <div className="titleContainer">
                 <Typography variant="h6" color="primary" >Gestão de Grupos de Investigação</Typography>
-                <Button component={Link} to="/novoGrupo" variant="contained" color="primary" >adicionar grupo</Button>
+                <div style={{
+                    display: "flex"
+                }}>
+                    <Button style={{marginRight: 10}} component={Link} to="/novoGrupo" variant="contained" color="primary" >adicionar grupo</Button>
+                    <Button variant="contained" color="secondary" >exportar dados</Button>
+                </div>
             </div>
             <Paper className="dataContainer">
-                <div className="exportContainer">
-                    <Tooltip title="Export data to excel">
-                        <IconButton>
-                            <MoreVertIcon />
-                        </IconButton>
-                    </Tooltip>
-                </div>
+               
                 <div className="graphContainer">
                     <Bar
                         width={100}

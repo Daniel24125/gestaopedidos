@@ -3,6 +3,7 @@ import {IconButton, Tooltip} from "@material-ui/core"
 import WidgetsIcon from '@material-ui/icons/Widgets';
 import WhatshotIcon from '@material-ui/icons/Whatshot';
 import GestureIcon from '@material-ui/icons/Gesture';
+import BuildIcon from '@material-ui/icons/Build';
 
 
 const RubricasComponent = ({
@@ -65,6 +66,21 @@ const RubricasComponent = ({
                         } 
                     }}>
                         <GestureIcon style={{fontSize: 50,color: submitData.rubrica.code=== "SEQ" ?"#9b59b6": "#bdc3c7" }} />
+                    </IconButton>
+                </Tooltip>
+                <Tooltip title="Reparações">
+                        <IconButton onClick={()=>{
+                        if(Object.keys(submitData).length > 0){
+                            if(submitData.rubrica.code !== "REP"){
+                                changeRubrica({
+                                    code: "REP", 
+                                    icon: "build",
+                                    name: "Reparações"
+                                })
+                            }
+                        } 
+                    }}>
+                        <BuildIcon style={{fontSize: 50,color: submitData.rubrica.code=== "REP" ?"#f39c12": "#bdc3c7" }} />
                     </IconButton>
                 </Tooltip>
         

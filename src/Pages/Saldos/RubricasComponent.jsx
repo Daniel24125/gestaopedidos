@@ -6,7 +6,7 @@ import {useGetRubricasByEmppresa} from "../../Domain/useCases"
 import {CircularProgress ,Table, Button, Dialog,DialogTitle,DialogContent,DialogContentText,DialogActions, TableHead, TableRow, TableBody, TableCell, Avatar, Typography, Tooltip, IconButton} from "@material-ui/core"
 import DeleteIcon from '@material-ui/icons/Delete';
 import DeleteNES from "../EmpresasForm/DeleteNES"
-
+import BuildIcon from '@material-ui/icons/Build';
  const RubricasComponent = ({empresa}) => {  
     const {
         data: ne, 
@@ -31,6 +31,10 @@ import DeleteNES from "../EmpresasForm/DeleteNES"
            component: ()=> <WidgetsIcon />,
            color: "#3498db"
         },
+        "REP": {
+            component: ()=> <BuildIcon/>,
+            color: "#f39c12"
+        }
     }
 
     return (

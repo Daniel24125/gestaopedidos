@@ -157,7 +157,7 @@ export const getPedidoTemplate = (pedido, empresa) =>{
        <img style="height: 50px" src="https://www.ceb.uminho.pt/Content/images/logoceb.png" alt="">
        <div class="infoContainer">
          <div class="infoRow">
-           <div class="infoCol"> <strong>REQUISIÇÃO</strong></div>
+           <div class="infoCol"> <strong>ID PEDIDO</strong></div>
            <div class="infoCol">${pedido.id}</div>
          </div>
          <div class="infoRow">
@@ -165,7 +165,7 @@ export const getPedidoTemplate = (pedido, empresa) =>{
            <div class="infoCol"> ${pedido.cabimento}</div>
          </div>
          <div class="infoRow">
-           <div class="infoCol"> <strong>NOTA DE ENCOMENDA Nº</strong></div>
+           <div class="infoCol"> <strong>NE</strong></div>
            <div class="infoCol"> ${pedido.ne}</div>
          </div>
 
@@ -241,7 +241,7 @@ export const getPedidoTemplate = (pedido, empresa) =>{
      </div>
      <div class="rowContainer">
        <div class="noteContainer">
-         <p class="note">As faturas devem mencionar o número e data de compromisso e o número da nota de encomenda.</p>
+         <p class="note">As faturas devem mencionar o número de cabimento e de NE.</p>
 
        </div>
      </div>
@@ -952,4 +952,21 @@ export const useSaveConfig = (configsData) =>{
           cacheTime: 0
         }
     })
+}
+
+export const useDownloadDistCum = (template) =>{
+  const grupos = Container.get(Grupos)
+  return useQuery({
+      queryKey: ['download_dist_cum'],
+      queryFn: async () => {
+          const info =  await grupos.downloadDistCum(accessToken, template)
+          return info
+      },
+      config: { 
+        refetchOnWindowFocus: false,
+        refetchInterval: false,
+        refetchIntervalInBackground: false,
+        cacheTime: 0
+      }
+  })
 }

@@ -1,6 +1,5 @@
 import React from 'react'
 import {useDownloadPDF} from "../../Domain/useCases"
-import {CircularProgress} from "@material-ui/core"
 import {saveAs} from "file-saver"
 
 const DownloadPDF = ({

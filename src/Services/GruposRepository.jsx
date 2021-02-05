@@ -120,4 +120,19 @@ export default class GruposRepository  {
         })
         return response.then(res =>res.json())
     }
+
+    downloadDistCum = (accessToken,template) =>{
+        let url = this.apiBaseUrl().toString()
+        url += `downloadDistCum`
+        const response =  fetch(url,{
+            method: "POST", 
+            headers:{
+            Authorization: accessToken ? `Bearer ${accessToken}`: "",
+            "content-type": "application/json", 
+            },
+            body: JSON.stringify({template}),
+            json: true
+        })
+        return response.then(res =>res.blob())
+    }
 }

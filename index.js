@@ -17,7 +17,7 @@ admin.initializeApp({
 
 app.use(cors({
   origin: [
-      // "http://localhost:3000", 
+      "http://localhost:3000", 
       "https://gestaopedidos.herokuapp.com"
   ],
   methods: "GET,PATCH,POST,DELETE",
@@ -28,7 +28,7 @@ app.use(cors({
       ]
 }))
 
-app.options('*', cors()) // include before other routes
+app.options('*', cors()) 
 
 var jwtCheck = jwt({
   secret: jwks.expressJwtSecret({
@@ -42,7 +42,6 @@ var jwtCheck = jwt({
   algorithms: ['RS256']
 });
 
-// app.use(jwtCheck);
 
 
 app.use(bodyParser.urlencoded({
@@ -483,6 +482,151 @@ app.post("/api/getDistAnual",jwtCheck, async (req, res) => {
     })
   })
 })
+const months = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto","Setembro", "Outubro", "Novembro", "Dezembro"]
+
+console.log(months.splice(0,new Date().getMonth()+1))
+
+app.post("/api/downloadDistCum",jwtCheck, async (req, res)=>{
+
+  const months = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto","Setembro", "Outubro", "Novembro", "Dezembro"]
+
+  const template = `
+  <!doctype html>
+  <html>
+ 
+  <head>
+    <title>Distribuição Cumulativa de ${new Date().getFullYear()}</title>
+    <style>
+      .wrapper {
+        max-width: 800px;
+        background: white;
+        min-height: 900px;
+        font-size: 12px;
+        padding: 20px;
+        font-family: Arial, Helvetica, sans-serif;
+        display: flex; 
+        align-items: center;
+        flex-direction: column;
+      }
+    .tableContainer{
+        width: 600px ;
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+    }
+    th, td{
+        padding: 5px 20px;
+        border-top: 1px solid black;
+        text-align: center;
+    }
+    table{
+        width: 600px
+    }
+   
+      
+    </style>
+  </head>
+ 
+  <body>
+    <div class="wrapper">
+      <div style="width: 600px;height: 70px; display: flex; justify-content: space-between; align-items: center;">
+        <div class="imageContainer">
+            <img style="width: 100px" src="https://www.ceb.uminho.pt/Content/images/logoceb.png" alt="">
+            <img style="width: 60px" src="https://www.ceb.uminho.pt/Content/images/EENG2.gif" alt="">
+        </div>
+        <h3>
+            <strong>Distribuição Anual Cumulativa de 2021</strong>
+        </h3>
+      </div>
+      <div class="tableContainer">
+
+          <table cellspacing="0" cellpadding="0">
+              <thead>
+                <tr style="color: white;background-color: #272727;">
+                    <th>Grupo</th>
+                    <th>Membros</th>
+                    ${months.splice(0,new Date().getMonth()+1).map(m =>{
+                      return `
+                        <th>${m}</th>
+                        <th>Total</th>
+                      `
+                    })}
+                    <th>Janeiro</th>
+                    <th>Total</th>
+                    <th>Fevereiro</th>
+                    <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                    <td style="background-color: #ff0000;">AMG</td>
+                    <td style="background-color: #ff0000;">Membro1</td>
+                    <td style="background-color: #ff000079;">200</td>
+                    <td style="background-color: #ff000079;">200</td>
+                    <td style="background-color: #ff000079;">400</td>
+                    <td style="background-color: #ff000079;">600</td>
+                </tr>
+            
+              </tbody>
+          </table>
+      </div>
+    </div>
+  </body>
+ 
+  </html>
+
+  `
+
+  const browser = await puppeteer.launch({ args: ['--no-sandbox'],headless: true })
+  .catch(err => {
+      res.json({
+          error: true,
+          msg: String(err)
+      })
+  }) 
+  
+  const page = await browser.newPage()
+  .catch(err => {
+      res.json({
+          error: true,
+          msg: String(err)
+      })
+  }) 
+  await page.setContent(template, {waitUntil: 'load'})
+  .catch(err => {
+      res.json({
+          error: true,
+          msg: String(err)
+      })
+  }) 
+
+  const pdf = await page.pdf({
+      format: "A4", 
+      // preferCSSPageSize: true
+  }).catch(err => {
+      res.json({
+          error: true,
+          msg: String(err)
+      })
+  }) 
+
+
+  const file =  `Content-Disposition': 'attachment; filename=dist_anual_cumulativa_${new Date().getFullYear()}.pdf`
+  res.writeHead(200, {
+    'Content-Type': 'application/pdf',
+    file
+  });
+
+  res.end(pdf, err=> {
+      if (err) {
+          console.log("Error");
+          console.log(err);
+      }   
+  });
+  await browser.close()
+})
+
+
 
 const updateGrupoDist = async (valor_total, pedido, res)=>{
   const dist_data = await distAnualRef

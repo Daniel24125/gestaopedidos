@@ -11,6 +11,7 @@ import WhatshotIcon from '@material-ui/icons/Whatshot';
 import GestureIcon from '@material-ui/icons/Gesture';
 import AddNE from "./AddNE"
 import DeleteNES from "./DeleteNES"
+import BuildIcon from '@material-ui/icons/Build';
 
 const EmpresasForm = () => {
     let { id } = useParams();
@@ -141,6 +142,9 @@ const EmpresasForm = () => {
                             <MenuItem value="SEQ">
                                <GestureIcon style={{color: "#9b59b6", marginRight: 10}}/> Sequenciação
                             </MenuItem>
+                            <MenuItem value="SEQ">
+                               <BuildIcon style={{color: "#f39c12", marginRight: 10}}/> Reparações
+                            </MenuItem>
                         </TextField>
                          <TextField
                             margin="normal"
@@ -261,6 +265,7 @@ const EmpresasForm = () => {
                                     {n.rubrica === "PM" && <WidgetsIcon style={{color: "#3498db"}} />}
                                     {n.rubrica === "PR" && <WhatshotIcon style={{color: "#e74c3c"}}/>}
                                     {n.rubrica === "SEQ" && <GestureIcon style={{color: "#9b59b6"}}/>}
+                                    {n.rubrica === "REP" && <BuildIcon style={{color: "#f39c12"}}/>}
                                 </ListItemIcon>
                                 <ListItemText primary={`${n.ne}`} secondary={`Saldo de abertura: ${n.saldo_abertura}`} />
                                 <ListItemSecondaryAction>

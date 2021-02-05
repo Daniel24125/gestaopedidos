@@ -47,6 +47,7 @@ import GetFaturasPedido from "./GetFaturasPedido"
 import DownloadPDF from "./DownloadPDF"
 import ChangeArtigosState from "./ChangeArtigosStatus"
 import FaturarArtigos from "./FaturarArtigos"
+import BuildIcon from '@material-ui/icons/Build';
 
 const PedidosPage = () => {
     const [pedidosList, setPedidosList] = React.useState(null);
@@ -76,6 +77,7 @@ const PedidosPage = () => {
         "gestures": ()=> <GestureIcon style={{color: "#9b59b6"}}/>, 
         "whatshot":()=>  <WhatshotIcon style={{color: "#e74c3c"}}/>,
         "widget": ()=> <WidgetsIcon style={{color: "#3498db"}}/>,
+        "build": ()=> <BuildIcon style={{color: "#f39c12"}}/>,
     }
 
     const {
