@@ -17,7 +17,6 @@ admin.initializeApp({
 
 app.use(cors({
   origin: [
-      "http://localhost:3000", 
       "https://gestaopedidos.herokuapp.com"
   ],
   methods: "GET,PATCH,POST,DELETE",
