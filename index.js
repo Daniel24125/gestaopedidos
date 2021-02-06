@@ -483,9 +483,10 @@ app.post("/api/getDistAnual",jwtCheck, async (req, res) => {
   })
 })
 
-app.get("/api/downloadDistCum",jwtCheck, async (req, res)=>{
-
+app.get("/api/downloadDistCum", async (req, res)=>{
   const months = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto","Setembro", "Outubro", "Novembro", "Dezembro"]
+
+
   const grupos = await grupos_ref.get()
   .catch(err => {
     res.json({
@@ -503,7 +504,7 @@ app.get("/api/downloadDistCum",jwtCheck, async (req, res)=>{
     <style>
       .wrapper {
         max-width: 800px;
-        background: white;
+        background: red;
         min-height: 900px;
         font-size: 12px;
         padding: 20px;
@@ -522,6 +523,7 @@ app.get("/api/downloadDistCum",jwtCheck, async (req, res)=>{
         padding: 5px 20px;
         border-top: 1px solid black;
         text-align: center;
+        color: white
     }
     table{
         width: 600px
@@ -546,10 +548,10 @@ app.get("/api/downloadDistCum",jwtCheck, async (req, res)=>{
 
           <table cellspacing="0" cellpadding="0">
               <thead>
-                <tr style="color: white;background-color: #272727;">
+                <tr style="color: white;background: #272727;">
                     <th>Grupo</th>
                     <th>Membros</th>
-                    ${months.splice(0,new Date().getMonth()+1).map(m =>{
+                    ${months.slice(0,new Date().getMonth()+1).map(m =>{
                       return `
                         <th>${m}</th>
                         <th>Total</th>
@@ -572,44 +574,32 @@ app.get("/api/downloadDistCum",jwtCheck, async (req, res)=>{
   for(let g_index = 0; g_index < grupos.docs.length; g_index++){
     const g = grupos.docs[g_index]
     const current_dist =distAnual.filter(d=>d.grupo === g.data().abrv)[0].anual
-  
-      const membros  = await  grupos_ref.doc(g.id).collection("membros").get()
-      .catch(err => {
-        res.json({
-            error: true,
-            msg: String(err)
-        })
-      })  
-      // eslint-disable-next-line no-loop-func
-      membros.forEach((m, m_index)=>{
-        const dist = m.data().dist.filter(d=>d.year===new Date().getFullYear())[0]
-        template += `
-        <tr>
-         ${m_index=== 0? `<td style="background-color: ${g.data().color};">${g.data().abrv}</td>`:"" }
-          <td style="background-color: ${g.data().color};">${m.data().name}</td>
-        `
-        months.splice(0,new Date().getMonth()+1).forEach((_mounth,index)=>{
-          template+= `
-            <td style="background-color: ${g.data().color};">${index === 0 ?dist["m1"] : dist[`m${index}`]+ dist[`m${index+1}`]}</td>
-            <td style="background-color: ${g.data().color};">${g_index=== 0? index=== 0? current_dist["m1"]:current_dist[`m${index}`] +current_dist[`m${index+1}`]:""}</td>
-          `
-        })
-        template +="</tr>"
+    const selected_months = months.slice(0,new Date().getMonth()+1) 
+    const membros  = await  grupos_ref.doc(g.id).collection("membros").get()
+    .catch(err => {
+      res.json({
+          error: true,
+          msg: String(err)
       })
-  }
-      
-
-
-    grupos.docs.forEach(async (g, g_index)=>{
-      
+    })  
+    // eslint-disable-next-line no-loop-func
+    membros.docs.forEach((m, m_index)=>{
+      const dist = m.data().dist.filter(d=>d.year===new Date().getFullYear())[0]
+      template += `
+      <tr>
+        <td style="background: ${g.data().color};"> ${m_index=== 0? g.data().abrv:"" }</td>
+        <td style="background: ${g.data().color};">${m.data().name}</td>
+      `
+      selected_months.forEach((_mounth,index)=>{
+ 
+        template+= `
+          <td style="background: ${g.data().color};">${index === 0 ?dist["m1"] : dist[`m${index}`]+ dist[`m${index+1}`]}</td>
+          <td style="font-weight: bold;background: ${g.data().color};">${m_index=== 0? index=== 0? current_dist["m1"]:current_dist[`m${index}`] +current_dist[`m${index+1}`]:""}</td>
+        `
+      })
+      template +="</tr>"
     })
-
-  
-  
-    
-
-
-
+  }
 
   template += `
   
@@ -621,59 +611,53 @@ app.get("/api/downloadDistCum",jwtCheck, async (req, res)=>{
 
   </html>
 `
-
-console.log(template)
-  res.json({
-    error: false,
-  })
-
-  // const browser = await puppeteer.launch({ args: ['--no-sandbox'],headless: true })
-  // .catch(err => {
-  //     res.json({
-  //         error: true,
-  //         msg: String(err)
-  //     })
-  // }) 
+  const browser = await puppeteer.launch({ args: ['--no-sandbox'],headless: true })
+  .catch(err => {
+      res.json({
+          error: true,
+          msg: String(err)
+      })
+  }) 
   
-  // const page = await browser.newPage()
-  // .catch(err => {
-  //     res.json({
-  //         error: true,
-  //         msg: String(err)
-  //     })
-  // }) 
-  // await page.setContent(template, {waitUntil: 'load'})
-  // .catch(err => {
-  //     res.json({
-  //         error: true,
-  //         msg: String(err)
-  //     })
-  // }) 
+  const page = await browser.newPage()
+  .catch(err => {
+      res.json({
+          error: true,
+          msg: String(err)
+      })
+  }) 
+  await page.setContent(template, {waitUntil: 'load'})
+  .catch(err => {
+      res.json({
+          error: true,
+          msg: String(err)
+      })
+  }) 
 
-  // const pdf = await page.pdf({
-  //     format: "A4", 
-  //     // preferCSSPageSize: true
-  // }).catch(err => {
-  //     res.json({
-  //         error: true,
-  //         msg: String(err)
-  //     })
-  // }) 
+  const pdf = await page.pdf({
+      format: "A4", 
+      preferCSSPageSize: true
+  }).catch(err => {
+      res.json({
+          error: true,
+          msg: String(err)
+      })
+  }) 
 
 
-  // const file =  `Content-Disposition': 'attachment; filename=dist_anual_cumulativa_${new Date().getFullYear()}.pdf`
-  // res.writeHead(200, {
-  //   'Content-Type': 'application/pdf',
-  //   file
-  // });
+  const file =  `Content-Disposition': 'attachment; filename=dist_anual_cumulativa_${new Date().getFullYear()}.pdf`
+  res.writeHead(200, {
+    'Content-Type': 'application/pdf',
+    file
+  });
 
-  // res.end(pdf, err=> {
-  //     if (err) {
-  //         console.log("Error");
-  //         console.log(err);
-  //     }   
-  // });
-  // await browser.close()
+  res.end(pdf, err=> {
+      if (err) {
+          console.log("Error");
+          console.log(err);
+      }   
+  });
+  await browser.close()
 })
 
 
