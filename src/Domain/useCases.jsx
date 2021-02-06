@@ -954,12 +954,30 @@ export const useSaveConfig = (configsData) =>{
     })
 }
 
-export const useDownloadDistCum = (template) =>{
+export const useDownloadDistCum = () =>{
   const grupos = Container.get(Grupos)
   return useQuery({
       queryKey: ['download_dist_cum'],
       queryFn: async () => {
-          const info =  await grupos.downloadDistCum(accessToken, template)
+          const info =  await grupos.downloadDistCum(accessToken)
+          return info
+      },
+      config: { 
+        refetchOnWindowFocus: false,
+        refetchInterval: false,
+        refetchIntervalInBackground: false,
+        cacheTime: 0
+      }
+  })
+}
+
+
+export const useDownloadDistCumGrupo = (grupoID) =>{
+  const grupos = Container.get(Grupos)
+  return useQuery({
+      queryKey: ['download_dist_cum_grupo'],
+      queryFn: async () => {
+          const info =  await grupos.downloadDistCumGrupo(accessToken,grupoID)
           return info
       },
       config: { 

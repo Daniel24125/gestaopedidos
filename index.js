@@ -483,7 +483,7 @@ app.post("/api/getDistAnual",jwtCheck, async (req, res) => {
   })
 })
 
-app.get("/api/downloadDistCum", async (req, res)=>{
+app.get("/api/downloadDistCum", jwtCheck,async (req, res)=>{
   const months = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto","Setembro", "Outubro", "Novembro", "Dezembro"]
 
 
@@ -502,9 +502,11 @@ app.get("/api/downloadDistCum", async (req, res)=>{
   <head>
     <title>Distribuição Cumulativa de ${new Date().getFullYear()}</title>
     <style>
+      html {
+        -webkit-print-color-adjust: exact;
+      }
       .wrapper {
-        max-width: 800px;
-        background: red;
+       
         min-height: 900px;
         font-size: 12px;
         padding: 20px;
@@ -523,7 +525,7 @@ app.get("/api/downloadDistCum", async (req, res)=>{
         padding: 5px 20px;
         border-top: 1px solid black;
         text-align: center;
-        color: white
+ 
     }
     table{
         width: 600px
@@ -538,7 +540,7 @@ app.get("/api/downloadDistCum", async (req, res)=>{
       <div style="width: 600px;height: 70px; display: flex; justify-content: space-between; align-items: center;">
         <div class="imageContainer">
             <img style="width: 100px" src="https://www.ceb.uminho.pt/Content/images/logoceb.png" alt="">
-            <img style="width: 60px" src="https://www.ceb.uminho.pt/Content/images/EENG2.gif" alt="">
+            <img style="width: 60px" src="http://www.dps.uminho.pt/images/EditorTexto/um_eeng.jpg" alt="">
         </div>
         <h3>
             <strong>Distribuição Anual Cumulativa de ${new Date().getFullYear()}</strong>
@@ -555,8 +557,7 @@ app.get("/api/downloadDistCum", async (req, res)=>{
                       return `
                         <th>${m}</th>
                         <th>Total</th>
-                      `
-                    })}
+                      `})}
                 </tr>
               </thead>
               <tbody>
@@ -587,14 +588,14 @@ app.get("/api/downloadDistCum", async (req, res)=>{
       const dist = m.data().dist.filter(d=>d.year===new Date().getFullYear())[0]
       template += `
       <tr>
-        <td style="background: ${g.data().color};"> ${m_index=== 0? g.data().abrv:"" }</td>
+        <td style="font-weight: bold; background: ${g.data().color};"> ${m_index=== 0? g.data().abrv:"" }</td>
         <td style="background: ${g.data().color};">${m.data().name}</td>
       `
       selected_months.forEach((_mounth,index)=>{
  
         template+= `
-          <td style="background: ${g.data().color};">${index === 0 ?dist["m1"] : dist[`m${index}`]+ dist[`m${index+1}`]}</td>
-          <td style="font-weight: bold;background: ${g.data().color};">${m_index=== 0? index=== 0? current_dist["m1"]:current_dist[`m${index}`] +current_dist[`m${index+1}`]:""}</td>
+          <td style="background: ${g.data().color}ad;">${index === 0 ?dist["m1"] : dist[`m${index}`]+ dist[`m${index+1}`]}</td>
+          ${m_index=== 0?`<td rowspan="${membros.docs.length}" style="font-size: 20px ;font-weight: bold;background: ${g.data().color}ad;">${index=== 0? current_dist["m1"]:current_dist[`m${index}`] +current_dist[`m${index+1}`]}</td>`: ""}
         `
       })
       template +="</tr>"
@@ -635,7 +636,8 @@ app.get("/api/downloadDistCum", async (req, res)=>{
   }) 
 
   const pdf = await page.pdf({
-      format: "A4", 
+      format: "A2", 
+      landscape: true,
       preferCSSPageSize: true
   }).catch(err => {
       res.json({
@@ -660,6 +662,179 @@ app.get("/api/downloadDistCum", async (req, res)=>{
   await browser.close()
 })
 
+
+app.post("/api/downloadDistCumGrupo", jwtCheck,async (req, res)=>{
+  const months = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto","Setembro", "Outubro", "Novembro", "Dezembro"]
+  const grupoID = req.body.grupoID
+
+  const grupo = await grupos_ref.doc(grupoID).get()
+  .catch(err => {
+    res.json({
+        error: true,
+        msg: String(err)
+    })
+  })
+
+  let template = `
+  <!doctype html>
+  <html>
+ 
+  <head>
+    <title>${grupo.data().abrv} - Distribuição Cumulativa de ${new Date().getFullYear()} </title>
+    <style>
+      html {
+        -webkit-print-color-adjust: exact;
+      }
+      .wrapper {
+       
+        min-height: 900px;
+        font-size: 12px;
+        padding: 20px;
+        font-family: Arial, Helvetica, sans-serif;
+        display: flex; 
+        align-items: center;
+        flex-direction: column;
+      }
+    .tableContainer{
+        width: 600px ;
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+    }
+    th, td{
+        padding: 5px 20px;
+        border-top: 1px solid black;
+        text-align: center;
+ 
+    }
+    table{
+        width: 600px
+    }
+   
+      
+    </style>
+  </head>
+ 
+  <body>
+    <div class="wrapper">
+      <div style="width: 600px;height: 70px; display: flex; justify-content: space-between; align-items: center;">
+        <div class="imageContainer">
+            <img style="width: 100px" src="https://www.ceb.uminho.pt/Content/images/logoceb.png" alt="">
+            <img style="width: 60px" src="http://www.dps.uminho.pt/images/EditorTexto/um_eeng.jpg" alt="">
+        </div>
+        <h3>
+            <strong>${grupo.data().abrv} - Distribuição Anual Cumulativa de ${new Date().getFullYear()}</strong>
+        </h3>
+      </div>
+      <div class="tableContainer">
+
+          <table cellspacing="0" cellpadding="0">
+              <thead>
+                <tr style="color: white;background: #272727;">
+                    <th>Membros</th>
+                    ${months.slice(0,new Date().getMonth()+1).map(m =>{
+                      return `
+                        <th>${m}</th>
+                        <th>Total</th>
+                      `})}
+                </tr>
+              </thead>
+              <tbody>
+  `
+ 
+  let distAnual = await distAnualRef.where("grupo", "==", grupo.data().abrv).get()
+  .catch(err => {
+    res.json({
+        error: true,
+        msg: String(err)
+    })
+  })
+
+  const current_dist = distAnual.docs.map(doc=>doc.data())[0].anual
+ const selected_months = months.slice(0,new Date().getMonth()+1) 
+  const membros  = await  grupos_ref.doc(grupoID).collection("membros").get()
+  .catch(err => {
+    res.json({
+        error: true,
+        msg: String(err)
+    })
+  })  
+  membros.docs.forEach((m, m_index)=>{
+    const dist = m.data().dist.filter(d=>d.year===new Date().getFullYear())[0]
+    console.log(dist["m1"])
+    template += `
+    <tr>
+      <td style="background: ${grupo.data().color};">${m.data().name}</td>
+    `
+    selected_months.forEach((_mounth,index)=>{
+      template+= `
+        <td style="background: ${grupo.data().color}ad;">${index === 0 ?dist["m1"] : dist[`m${index}`]+ dist[`m${index+1}`]}</td>
+        ${m_index=== 0?`<td rowspan="${membros.docs.length}" style="font-size: 20px ;font-weight: bold;background: ${grupo.data().color}ad;">${index=== 0? current_dist["m1"]:current_dist[`m${index}`] +current_dist[`m${index+1}`]}</td>`: ""}
+      `
+    })
+    template +="</tr>"
+  })
+
+
+  template += `
+  
+  </tbody>
+  </table>
+  </div>
+  </div>
+  </body>
+
+  </html>
+`
+  const browser = await puppeteer.launch({ args: ['--no-sandbox'],headless: true })
+  .catch(err => {
+      res.json({
+          error: true,
+          msg: String(err)
+      })
+  }) 
+  
+  const page = await browser.newPage()
+  .catch(err => {
+      res.json({
+          error: true,
+          msg: String(err)
+      })
+  }) 
+  await page.setContent(template, {waitUntil: 'load'})
+  .catch(err => {
+      res.json({
+          error: true,
+          msg: String(err)
+      })
+  }) 
+
+  const pdf = await page.pdf({
+      format: "A2", 
+      landscape: true,
+      preferCSSPageSize: true
+  }).catch(err => {
+      res.json({
+          error: true,
+          msg: String(err)
+      })
+  }) 
+
+
+  const file =  `Content-Disposition': 'attachment; filename=dist_anual_cumulativa_${new Date().getFullYear()}.pdf`
+  res.writeHead(200, {
+    'Content-Type': 'application/pdf',
+    file
+  });
+
+  res.end(pdf, err=> {
+      if (err) {
+          console.log("Error");
+          console.log(err);
+      }   
+  });
+  await browser.close()
+})
 
 
 const updateGrupoDist = async (valor_total, pedido, res)=>{

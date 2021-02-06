@@ -1,7 +1,7 @@
 import React from 'react'
 import {useGetGrupos, useGetDistAnual} from "../../Domain/useCases"
 import Loading from "../../Components/Loading"
-import {Button,   DialogTitle,Dialog,DialogActions, Snackbar, DialogContent,DialogContentText,  Paper,MenuItem,Menu, Tooltip,Typography, IconButton, List, ListItem,Collapse, ListItemText, ListItemIcon} from "@material-ui/core"
+import {Button,   DialogTitle,Dialog,DialogActions, Snackbar, DialogContent,DialogContentText,  Paper,MenuItem,Menu, CircularProgress,Typography, IconButton, List, ListItem,Collapse, ListItemText, ListItemIcon} from "@material-ui/core"
 import {Link} from "react-router-dom"
 import GroupWorkIcon from '@material-ui/icons/GroupWork';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
@@ -9,6 +9,8 @@ import {Bar} from "react-chartjs-2"
 import MembersComponent from "./MembersComponent"
 import DeleteGroup from "./DeleteGrupoComponent"
 import MuiAlert from '@material-ui/lab/Alert';
+import DownloadDistCum from "./DownloadDistCum"
+import DownloadDistGrupo from "./DownloadDisGrupo"
 
 const GerirGruposPage = () => {
     const [collapse, setCollapse]=React.useState(null)
@@ -20,7 +22,8 @@ const GerirGruposPage = () => {
     const [deleteResult, setDeleteResult] = React.useState(null);
     const [selectedYear, setSelectedYear] = React.useState(2021);
     const [selectedDistID, setSelectedDistID] = React.useState(null);
-    
+    const [exportDistAnual, setExportDistAnual] = React.useState(null);
+    const [exportDistAnualGrupo, setExportDistAnualGrupo] = React.useState(null);
     
     const {
         data: distAnual, 
@@ -66,7 +69,6 @@ const GerirGruposPage = () => {
                     borderColor: grupoColor
                 })
             })
-          
             setDatasets(tempAnualDatasets)
         }
     }, [isLoading])
@@ -115,9 +117,21 @@ const GerirGruposPage = () => {
                     display: "flex"
                 }}>
                     <Button style={{marginRight: 10}} component={Link} to="/novoGrupo" variant="contained" color="primary" >adicionar grupo</Button>
-                    <Button variant="contained" color="secondary" >exportar dados</Button>
+                    <Button onClick={()=>{
+                        setExportDistAnual(true)
+                    }} variant="contained" color="secondary" >
+                        {exportDistAnual && <DownloadDistCum 
+                            setExportDistAnual={setExportDistAnual}
+                        /> }   
+                        exportar dados
+                        
+                    </Button>
                 </div>
             </div>
+            {exportDistAnualGrupo && <DownloadDistGrupo 
+                setExportDistAnualGrupo={setExportDistAnualGrupo}
+                grupoID={selectedGroup}
+            />}
             <Paper className="dataContainer">
                
                 <div className="graphContainer">
@@ -198,10 +212,12 @@ const GerirGruposPage = () => {
                 return(<>
                     <ListItem  key={g.id}>
                         <ListItemIcon>
-                            <GroupWorkIcon style={{fontSize: 40,color: g.color}} />
+                           {exportDistAnualGrupo && selectedGroup === g.id && <CircularProgress  style={{marginRight: 10}} color="primary" />}
+                           <GroupWorkIcon style={{fontSize: 40,color: g.color}} />
+
                         </ListItemIcon>
                         <ListItemText primary={g.name} secondary={g.abrv} />
-                        <IconButton onClick={(e)=>{
+                        <IconButton disabled={exportDistAnualGrupo} onClick={(e)=>{
                             setSelectedGroup(g.id)
                             setAnchorEl(e.target)
                             setSelectedDistID(g.dist)
@@ -226,6 +242,10 @@ const GerirGruposPage = () => {
                     setAnchorEl(null)
                     setCollapse(selectedGroup)    
                 }}>DETALHES</MenuItem>
+                 <MenuItem component={Button} onClick={()=>{
+                    setAnchorEl(null)
+                    setExportDistAnualGrupo(true)
+                }}>EXPORTAR</MenuItem>
                 <MenuItem component={Link} to={`/editGrupo/${selectedGroup}`} onClick={()=>setAnchorEl(null)}>EDITAR</MenuItem>
                 <MenuItem component={Button} onClick={()=>{
                     setAnchorEl(null)
