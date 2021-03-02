@@ -17,7 +17,8 @@ admin.initializeApp({
 
 app.use(cors({
   origin: [
-      "https://gestaopedidos.herokuapp.com"
+      "https://gestaopedidos.herokuapp.com",
+      "http://localhost:3000"
   ],
   methods: "GET,PATCH,POST,DELETE",
   allowedHeaders: [
@@ -58,6 +59,8 @@ const faturasRef = admin.firestore().collection("faturas")
 const distAnualRef = admin.firestore().collection("distAnual")
 
 app.use(express.static(path.join(__dirname, "build")));
+
+
 
 
 // GET REQUESTS 
@@ -137,8 +140,9 @@ app.get("/api/getPedidosAnual", jwtCheck,async (req, res) => {
     // })
   let groupColor = {}
     for (let i in groups.docs){
-      groupColor[groups.docs[i].data().abrv] = groups.docs[i].data().color
+      groupColor[groups.docs[i].data().name] = groups.docs[i].data().color
     }
+  
   if(pedidos.docs.length > 0){
     pedidos.forEach(p=>{
       const pedido = p.data()
@@ -165,6 +169,7 @@ app.get("/api/getPedidosAnual", jwtCheck,async (req, res) => {
       send_data[pedido["grupo"]].data[pedido["mounth"]]++;
     })
   }
+
   res.json(send_data)
 });
 
@@ -896,6 +901,9 @@ const updateGrupoDist = async (valor_total, pedido, res)=>{
   })
 }
 
+
+
+
 app.post("/api/novo_pedido", jwtCheck, async (req, res) => {
   let pedido = req.body.pedido;
   pedido["pedido_feito"] = false;
@@ -1604,6 +1612,34 @@ app.post("/api/getPedidoById",jwtCheck, async (req, res) => {
     })
   }
 });
+
+
+
+pedidos_ref.get().then(res=>{
+  const pedidos = res.docs.map(doc=>{
+    return {
+      data: doc.data(),
+      id: doc.id
+    }
+  })
+  pedidos.forEach(p=>{
+    let tempPedido = p.data
+    tempPedido["remetentes"] = {
+      [tempPedido.remetente]: {
+        nome: tempPedido.remetente,
+        artigos: tempPedido.artigos
+      }
+    }
+    pedidos_ref.doc(p.id)
+      .set(tempPedido, {merge: true})
+      .catch(err => {
+        console.log(err)
+      })
+  })
+}).catch(err => {
+  console.log(err)
+ })
+
 
 app.post("/api/editPedido",jwtCheck, async (req, res) => {
     let pedido = req.body.data;

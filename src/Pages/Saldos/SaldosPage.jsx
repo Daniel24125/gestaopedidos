@@ -107,7 +107,7 @@ const SaldosPage = () => {
                                                     </IconButton>
                                                 </div>
                                                 {context=== "rubricas" && <RubricasComponent empresa={f.id} />}
-                                                {context=== "faturacao" && <FaturasComponent empresa={f.id} />}
+                                                {context=== "faturacao" && <FaturasComponent empresa={f.empresa} />}
                                             </div>
                                         </Collapse>
                                     </TableCell>

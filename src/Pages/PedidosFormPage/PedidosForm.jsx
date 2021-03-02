@@ -1,20 +1,21 @@
 import React from 'react'
 import {useParams} from "react-router-dom"
 import FormComponent from "../../Components/FormComponent"
-import {List,Dialog,DialogTitle,DialogContent,DialogContentText,DialogActions, ListItem,FormHelperText, CircularProgress,Button,ListItemText,ListItemSecondaryAction, TextField,  MenuItem, Typography, InputAdornment , IconButton,InputLabel, Input, FormControl, Popover, Collapse, Divider} from "@material-ui/core"
+import {List,Dialog,ListSubheader,DialogTitle,DialogContent,DialogContentText,DialogActions, ListItem,FormHelperText,Menu, CircularProgress,Button,ListItemText,ListItemSecondaryAction, TextField,  MenuItem, Typography, InputAdornment , IconButton,InputLabel, Input, FormControl, Popover, Collapse, Divider} from "@material-ui/core"
 import RubricasComponent from "./RubricasComponent"
 import Loading from "../../Components/Loading"
 import {useGetGrupos, useGetEmpresasByRubrica} from "../../Domain/useCases"
 import SearchArticle from "./SearchArticle"
 import SearchIcon from '@material-ui/icons/Search';
 import DeleteIcon from '@material-ui/icons/Delete';
+import CloseIcon from '@material-ui/icons/Close';
 import SubmitForm from "./SubmitForm"
 import {useSendPedidos, useGetPedidoByID, useEditPedido,useGetFaturasByPedido} from "../../Domain/useCases"
 import ErrorIcon from '@material-ui/icons/Error';
 import SubmitFatura from "./SubmitFatura"
 import DeleteFatura from "./DeleteFatura"
 import AddArtigo from "./AddArtigo"
-
+import MoreVertIcon from '@material-ui/icons/MoreVert';
 
 const getFormatedNumber = (number)=> String(number).length === 1 ? `0${number}`: number 
 
@@ -56,7 +57,9 @@ const PedidosForm = () => {
     const [submitForm, setSubmitForm] = React.useState(false);
     const [showAddArtigoForm, setShowAddArtigoForm] = React.useState(false);
     const [addArtigoToDB, setAddArtigoToDB] = React.useState(false);
-    
+    const [menuAnchor, setMenuAnchor] = React.useState(null)
+    const [selectedRemetente, setSelectedRemetente] = React.useState(null)
+    const [collapseRemetente, setCollapseRemetente] = React.useState(null)
     const [tempArticle, setTempArticle] = React.useState({
         artigo: "", 
         preco: 0, 
@@ -70,6 +73,9 @@ const PedidosForm = () => {
             quantidade: 0
         }
     });
+
+    const [tempRemetente, setTempRemetente] = React.useState("");
+
     const [tempFatura, setTempFatura] = React.useState({
         name: "", 
         data_emissao: today, 
@@ -81,7 +87,7 @@ const PedidosForm = () => {
     
     const [error, setError] = React.useState({
         data_pedido: false, 
-        remetente: false,
+        remetentes: false,
         empresa: false,
         ne: false,
         proposta: false,
@@ -119,14 +125,24 @@ const PedidosForm = () => {
 
     const onSubmitForm = ()=>{
         let tempError = {}
+        let hasError = false
         Object.keys(error).forEach(key=>{
-            if(key!== "artigos" && submitData[key] === ""){
+            if(key!== "artigos" &&key!== "remetentes" && submitData[key] === ""){
+                hasError=true
                 tempError={
                     ...tempError,
                     [key]: true
                 }
             }
             else if (key === "artigos" && submitData.artigos.length === 0){
+                hasError=true
+                tempError={
+                    ...tempError,
+                    [key]: true
+                }
+            }  
+            else if (key === "remetentes" && Object.keys(submitData.remetentes).length === 0){
+                hasError=true
                 tempError={
                     ...tempError,
                     [key]: true
@@ -137,7 +153,7 @@ const PedidosForm = () => {
             ...error, 
             ...tempError
         })
-        if(Object.values(tempError).length === 0){
+        if(!hasError){
             setSubmitForm(true)
         }
         
@@ -151,7 +167,6 @@ const PedidosForm = () => {
         fetchingPedido,
         fetchingFaturas
     ])
-
     React.useEffect(()=>{
         if(!isLoading){
                 setSubmitData({
@@ -165,7 +180,8 @@ const PedidosForm = () => {
                     day:id?  pedido.data.day :  date.getDate(),
                     mounth:id?  pedido.data.mounth: date.getMonth()+1,
                     year:id?  pedido.data.year : date.getFullYear(),
-                    remetente: id? pedido.data.remetente : "",
+                    // remetente: id? pedido.data.remetente : "",
+                    remetentes: id? pedido.data.remetentes : {},
                     grupo:id?  pedido.data.grupo : grupos.data[0].name,
                     grupo_abrv:id?  pedido.data.grupo_abrv : grupos.data[0].abrv,
                     grupo_id :id?  pedido.data.grupo_id : grupos.data[0].id,
@@ -181,17 +197,29 @@ const PedidosForm = () => {
             }
         }, [isLoading])
         
-
+      
     if((isLoading || Object.keys(submitData).length=== 0)) return <Loading msg="A carregar dados necessários..." />
     if(submitForm)  return <SubmitForm data={submitData}  id={id} submitFunction={id? useEditPedido: useSendPedidos}/>
     return (
         <FormComponent title={id? "Editar Pedido": "Registo de Novo Pedido"}>
             <Dialog open={addArtigo} onClose={()=>setAddArtigo(false)} aria-labelledby="form-dialog-title">
-                <DialogTitle id="form-dialog-title">Adicionar Artigo</DialogTitle>
+                <DialogTitle id="form-dialog-title">Adicionar Remetente</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
-                        Por favor preencha todos os dados para adicionar um novo artigo a este pedido
+                        Por favor preencha todos os dados para adicionar um novo remetente a este pedido e a sua lista de artigos
                     </DialogContentText>
+                    <TextField
+                        id="nome"
+                        label="Nome do remetente"
+                        value={tempRemetente}
+                        onChange={(e)=>{
+                            setTempRemetente(e.target.value)
+                        }}
+                        variant="filled"
+                        fullWidth
+                        margin="normal"
+                    />
+                    {tempRemetente !== "" && <>
                     <FormControl 
                         variant="outlined"
                         fullWidth
@@ -207,6 +235,11 @@ const PedidosForm = () => {
                             value={articleSearchTerm}
                             onChange={(e)=>{
                                 setArticlesSearchTerm(e.target.value)
+                                setShowAddArtigoForm(false)
+                                if(articleSearchTerm !== "" ) {
+                                        setPerformSearch(true)
+                                        setAnchorEl(e.target)
+                                    }
                             }}
                             style={{padding: "0px 0px 0px 15px"}}
                             onKeyDown={(e)=>{
@@ -238,22 +271,7 @@ const PedidosForm = () => {
                             }
                             />
                             {tempArticle.artigo!== "" && <FormHelperText>Artigo: {tempArticle.artigo}</FormHelperText>}
-                        </FormControl>
-                        <Popover 
-                            id={id}
-                            open={Boolean(anchorEl)}
-                            anchorEl={anchorEl}
-                            onClose={()=>setAnchorEl(null)}
-                            anchorOrigin={{
-                                vertical: 'bottom',
-                                horizontal: 'right',
-                            }}
-                            transformOrigin={{
-                                vertical: 'top',
-                                horizontal: 'right',
-                            }}
-                        >
-                            <div className="formSearchResultContainer">
+                           {Boolean(anchorEl) &&  <div className="formSearchResultContainer">
                                 {performSearch && <CircularProgress />}
                                 {!performSearch&& articlesResult.length > 0 &&  <List dense={true}>
                                     {articlesResult.map(a=>{
@@ -283,8 +301,9 @@ const PedidosForm = () => {
                                         setAnchorEl(null)
                                     }} color="primary">adicionar artigo</Button>    
                                 </Typography>}
-                            </div>
-                        </Popover>
+                            </div>}
+                        </FormControl>
+                       
                         
                         <Collapse in={showAddArtigoForm} timeout="auto" unmountOnExit > 
                             <TextField
@@ -320,39 +339,63 @@ const PedidosForm = () => {
                         </Collapse>
 
 
-                <TextField
-                    id="quantidade"
-                    label="Quantidade"
-                    value={tempArticle.quantidade}
-                    onChange={onChangeInputArticle}
-                    variant="filled"
-                    type="number"
-                    fullWidth
-                    margin="normal"
-                />
-                <TextField
-                    id="preco"
-                    label="Preço"
-                    type="number"
-                    value={tempArticle.preco}
-                    onChange={onChangeInputArticle}
-                    variant="filled"
-                    fullWidth
-                    margin="normal"
-                />
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={()=>setAddArtigo(false)} color="primary">
-                            Cancelar
-                        </Button>
-                        <Button disabled={tempArticle.artigo === "" || tempArticle.quantidade === 0 || tempArticle.preco === 0} onClick={()=>{
+                        <TextField
+                            id="quantidade"
+                            label="Quantidade"
+                            value={tempArticle.quantidade}
+                            onChange={onChangeInputArticle}
+                            variant="filled"
+                            type="number"
+                            fullWidth
+                            margin="normal"
+                        />
+                        <TextField
+                            id="preco"
+                            label="Preço"
+                            type="number"
+                            value={tempArticle.preco}
+                            onChange={onChangeInputArticle}
+                            variant="filled"
+                            fullWidth
+                            margin="normal"
+                        />
+                    </>}
+                    <div style={{
+                        width: "100%",
+                        display: "flex",
+                        justifyContent: "flex-end"
+                    }}>
+                    <Button disabled={tempArticle.artigo === "" || tempArticle.quantidade === 0 || tempArticle.preco === 0} onClick={()=>{
                             if(tempArticle.quantidade !== 0 && tempArticle.preco !== 0){
-                                let tempArtigo = submitData.artigos
-                                tempArtigo.push(tempArticle)
+                                let tempArtigos = submitData.artigos
+                                const artigoIndex = tempArtigos.findIndex(ta=>ta.referencia_artigo === tempArticle.referencia_artigo)
+                                if(artigoIndex === -1){
+                                    tempArtigos.push(tempArticle)
+                                 }else{
+                                    tempArtigos[artigoIndex].quantidade = Number(tempArtigos[artigoIndex].quantidade) + Number(tempArticle.quantidade)
+                                 }
+                                 const tempRemetenteArtigo = submitData.remetentes[tempRemetente] ? submitData.remetentes[tempRemetente].artigos: []
+                                 if(tempRemetenteArtigo.length > 0){
+                                     const remetenteArtigoIndex = tempRemetenteArtigo.findIndex(ta=>ta.referencia_artigo === tempArticle.referencia_artigo)
+                                    if(remetenteArtigoIndex === -1){
+                                        tempRemetenteArtigo.push(tempArticle)
+                                    }else{
+                                        tempRemetenteArtigo[remetenteArtigoIndex].quantidade = Number(tempRemetenteArtigo[remetenteArtigoIndex].quantidade) + Number(tempArticle.quantidade)
+                                    }
+                                 }else{
+                                    tempRemetenteArtigo.push(tempArticle)
+                                 }
                                 setSubmitData({
                                     ...submitData,
-                                    artigos: tempArtigo,
-                                    valor_total: Number(submitData.valor_total) + Number(tempArticle.quantidade * tempArticle.preco)
+                                    artigos: tempArtigos,
+                                    valor_total: Number(submitData.valor_total) + Number(tempArticle.quantidade * tempArticle.preco),
+                                    remetentes: {
+                                        ...submitData.remetentes,
+                                        [tempRemetente]: {
+                                            nome: tempRemetente,
+                                            artigos: tempRemetenteArtigo
+                                        }
+                                    }
                                 })
                                 setTempArticle({
                                     artigo: "", 
@@ -368,10 +411,55 @@ const PedidosForm = () => {
                                     }
                                 })
                                 setArticlesSearchTerm("")
-                                setAddArtigo(false)
                             }
-                        }} >adicionar</Button>
-                                
+                        }} >adicionar artigo</Button>
+
+                    </div>
+                    
+                       {submitData.remetentes[tempRemetente] && <List dense>
+                            {submitData.remetentes[tempRemetente].artigos.map((a, index)=>{
+                                return(<ListItem>
+                                    <ListItemText primary={a.artigo} secondary={`${a.referencia_artigo} - Quantidade: ${a.quantidade}`} />
+                                    <ListItemSecondaryAction>
+                                        <IconButton onClick={()=>{
+                                             let tempRemetenteArtigos = submitData.remetentes[tempRemetente].artigos
+                                             tempRemetenteArtigos.splice(index,1)
+                                             let tempArtigos = submitData.artigos
+                                             const artigoIndex = tempArtigos.findIndex(ta=>ta.referencia_artigo === a.referencia_artigo)
+                                             if(submitData.artigos[artigoIndex].quantidade - a.quantidade === 0){
+                                                tempArtigos.splice(artigoIndex, 1)
+                                             }else{
+                                                tempArtigos[artigoIndex].quantidade -= a.quantidade
+                                             }
+                                             setSubmitData({
+                                                 ...submitData,
+                                                 remetentes: {
+                                                    [tempRemetente]: {
+                                                        nome: tempRemetente,
+                                                        artigos: tempRemetenteArtigos
+                                                    }
+                                                 },
+                                                 artigos: tempArtigos,
+                                                 valor_total: submitData.valor_total - (a.preco*a.quantidade)
+                                             })
+                                        }}>
+                                            <DeleteIcon/>
+                                        </IconButton>
+                                    </ListItemSecondaryAction>
+                                </ListItem>)
+                            })}
+                        </List>}
+
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={()=>setAddArtigo(false)} color="primary">
+                            Cancelar
+                        </Button>
+                        
+                        <Button disabled={tempRemetente === ""|| !submitData.remetentes[tempRemetente]} onClick={()=>{
+                            setTempRemetente("")
+                            setAddArtigo(false)
+                        }}>adcionar remetente</Button>
                 </DialogActions>
             </Dialog>
             
@@ -439,7 +527,8 @@ const PedidosForm = () => {
                        {submitFatura&& <SubmitFatura
                             fatura={{
                                 ...tempFatura,
-                                pedido: id
+                                pedido: id,
+                                empresa: submitData.empresa
                             }}
                             setSubmitFatura={setSubmitFatura}
                             refetchFaturas={refetchFaturas}
@@ -510,7 +599,7 @@ const PedidosForm = () => {
                     marginBottom: 30
                 }} color="error">
                     <ErrorIcon/>
-                    Não existem notas de encomenda para a rúbirca selecionada    
+                    Não existem notas de encomenda para a rúbrica selecionada    
                 </Typography>}
             
            <TextField
@@ -537,7 +626,7 @@ const PedidosForm = () => {
                 }}
             />
 
-            <TextField
+            {/* <TextField
                 error={error.remetente}
                 required
                 id="remetente"
@@ -545,7 +634,7 @@ const PedidosForm = () => {
                 value={submitData.remetente}
                 onChange={onChangeInput}
                 variant="filled"
-            />
+            /> */}
             <TextField
                 id="grupo"
                 variant="filled"
@@ -670,32 +759,88 @@ const PedidosForm = () => {
                 variant="filled"
             />
 
-            <Button onClick={()=>setAddArtigo(true)}>adicionar artigo</Button>
+            <Button onClick={()=>setAddArtigo(true)}>adicionar remetente</Button>
             
-            <List dense={true}>
-                {
-                    submitData.artigos.map((a, index)=>{
-                        return (
-                            <ListItem style={{
-                                background: "#D1E9FF"
-                            }} key={"artigo_" + a.id}>
-                                    <ListItemText primary={`${a.quantidade} unidade(s) de ${a.artigo}`} secondary={`${a.referencia_artigo} -  ${a.preco*a.quantidade} €`} />
-                                    <ListItemSecondaryAction>
-                                        <IconButton onClick={()=>{
-                                                let tempArtigo = submitData.artigos
-                                                tempArtigo.splice(index,1)
-                                                setSubmitData({
-                                   
-                                                    ...submitData,
-                                                    artigos: tempArtigo,
-                                                    valor_total: submitData.valor_total - (a.preco*a.quantidade)
-                                                })
-                                        }} style={{color: "#e74c3c"}}>
-                                            <DeleteIcon/>
-                                        </IconButton>
-                                    </ListItemSecondaryAction>
+            <List subheader={
+                <ListSubheader  component="div" id="nested-list-subheader">
+                    Lista de remetentes
+                </ListSubheader>
+            }>
+                {Object.keys(submitData.remetentes).length === 0 && <Typography>Ainda não adicionou nenhum remetente</Typography> }
+                {Object.keys(submitData.remetentes).map((r, index)=>{
+                    return (<>
+                        <ListItem button style={{
+                            background: "#D1E9FF"
+                        }} key={"remetente_" + r}>
+                                <ListItemText primary={r} />
+                                <ListItemSecondaryAction>
+                                    <IconButton onClick={e=>{
+                                        setMenuAnchor(e.target)
+                                        setSelectedRemetente(r)
+                                    }}>
+                                        <MoreVertIcon />
+                                    </IconButton>
+                                </ListItemSecondaryAction>
                             </ListItem>
-                        )
+                            <Collapse in={collapseRemetente === r} timeout="auto" unmountOnExit>
+                                <List 
+                                subheader={
+                                    <ListSubheader  component="div" id="nested-list-subheader">
+                                        Lista de artigos
+                                    </ListSubheader>
+                                  }>
+                                {submitData.remetentes[r].artigos.map((a, index)=>{
+
+                                    return(<ListItem>
+                                        <ListItemText primary={a.artigo} secondary={`${a.referencia_artigo} - Quantidade: ${a.quantidade}`} />
+                                        <ListItemSecondaryAction>
+                                            <IconButton onClick={()=>{
+                                                let tempRemetenteArtigos = submitData.remetentes[r].artigos
+                                                tempRemetenteArtigos.splice(index,1)
+                                                let tempArtigos = submitData.artigos
+                                                const artigoIndex = tempArtigos.findIndex(ta=>ta.referencia_artigo === a.referencia_artigo)
+                                                if(submitData.artigos[artigoIndex].quantidade - a.quantidade === 0){
+                                                    tempArtigos.splice(artigoIndex, 1)
+                                                }else{
+                                                    tempArtigos[artigoIndex].quantidade -= a.quantidade
+                                                }
+                                                if(tempRemetenteArtigos.length > 0){
+                                                    setSubmitData({
+                                                        ...submitData,
+                                                        remetentes: {
+                                                            [r]: {
+                                                                nome: r,
+                                                                artigos: tempRemetenteArtigos
+                                                            }
+                                                        },
+                                                        artigos: tempArtigos,
+                                                        valor_total: submitData.valor_total - (a.preco*a.quantidade)
+                                                    })
+                                                }else{
+                                                    let tempRemetentes = submitData.remetentes
+                                                    delete tempRemetentes[r]
+                                                    setSubmitData({
+                                                        ...submitData,
+                                                        remetentes: tempRemetentes
+                                                    })
+                                                }
+                                               
+                                            }}>
+                                                <DeleteIcon/>
+                                            </IconButton>
+                                        </ListItemSecondaryAction>
+                                    </ListItem>)
+                                })}
+                                </List>
+                                <div style={{
+                                    width: "100%",
+                                    display: "flex",
+                                    justifyContent: "flex-end"
+                                }}>
+                                    <Button onClick={()=>setCollapseRemetente(null)}>fechar</Button>
+                                </div>
+                            </Collapse>
+                        </>)
                     })
                 }
             </List>
@@ -745,10 +890,39 @@ const PedidosForm = () => {
             >
                 Submeter
             </Button>
+            <Menu
+                anchorEl={menuAnchor}
+                keepMounted
+                open={Boolean(menuAnchor)}
+                onClose={()=>setMenuAnchor(null)}
+            >
+                <MenuItem onClick={()=>{
+                    setMenuAnchor(null)
+                    setCollapseRemetente(selectedRemetente)
+                }}>VER ARTIGOS</MenuItem>
+                <MenuItem onClick={()=>{
+                    setMenuAnchor(null)
+                    let tempRemetenteList = submitData.remetentes
+                    let tempTotal = submitData.valor_total 
+                    tempRemetenteList[selectedRemetente].artigos.forEach(a=>{
+                        let tempArtigos = submitData.artigos
+                        const artigoIndex = tempArtigos.findIndex(ta=>ta.referencia_artigo === a.referencia_artigo)
+                        if(submitData.artigos[artigoIndex].quantidade - a.quantidade === 0){
+                           tempArtigos.splice(artigoIndex, 1)
+                        }else{
+                           tempArtigos[artigoIndex].quantidade -= a.quantidade
+                        }
+                        tempTotal -= Number(a.preco*a.quantidade)
+                    })
+                    delete tempRemetenteList[selectedRemetente]
+                    setSubmitData({
+                        ...submitData,
+                        remetentes: tempRemetenteList,
+                        valor_total: tempTotal
+                    })
+                }}>ELIMINAR</MenuItem>
+            </Menu>
         </FormComponent>
-
-       
-        
     )
 }
 

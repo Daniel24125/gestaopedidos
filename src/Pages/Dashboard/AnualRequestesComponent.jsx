@@ -83,6 +83,7 @@ const AnualRequestesComponent = () => {
                                     labelString: `Ano de ${new Date().getFullYear()}`, 
                                     fontColor: "#666"
                                 },
+                                stacked: true,
                                 ticks:{
                                     fontColor: "#666"
                                 }

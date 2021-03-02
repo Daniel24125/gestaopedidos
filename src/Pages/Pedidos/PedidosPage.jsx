@@ -21,6 +21,7 @@ import { Paper,
     DialogActions, 
     DialogContent,
     DialogContentText, 
+    Toolbar,
     TextField,
     CircularProgress
 } from '@material-ui/core'
@@ -230,7 +231,7 @@ const PedidosPage = () => {
                             <TableCell ></TableCell>
                             <TableCell style={{color: "#878787"}} >Data Pedido</TableCell>
                             <TableCell align="center" style={{color: "#878787"}} >Rúbrica</TableCell>
-                            <TableCell style={{color: "#878787"}} >Remetente</TableCell>
+                            {/* <TableCell style={{color: "#878787"}} >Remetente</TableCell> */}
                             <TableCell style={{color: "#878787"}} >Grupo</TableCell>
                             <TableCell style={{color: "#878787"}} >Empresa</TableCell>
                             <TableCell style={{color: "#878787"}} >Valor Total</TableCell>
@@ -261,9 +262,9 @@ const PedidosPage = () => {
                                                 {Rubricas[p.rubrica.icon]()}
                                             </Tooltip>
                                         </TableCell>
-                                        <TableCell  component="th" scope="row">
+                                        {/* <TableCell  component="th" scope="row">
                                             {p.remetente}
-                                        </TableCell>
+                                        </TableCell> */}
                                         <TableCell  component="th" scope="row">
                                             <Tooltip title={p.grupo.length < 30? "":p.grupo}>
                                                 <Typography>
@@ -280,7 +281,7 @@ const PedidosPage = () => {
 
                                         </TableCell>
                                         <TableCell  component="th" scope="row">
-                                            {p.valor_total} €
+                                            {Number(p.valor_total).toFixed(2)} €
                                         </TableCell>
                                         <TableCell  component="th" scope="row">
                                             <Tooltip title="Ver faturas">
@@ -303,8 +304,23 @@ const PedidosPage = () => {
                                         </TableCell>
                                     </TableRow>
                                     <TableRow key={`Collapse_${i}`}>
-                                        <TableCell style={{padding:0 }} colSpan={9}>
-                                            <Collapse style={{backgroundColor: "#2d3436"}} in={openCollapsePedido === p.id} timeout="auto" unmountOnExit>
+                                        <TableCell style={{padding:0 }} colSpan={8}>
+                                            <Collapse style={{backgroundColor: "#2d3436", padding: "0 30px"}} in={openCollapsePedido === p.id} timeout="auto" unmountOnExit>
+                                                <div style={{
+                                                    display: "flex",
+                                                    width: "100%",
+                                                    justifyContent: "flex-end"
+                                                }}>
+                                                <IconButton style={{color: "white"}} onClick={()=>{
+                                                    setOpenCollapsePedido(null)
+                                                }}>
+                                                    <CloseIcon />
+                                                </IconButton>
+                                                </div>
+                                                
+                                                <Toolbar style={{color: "white"}}>
+                                                    <Typography variant="h5">Lista Completa de Artigos</Typography>
+                                                </Toolbar>
                                                 <Table size="small">
                                                     <TableHead>
                                                         <TableRow >
@@ -317,13 +333,7 @@ const PedidosPage = () => {
                                                             <TableCell style={{borderColor: "#232323",color: "#3498db"}} align="center">Chegada</TableCell>
                                                             <TableCell style={{borderColor: "#232323",color: "#3498db"}} align="right">Guia</TableCell>
                                                             <TableCell style={{borderColor: "#232323",color: "#3498db"}} align="center">Faturado</TableCell>
-                                                            <TableCell style={{borderColor: "#232323"}} align="center">
-                                                                <IconButton style={{color: "white"}} onClick={()=>{
-                                                                    setOpenCollapsePedido(null)
-                                                                }}>
-                                                                    <CloseIcon />
-                                                                </IconButton>
-                                                            </TableCell>
+                                                           
                                                         </TableRow>
                                                     </TableHead>
                                                     <TableBody>
@@ -349,10 +359,10 @@ const PedidosPage = () => {
                                                                  {a.quantidade}
                                                              </TableCell>
                                                              <TableCell style={{borderColor: "#232323",color: "white"}}  align="right" component="th" scope="row">
-                                                                {a.preco} €
+                                                                {Number(a.preco).toFixed(2)} €
                                                              </TableCell>
                                                              <TableCell style={{borderColor: "#232323",color: "white"}}  align="right" component="th" scope="row">
-                                                                 {a.preco * a.quantidade} €
+                                                                 {Number(a.preco * a.quantidade).toFixed(2)} €
                                                              </TableCell>
                                                              <TableCell style={{borderColor: "#232323"}}  align="center" component="th" scope="row">
                                                                 {!chegadaArtigosState && !a.entrega.chegada && <Tooltip title="Chegada de artigo">
@@ -394,11 +404,54 @@ const PedidosPage = () => {
                                                                 </IconButton>}
                                                                 {changeArtigoFaturado && <CircularProgress size={30} />}
                                                              </TableCell>
-                                                             <TableCell style={{borderColor: "#232323"}} align="center" component="th" scope="row"></TableCell>
                                                          </TableRow>)
                                                         })}
                                                     </TableBody>
                                                 </Table>
+                                                <Toolbar  style={{color: "white"}}>
+                                                    <Typography variant="h5">Lista de Remetentes</Typography>
+                                                </Toolbar>
+                                                {Object.keys(p.remetentes).map(r=>{
+                                                    return (<>
+                                                        <Toolbar style={{color: "white"}}>
+                                                            <Typography>{r}</Typography>
+                                                        </Toolbar>
+                                                        <Table key={r} size="small">
+                                                        <TableHead>
+                                                            <TableRow >
+                                                                <TableCell style={{borderColor: "#232323",color: "#3498db"}} align="right">Referência</TableCell>
+                                                                <TableCell style={{borderColor: "#232323",color: "#3498db"}} align="right">Artigo</TableCell>
+                                                                <TableCell style={{borderColor: "#232323",color: "#3498db"}} align="right">Quantidade</TableCell>
+                                                                <TableCell style={{borderColor: "#232323",color: "#3498db"}} align="right">Preço Unitário</TableCell>
+                                                                <TableCell style={{borderColor: "#232323",color: "#3498db"}} align="right">Preço Total</TableCell>
+                                                            </TableRow>
+                                                        </TableHead>
+                                                        <TableBody>
+                                                            {p.remetentes[r].artigos.map((a,index_artigos)=>{
+                                                                return ( <TableRow key={`artigo_${a.referencia_artigo}`}>
+                                                                
+                                                                <TableCell style={{borderColor: "#232323",color: "white"}}  align="right" component="th" scope="row">
+                                                                    {a.referencia_artigo}
+                                                                </TableCell>
+                                                                <TableCell style={{borderColor: "#232323",color: "white"}}  align="right" component="th" scope="row">
+                                                                    {a.artigo}
+                                                                </TableCell>
+                                                                <TableCell style={{borderColor: "#232323",color: "white"}}  align="right" component="th" scope="row">
+                                                                    {a.quantidade}
+                                                                </TableCell>
+                                                                <TableCell style={{borderColor: "#232323",color: "white"}}  align="right" component="th" scope="row">
+                                                                    {Number(a.preco).toFixed(2)} €
+                                                                </TableCell>
+                                                                <TableCell style={{borderColor: "#232323",color: "white"}}  align="right" component="th" scope="row">
+                                                                    {Number(a.preco * a.quantidade).toFixed(2)} €
+                                                                </TableCell>
+                                                                
+                                                            </TableRow>)
+                                                            })}
+                                                        </TableBody>
+                                                    </Table>
+                                                </>)
+                                                })}
                                                 <div className="artigoInfoContainer">
                                                     <Typography> <strong style={{color: "#3498db"}}>Proposta:</strong> {p.proposta}</Typography>
                                                     <Typography> <strong style={{color: "#3498db"}}>NE:</strong> {p.ne}</Typography>

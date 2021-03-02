@@ -89,7 +89,7 @@ const EmpresasComponent = () => {
                                                 {emp.ne}
                                             </TableCell>
                                             <TableCell align="right">
-                                                {emp.saldo_disponivel}
+                                                {Number(emp.saldo_disponivel).toFixed(2)}€
                                             </TableCell>
                                         </TableRow>
                                     )

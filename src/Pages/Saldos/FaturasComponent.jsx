@@ -8,7 +8,7 @@ const FaturasComponent = ({empresa}) => {
         data: faturas, 
         isFetching
     } = useGetFaturasByEmppresa(empresa)
-
+    
     return (
         <div className="optionsContainer">
             {isFetching && <CircularProgress size={60} color="primary"/>}
@@ -29,12 +29,12 @@ const FaturasComponent = ({empresa}) => {
                         {faturas.data.map(f => {
                             return (
                             <TableRow>
-                                <TableCell  >{f.codigo_fatura}</TableCell>
+                                <TableCell  >{f.name}</TableCell>
                                 <TableCell >{f.data_emissao.slice(0,11)}</TableCell>
                                 <TableCell >
-                                    <Button color="primary">ver pedido</Button>
+                                    {f.pedido}
                                 </TableCell>
-                                <TableCell >{f.valor}</TableCell>
+                                <TableCell >{f.valor_fatura}€</TableCell>
                                 <TableCell>
                                     <Tooltip title="Ver notas">
                                         <IconButton color="primary">
