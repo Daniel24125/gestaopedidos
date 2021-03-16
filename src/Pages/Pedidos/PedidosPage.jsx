@@ -241,7 +241,7 @@ const PedidosPage = () => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {pedidosList.data.map((p,i)=>{
+                        {pedidosList.data.sort((a,b)=>b.data_pedido-a.data_pedido).map((p,i)=>{
                             return (
                                 <>
                                     <TableRow key={`pedido_${i}`}>

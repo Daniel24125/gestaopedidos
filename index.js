@@ -1614,44 +1614,17 @@ app.post("/api/getPedidoById",jwtCheck, async (req, res) => {
 });
 
 
-
-pedidos_ref.get().then(res=>{
-  const pedidos = res.docs.map(doc=>{
-    return {
-      data: doc.data(),
-      id: doc.id
-    }
-  })
-  pedidos.forEach(p=>{
-    let tempPedido = p.data
-    tempPedido["remetentes"] = {
-      [tempPedido.remetente]: {
-        nome: tempPedido.remetente,
-        artigos: tempPedido.artigos
-      }
-    }
-    pedidos_ref.doc(p.id)
-      .set(tempPedido, {merge: true})
-      .catch(err => {
-        console.log(err)
-      })
-  })
-}).catch(err => {
-  console.log(err)
- })
-
-
 app.post("/api/editPedido",jwtCheck, async (req, res) => {
     let pedido = req.body.data;
     const id = req.body.id
     const old_pedido = await pedidos_ref.doc(id)
-      .get()
-      .catch(err => {
-        res.json({
-            error: true,
-            msg: String(err)
-        })
+    .get()
+    .catch(err => {
+      res.json({
+        error: true,
+        msg: String(err)
       })
+    })
     let valor_atualizar = Number(pedido.valor_total - old_pedido.data().valor_total)
     if(Boolean(valor_atualizar)){
       updateGrupoDist(valor_atualizar, pedido, res)

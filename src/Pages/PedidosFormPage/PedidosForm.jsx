@@ -197,7 +197,6 @@ const PedidosForm = () => {
             }
         }, [isLoading])
         
-      
     if((isLoading || Object.keys(submitData).length=== 0)) return <Loading msg="A carregar dados necessários..." />
     if(submitForm)  return <SubmitForm data={submitData}  id={id} submitFunction={id? useEditPedido: useSendPedidos}/>
     return (
@@ -767,7 +766,7 @@ const PedidosForm = () => {
                 </ListSubheader>
             }>
                 {Object.keys(submitData.remetentes).length === 0 && <Typography>Ainda não adicionou nenhum remetente</Typography> }
-                {Object.keys(submitData.remetentes).map((r, index)=>{
+                {Object.keys(submitData.remetentes).map((r)=>{
                     return (<>
                         <ListItem button style={{
                             background: "#D1E9FF"
@@ -821,10 +820,11 @@ const PedidosForm = () => {
                                                     delete tempRemetentes[r]
                                                     setSubmitData({
                                                         ...submitData,
-                                                        remetentes: tempRemetentes
+                                                        remetentes: tempRemetentes,
+                                                        valor_total: submitData.valor_total - (a.preco*a.quantidade)
                                                     })
                                                 }
-                                               
+                                                
                                             }}>
                                                 <DeleteIcon/>
                                             </IconButton>
