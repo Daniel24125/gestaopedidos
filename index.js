@@ -1664,7 +1664,7 @@ app.post("/api/editPedido",jwtCheck, async (req, res) => {
         })
         await notasEncomendaRef.doc(pedido.ne_id).set({
           saldo_disponivel: notaE.data().saldo_disponivel + (valor_atualizar*-1)
-        })
+        }, {merge: true})
     }
     await pedidos_ref.doc(id)
       .set(pedido, {merge: true})
