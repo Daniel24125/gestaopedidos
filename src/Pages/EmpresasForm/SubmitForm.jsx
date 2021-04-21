@@ -10,9 +10,9 @@ const SubmitForm = ({
     nesIDs
 }) => {
     const {
-        isFetching
+        isFetching: submitFormFetching
     } = submitFunction(data, id, nesIDs)
-    if(isFetching) return <Loading msg="A submeter dados do formulário..." />
+    if(submitFormFetching) return <Loading msg="A submeter dados do formulário..." />
     return (
         <div className="formSubmitedContainer">
             <LibraryAddCheckIcon style={{fontSize: 200, color: "#2ecc71"}} />

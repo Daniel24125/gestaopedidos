@@ -13,11 +13,11 @@ const AddArtigo = ({
 }) => {
     const {
         data: result, 
-        isFetching 
+        isFetching: addArtigoFetching
     } = useAddArtigoToDB(artigo)
 
     React.useEffect(()=>{
-        if(!isFetching){
+        if(!addArtigoFetching){
             if(!articlesMainPage){
                 setTempArticle({
                     ...tempArticle,
@@ -34,9 +34,9 @@ const AddArtigo = ({
             setShowAddArtigoForm(false)
             setAddArtigoToDB(false)
         }
-    }, [isFetching])
+    }, [addArtigoFetching])
     
-    if(isFetching) return (<CircularProgress size={30} />)
+    if(addArtigoFetching) return (<CircularProgress size={30} />)
 
     return (
         <div>

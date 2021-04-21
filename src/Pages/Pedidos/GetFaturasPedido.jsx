@@ -28,11 +28,11 @@ const GetFaturasPedido = ({
 
     const {
         data: faturas, 
-        isFetching,
+        isFetching: faturasFetching,
         refetch
     } = useGetFaturasByPedido(pedidoID)
 
-    if(isFetching) return (<div style={{
+    if(faturasFetching) return (<div style={{
         minWidth: 600,
         display: "flex", 
         justifyContent: "center",

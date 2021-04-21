@@ -8,7 +8,7 @@ const SearchArticle = ({
 }) => {
     const {
         data: articles, 
-        isFetching, 
+        isFetching: searchArticleFetching, 
         refetch
     } = useGetArticle(term)
     React.useEffect(()=>{
@@ -18,11 +18,11 @@ const SearchArticle = ({
     },[performSearch])
 
     React.useEffect(()=>{
-        if(!isFetching ){
+        if(!searchArticleFetching ){
             setArticlesResult(articles.data)
             setPerformSearch(false)
         }
-    }, [isFetching])
+    }, [searchArticleFetching])
     return (
         <>
             {/* {performSearch && <CircularProgress size={20} color="primary" />} */}

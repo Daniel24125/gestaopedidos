@@ -13,7 +13,7 @@ const AddNE =({
 })=> {
     const {
         data: result, 
-        isFetching
+        isFetching: neFetching
     } = useAddNE({
         ...ne,
         data_registo: new Date().toJSON(),
@@ -24,7 +24,7 @@ const AddNE =({
     })
     
     React.useEffect(()=>{
-        if(!isFetching){
+        if(!neFetching){
             refetch()
             setAddNe(false)
             setTempNE({
@@ -38,9 +38,9 @@ const AddNE =({
             })
             setSubmitAddNE(false)
         }
-    },[isFetching])
+    },[neFetching])
 
-    if(isFetching)return <CircularProgress/>
+    if(neFetching)return <CircularProgress/>
     
     return (
         <div>

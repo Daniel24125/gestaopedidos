@@ -590,6 +590,7 @@ app.get("/api/downloadDistCum", jwtCheck,async (req, res)=>{
     // eslint-disable-next-line no-loop-func
     membros.docs.forEach((m, m_index)=>{
       const dist = m.data().dist.filter(d=>d.year===new Date().getFullYear())[0]
+      
       template += `
       <tr>
         <td style="font-weight: bold; background: ${g.data().color};"> ${m_index=== 0? g.data().abrv:"" }</td>
@@ -597,9 +598,13 @@ app.get("/api/downloadDistCum", jwtCheck,async (req, res)=>{
       `
       selected_months.forEach((_mounth,index)=>{
  
+        // <td style="background: ${g.data().color}ad;">${index === 0 ?dist["m1"] : dist[`m${index+1}`]}</td>
+        // ${m_index=== 0?`<td rowspan="${membros.docs.length}" style="font-size: 20px ;font-weight: bold;background: ${g.data().color}ad;">${index=== 0? current_dist["m1"]:current_dist[`m${index}`] +current_dist[`m${index+1}`]}</td>`: ""}
+
         template+= `
-          <td style="background: ${g.data().color}ad;">${index === 0 ?dist["m1"] : dist[`m${index}`]+ dist[`m${index+1}`]}</td>
-          ${m_index=== 0?`<td rowspan="${membros.docs.length}" style="font-size: 20px ;font-weight: bold;background: ${g.data().color}ad;">${index=== 0? current_dist["m1"]:current_dist[`m${index}`] +current_dist[`m${index+1}`]}</td>`: ""}
+          <td style="background: ${g.data().color}ad;">${ dist[`m${index+1}`].toFixed(2)}</td>
+
+          ${m_index=== 0?`<td rowspan="${membros.docs.length}" style="font-size: 20px ;font-weight: bold;background: ${g.data().color}ad;">${current_dist[`m${index+1}`].toFixed(2)}</td>`: ""}
         `
       })
       template +="</tr>"

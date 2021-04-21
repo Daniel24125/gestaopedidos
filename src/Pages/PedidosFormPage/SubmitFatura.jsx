@@ -11,11 +11,11 @@ const SubmitFatura = ({
 }) => {
     const {
         data: result, 
-        isFetching
+        isFetching: addFaturaFetching
     } = useAddFatura(fatura)
     
     React.useEffect(()=>{
-        if(!isFetching){
+        if(!addFaturaFetching){
             refetchFaturas()
             setAddFat(false)
             setTempFatura({
@@ -26,9 +26,9 @@ const SubmitFatura = ({
             })
             setSubmitFatura(false)
         }
-    },[isFetching])
+    },[addFaturaFetching])
 
-    if(isFetching)return <CircularProgress/>
+    if(addFaturaFetching)return <CircularProgress/>
     return (
         <div>
             

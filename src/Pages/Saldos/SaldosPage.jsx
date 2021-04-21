@@ -19,11 +19,11 @@ const SaldosPage = () => {
 
     const {
         data: fornecedores, 
-        isFetching,
+        isFetching: saldoFetching,
         refetch
     } = useGetFornecedores()
 
-    if(isFetching) return <Loading msg="A carregar dados de fornecedores..."/>
+    if(saldoFetching) return <Loading msg="A carregar dados de fornecedores..."/>
 
     return (
         <div className="fornecedoresContainer">

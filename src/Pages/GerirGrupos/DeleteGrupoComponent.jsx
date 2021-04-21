@@ -11,17 +11,17 @@ import { CircularProgress} from "@material-ui/core"
 
     const {
         data: result, 
-        isFetching 
+        isFetching: deleteGrupoFetching
     } = useDeleteGrupo(id, selectedDistID)
 
     React.useEffect(()=>{
-        if(!isFetching){
+        if(!deleteGrupoFetching){
             setDeleteResult(result)
             setDeleteGrupo(false)
         }
-    }, [isFetching])
+    }, [deleteGrupoFetching])
 
-    if(isFetching) return (<CircularProgress />)
+    if(deleteGrupoFetching) return (<CircularProgress />)
     return (<></>)
 }
 export default DeletePedidoComponent

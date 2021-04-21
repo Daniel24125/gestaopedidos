@@ -9,18 +9,18 @@ const  DeleteArtigo = ({
     refetch
 }) => {
     const {
-        isFetching 
+        isFetching: deleteFetching 
     } = useDeleteArtigo(id)
 
     React.useEffect(()=>{
-        if(!isFetching){
+        if(!deleteFetching){
             setOpenDelete(false)
             refetch()
             setDeleteArtigo(false)
         }
-    }, [isFetching])
+    }, [deleteFetching])
     
-    if(isFetching) return (<CircularProgress />)
+    if(deleteFetching) return (<CircularProgress />)
     return (
         <div>
             

@@ -29,20 +29,20 @@ const ArtigosComponent = () => {
     
     const {
         data: artigos, 
-        isFetching,
+        isFetching: artigosFetching,
         refetch
     } = useGetArtigos()
 
 
     React.useEffect(()=>{
-        if(!isFetching){
+        if(!artigosFetching){
             setArticlesList(artigos.data)
             setSearchData("")
             setSearchPerformed(false)
         }
-    },[isFetching])
+    },[artigosFetching])
 
-    if(isFetching) return <Loading msg="A carregar artigos..." />
+    if(artigosFetching) return <Loading msg="A carregar artigos..." />
     return (
         <div className="artigosContainer">
             <Dialog onClose={()=>{

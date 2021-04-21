@@ -10,18 +10,18 @@ import {CircularProgress} from "@material-ui/core"
  }) => {
     const {
         data: result, 
-        isFetching 
+        isFetching: deletePedidoFetching
     } = useDeletePedido(id)
 
     React.useEffect(()=>{
-        if(!isFetching){
+        if(!deletePedidoFetching){
             setOpenDelete(false)
             refetch()
             setDeletePedido(false)
         }
-    }, [isFetching])
+    }, [deletePedidoFetching])
     
-    if(isFetching) return (<CircularProgress />)
+    if(deletePedidoFetching) return (<CircularProgress />)
     return <></>
 }
 export default DeletePedidoComponent

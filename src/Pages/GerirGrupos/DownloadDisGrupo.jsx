@@ -8,7 +8,7 @@ const DownloadDisGrupo = ({
 }) => {
     const {
         data: result, 
-        isFetching 
+        isFetching: donwloadFetching
     } = useDownloadDistCumGrupo(grupoID)
 
     const {
@@ -17,11 +17,11 @@ const DownloadDisGrupo = ({
     } = useGetGrupoByID(grupoID)
 
     React.useEffect(()=>{
-        if(!isFetching && !fetchingGrupo){
+        if(!donwloadFetching && !fetchingGrupo){
             saveAs(result, `Distribuição Cumulativa ${new Date().getFullYear()} - ${grupo.data.abrv}.pdf`)
             setExportDistAnualGrupo(false)
         }
-    }, [isFetching])
+    }, [donwloadFetching, fetchingGrupo])
     return (
         <div>
             

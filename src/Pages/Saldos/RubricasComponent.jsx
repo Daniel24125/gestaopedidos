@@ -10,7 +10,7 @@ import BuildIcon from '@material-ui/icons/Build';
  const RubricasComponent = ({empresa}) => {  
     const {
         data: ne, 
-        isFetching,
+        isFetching: rubricasFetching,
         refetch
     } = useGetRubricasByEmppresa(empresa)
 
@@ -64,8 +64,8 @@ import BuildIcon from '@material-ui/icons/Build';
                 </DialogActions>
 
             </Dialog>
-            {isFetching && <CircularProgress size={60} color="primary" />}
-            {!isFetching && <>
+            {rubricasFetching && <CircularProgress size={60} color="primary" />}
+            {!rubricasFetching && <>
                 {ne.data.length === 0 && <Typography style={{marginBottom: 20}}>Não se encontra registada nenhuma nota de encomenda para esta empresa</Typography>}
                 {ne.data.length > 0 && <Table size="medium">
                     <TableHead>

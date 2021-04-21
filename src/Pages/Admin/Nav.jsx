@@ -23,7 +23,7 @@ const Nav = (props) => {
 
     const {
         data: configs, 
-        isFetching,
+        isFetching: configFetching,
     } = useGetConfigs()
 
 
@@ -50,13 +50,13 @@ const Nav = (props) => {
       };
   
     React.useEffect(()=>{
-        if(!isFetching){
+        if(!configFetching){
             setTempConfig({
                 pedido_acabado: configs.data.pedido_acabado/1000/60/60/24,
                 saldo_th: configs.data.saldo_th,
             })
         }
-    },[isFetching])
+    },[configFetching])
 
     return (
         <>
@@ -64,8 +64,8 @@ const Nav = (props) => {
                 setShowConfigs(false)
             }} aria-labelledby="form-dialog-title">
                 <DialogTitle id="form-dialog-title">Preferências</DialogTitle>
-                {isFetching && <CircularProgress />}
-                {!isFetching && <>
+                {configFetching && <CircularProgress />}
+                {!configFetching && <>
                     <DialogContent>
                         
                         <DialogContentText>

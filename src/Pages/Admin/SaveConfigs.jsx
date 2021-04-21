@@ -10,17 +10,17 @@ const SaveConfigs = ({
 
     const {
         data: result, 
-        isFetching,
+        isFetching: saveConfigFetching,
     } = useSaveConfig(configs)
 
     React.useEffect(()=>{
-        if(!isFetching){
+        if(!saveConfigFetching){
             setOpenSnackbar(true)
             setSaveConfigs(false)
         }
-    }, [isFetching])
+    }, [saveConfigFetching])
 
-    if(isFetching) return <CircularProgress size={30}/>
+    if(saveConfigFetching) return <CircularProgress size={30}/>
     return (
         <div>
             

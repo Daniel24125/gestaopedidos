@@ -6,13 +6,13 @@ import CommentIcon from '@material-ui/icons/Comment';
 const FaturasComponent = ({empresa}) => {
     const {
         data: faturas, 
-        isFetching
+        isFetching: getFaturasFetching
     } = useGetFaturasByEmppresa(empresa)
     
     return (
         <div className="optionsContainer">
-            {isFetching && <CircularProgress size={60} color="primary"/>}
-            {!isFetching && <>
+            {getFaturasFetching && <CircularProgress size={60} color="primary"/>}
+            {!getFaturasFetching && <>
                 {faturas.data.length === 0 && <Typography style={{marginBottom: 20}}> Não existem faturas emitidas para esta empresa</Typography>}
                 {faturas.data.length > 0 && <Table size="medium">
                     <TableHead> 

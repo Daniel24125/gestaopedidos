@@ -13,19 +13,19 @@ import MuiAlert from '@material-ui/lab/Alert';
 }) => {
     const {
         data: pedidos, 
-        isFetching
+        isFetching: fetchingPedidos
     } = useSearchPedidos(word, field)
     const [open, setOpen] = React.useState(false);
 
     React.useEffect(()=>{
-        if(!isFetching){
+        if(!fetchingPedidos){
             if(pedidos.data.length > 0){
                 setPedidosList(pedidos)
             }else{
                 setOpen(true)
             }
         }
-    }, [isFetching])
+    }, [fetchingPedidos])
 
     const handleClose = (event, reason) => {
         if (reason === 'clickaway') {
@@ -35,7 +35,7 @@ import MuiAlert from '@material-ui/lab/Alert';
         setSubmitSearch(false)
     };
 
-    if(isFetching) return <CircularProgress size={40} />
+    if(fetchingPedidos) return <CircularProgress size={40} />
 
     return (<>
         <IconButton onClick={()=>{

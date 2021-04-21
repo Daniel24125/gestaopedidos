@@ -10,18 +10,18 @@ const DeleteEmpresa = ({
 }) => {
     const {
         data: result, 
-        isFetching,
+        isFetching: deleteEmpresaFetching,
     } = useDeleteEmpresa(id)
 
     React.useEffect(()=>{
-        if(!isFetching){
+        if(!deleteEmpresaFetching){
             setOpenDelete(false)
             refetch()
             setDeleteEmpresa(false)
         }
-    }, [isFetching])
+    }, [deleteEmpresaFetching])
 
-    if(isFetching) return <CircularProgress color="primary" />
+    if(deleteEmpresaFetching) return <CircularProgress color="primary" />
     return (
         <div>
             

@@ -7,14 +7,14 @@ const DownloadDistCum = ({
 }) => {
     const {
         data: result, 
-        isFetching 
+        isFetching: downloadDistFetching 
     } = useDownloadDistCum()
     React.useEffect(()=>{
-        if(!isFetching){
+        if(!downloadDistFetching){
             saveAs(result, `Distribuição Cumulativa ${new Date().getFullYear()}.pdf`)
             setExportDistAnual(false)
         }
-    }, [isFetching])
+    }, [downloadDistFetching])
     return (
         <CircularProgress size={20} style={{color: "white", marginRight: 10}}/>
     )

@@ -15,7 +15,7 @@ const AddGroup = () => {
     
     const {
         data: grupo, 
-        isFetching
+        isFetching: gupoFetching
     } = useGetGrupoByID(id)
 
     const [color, setColor] = useColor("hex", "#121212");
@@ -71,7 +71,7 @@ const AddGroup = () => {
     }
 
     React.useEffect(()=>{
-        if(!isFetching ){
+        if(!gupoFetching ){
             if(id){
                 setSubmitData({
                     name: grupo.data.name,
@@ -81,11 +81,11 @@ const AddGroup = () => {
                 })
             }
         }
-    }, [isFetching])
+    }, [gupoFetching])
 
 
 
-    if(isFetching) return <Loading msg="A carregar dados do grupo" />
+    if(gupoFetching) return <Loading msg="A carregar dados do grupo" />
     if(submitForm)  return <SubmitForm data={submitData}  id={id} submitFunction={id? useEditGrupo: useNovoGrupo}/>
     return (
         <FormComponent title={id? `Editar o Grupo ${grupo.data.name}`: "Registo de Novo Grupo"}>

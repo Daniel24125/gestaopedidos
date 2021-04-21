@@ -13,17 +13,17 @@ const ChageArtigosStatus = ({
 }) => {
     const {
         data: result, 
-        isFetching 
+        isFetching: changeStatusFetching
     } = useSetArtigoState(pedidoID ,index,chegada_data)
 
     React.useEffect(()=>{
-        if(!isFetching){
+        if(!changeStatusFetching){
             openArtigoChegadaForm(false)
             refetch()
             setChegadaArtigosState(false)
             setRefetch(true)
         }
-    }, [isFetching])
+    }, [changeStatusFetching])
     
     // if(isFetching) return (<CircularProgress size={30} />)
     return (

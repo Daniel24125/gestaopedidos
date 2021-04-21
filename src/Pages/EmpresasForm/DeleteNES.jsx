@@ -10,18 +10,18 @@ const DeleteNES = ({
 }) => {
     const {
         data: result, 
-        isFetching,
+        isFetching: deleteFetching,
     } = useDeleteNES(id)
 
     React.useEffect(()=>{
-        if(!isFetching){
+        if(!deleteFetching){
             setOpenDelete(false)
             refetch()
             setDeleteNE(false)
         }
-    }, [isFetching])
+    }, [deleteFetching])
 
-    if(isFetching) return <CircularProgress color="primary" />
+    if(deleteFetching) return <CircularProgress color="primary" />
     return (
         <div>
             

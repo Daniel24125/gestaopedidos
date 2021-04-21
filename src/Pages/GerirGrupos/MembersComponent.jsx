@@ -14,12 +14,12 @@ const MembersComponent = ({
     const [membersDatasets, setMemberDataset] = React.useState([])
     const {
         data: membros, 
-        isFetching
+        isFetching: grupoMembrosFetching
     } = useGetGrupoMembros(id)
 
     React.useEffect(()=>{
         let tempMembersDatasets=[]
-            if(!isFetching){
+            if(!grupoMembrosFetching){
             membros.data.forEach(m=>{
                 const orderedDataMembers = []
                 const rc = RandomColor()
@@ -38,9 +38,9 @@ const MembersComponent = ({
             
             setMemberDataset(tempMembersDatasets)
         }
-    }, [isFetching])
+    }, [grupoMembrosFetching])
 
-    if (isFetching) 
+    if (grupoMembrosFetching) 
     return <div style={{
         width: "100%",
         display: "flex",

@@ -18,7 +18,7 @@ const EmpresasForm = () => {
 
     const {
         data: empresa, 
-        isFetching
+        isFetching: empresaFetching
     } = useGetEmpresaById(id)
     
     const {
@@ -69,7 +69,7 @@ const EmpresasForm = () => {
     }
 
     React.useEffect(()=>{
-        if(!isFetching  && !fetchingNES){
+        if(!empresaFetching  && !fetchingNES){
             if(id){
                 setSubmitData({
                     ...submitData, 
@@ -77,9 +77,9 @@ const EmpresasForm = () => {
                 })
             }
         }
-    }, [isFetching, fetchingNES])
+    }, [empresaFetching, fetchingNES])
 
-    if(isFetching || fetchingNES) return <Loading msg="A carregar dados da empresa" />
+    if(empresaFetching || fetchingNES) return <Loading msg="A carregar dados da empresa" />
     if(submitForm)  return <SubmitForm data={submitData} nesIDs={nes.data? nes.data.map(n=>n.id): null} id={id} submitFunction={id? useEditEmpresa: useAddEmpresa}/>
     return (
         <FormComponent title={id? `Editar a empresa ${empresa.data.empresa}`: "Registo de Novo Fornecedor"}>

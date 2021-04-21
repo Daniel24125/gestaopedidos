@@ -11,17 +11,17 @@ const DownloadPDF = ({
 }) => {
     const {
         data: result, 
-        isFetching 
+        isFetching: pdfFetching
     } = useDownloadPDF(template, pedidoID)
 
     React.useEffect(()=>{
-        if(!isFetching){
+        if(!pdfFetching){
             saveAs(result, `pedido_${pedidoID}`)
             setIsRefetch(true)
             refecth()
             setFazerPedido(false)
         }
-    }, [isFetching])
+    }, [pdfFetching])
     // if(isFetching) return (<CircularProgress size={30} />)
 
     return (

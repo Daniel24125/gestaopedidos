@@ -12,18 +12,18 @@ const FaturarArtigos = ({
 }) => {
     const {
         data: result, 
-        isFetching 
+        isFetching: faturadoFetching
     } = useSetArtigoFaturado(pedidoID ,index,faturado)
 
     React.useEffect(()=>{
-        if(!isFetching){
+        if(!faturadoFetching){
             refetch()
             setChangeArtigoFaturado(false)
             setRefetch(true)
         }
-    }, [isFetching])
+    }, [faturadoFetching])
     
-    if(isFetching) return (<CircularProgress size={30} />)
+    if(faturadoFetching) return (<CircularProgress size={30} />)
     return (<div></div>)
 }
 export default FaturarArtigos

@@ -10,18 +10,18 @@ const DeleteFatura = ({
 }) => {
     const {
         data: result, 
-        isFetching,
+        isFetching: deleteFaturaFetching,
     } = useDeleteFatura(id)
 
     React.useEffect(()=>{
-        if(!isFetching){
+        if(!deleteFaturaFetching){
             setOpenDelete(false)
             refetch()
             setDeleteFatura(false)
         }
-    }, [isFetching])
+    }, [deleteFaturaFetching])
 
-    if(isFetching) return <CircularProgress color="primary" />
+    if(deleteFaturaFetching) return <CircularProgress color="primary" />
     return (
         <div>
             
