@@ -373,22 +373,43 @@ app.post('/api/getArticle', jwtCheck,async (req, res) => {
 app.post('/api/searchPedidos', jwtCheck,async  (req, res) => {
   const word = req.body.word 
   const field = req.body.field 
-  const pedidos = await pedidos_ref.where(field, ">=", word)
-  .where(field, "<",word+ "\uf8ff")
-  .get()
-  .catch(err => {
-    res.json({
-        error: true,
-        msg: String(err)
+  let pedidos
+  if(field === "artigo"){
+    pedidos = await pedidos_ref.get()
+    .catch(err => {
+      res.json({
+          error: true,
+          msg: String(err)
+      })
     })
-  })
-  res.json({
-    data: pedidos.docs.map(doc=>{
+    pedidos = pedidos.docs.map(doc=>{
       return {
         id: doc.id,
         ...doc.data()
       }
     })
+    pedidos =pedidos.filter(p=>{
+      return p.artigos.filter(a=>a.referencia_artigo.toLowerCase().search(word.toLowerCase())!== -1).length > 0
+    })
+  }else{
+    pedidos = await pedidos_ref.where(field, ">=", word)
+    .where(field, "<",word+ "\uf8ff")
+    .get()
+    .catch(err => {
+      res.json({
+          error: true,
+          msg: String(err)
+      })
+    })
+    pedidos = pedidos.docs.map(doc=>{
+      return {
+        id: doc.id,
+        ...doc.data()
+      }
+    })
+  }
+  res.json({
+    data: pedidos
   })
 })
 
@@ -408,9 +429,292 @@ app.post("/api/saveConfig",jwtCheck, async (req, res) => {
 });
 
 
+const getPedidoTemplate = (pedido, empresa) =>{
+  let template =  `
+<!doctype html>
+<html>
+
+<head>
+ <title>Pedido</title>
+ <style>
+ .wrapper {
+  max-width: 800px;
+  background: white;
+  min-height: 900px;
+  font-size: 12px;
+  padding: 20px;
+
+}
+
+.wrapper .rowContainer {
+  width: 95%;
+  position: relative;
+  min-height: 130px;
+  display: inline-block
+}
+
+.wrapper .rowContainer .noteContainer {
+  width: 100%;
+  text-align: center;
+
+}
+
+.wrapper .rowContainer .noteContainer .note {
+  width: 50%;
+  font-weight: bold;
+  margin: 30px auto
+}
+
+.wrapper .rowContainer table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 30px;
+  margin-top: 10px
+}
+
+.wrapper .rowContainer table th {
+  text-align: left !important;
+  padding: 10px 10px;
+}
+
+.wrapper .rowContainer table td {
+  padding: 10px;
+}
+
+.wrapper .rowContainer .propostaTitulo {
+   padding: 10px;
+   margin-bottom: 10px
+}
+.wrapper .rowContainer .propostaTitulo strong{
+ text-decoration: underline
+}
+
+
+.wrapper .rowContainer .totalContainer {
+  width: 25%;
+  position: absolute;
+  right: 0
+}
+
+.wrapper .rowContainer .totalContainer .totalRow {
+  font-weight: bold;
+}
+
+
+.wrapper .rowContainer .column {
+  width: 48%;
+  display: inline-block
+}
+
+.wrapper .rowContainer .column .empresaInfoContainer {
+  width: 100%;
+  border: 1px solid black;
+  margin-left: -20px;
+}
+
+.wrapper .rowContainer .column .empresaInfoContainer p {
+  padding-left: 20px;
+}
+
+
+
+.wrapper .rowContainer img {
+  width: auto;
+  height: 100px;
+  margin-left: 10px;
+
+}
+
+.wrapper .remetenteContainer{
+    margin: 20px 0
+}
+
+.wrapper .rowContainer .infoContainer {
+  width: 45%;
+  border: 1px solid black;
+  margin-left: 70px;
+ display: inline-block;
+  font-size: 12px
+}
+
+.wrapper .rowContainer .infoContainer .infoRow {
+  width: 100%;
+
+  padding: 5px 20px;
+}
+
+.wrapper .rowContainer .infoContainer .infoRow .infoCol {
+  display: inline-block;
+  padding-top: 15px;
+
+}
+ </style>
+</head>
+
+<body>
+ <div class="wrapper">
+   <div class="rowContainer">
+     <img src="https://www.eng.uminho.pt/SiteAssets/Logo.PNG" alt="">
+     <img style="height: 50px" src="https://www.ceb.uminho.pt/Content/images/logoceb.png" alt="">
+     <div class="infoContainer"> `
+
+      pedido.ids.forEach(id=> {
+        
+        template += `
+      <div class="infoRow">
+        <div class="infoCol"> <strong>ID PEDIDO: </strong></div>
+        <div class="infoCol">${id}</div>
+      </div>
+      `})
+      template +=`
+      <div class="infoRow">
+      <div class="infoCol"> <strong>Nº CABIMENTO: </strong></div>
+      <div class="infoCol"> ${pedido.cabimento}</div>
+    </div>
+    <div class="infoRow">
+      <div class="infoCol"> <strong>NE: </strong></div>
+      <div class="infoCol"> ${pedido.ne}</div>
+    </div>
+
+  </div>
+</div>
+<div class="rowContainer remetenteContainer">
+
+  <div style="padding: 20px 0 20px 10px" class="column">
+    <p>Departamento de Engenharia Biológica</p>
+    <p>Campus de Gualtar</p>
+    <p>4710-057 Braga – P</p>
+    <p>tel: 253 604 400 </p>
+    <p><strong>NIF: 502 011 378</strong></p>
+  </div>
+  <div class="column">
+    <p><strong>Requisita-se à entidade:</strong></p>
+    <div class="empresaInfoContainer">
+      <p><strong>${pedido.empresa}</strong></p>
+      <p><strong>${empresa.morada?empresa.morada: "ND"}</strong></p>
+      <p><strong>${empresa.cp?empresa.cp: "ND"} - ${empresa.localidade}, ${pedido.distrito?pedido.distrito: "ND"}</strong></p>
+      <p><strong>NIF: ${empresa.nif?empresa.nif: "ND"}</strong></p>
+    </div>
+  </div>
+</div>
+<div class="rowContainer">
+      `
+      
+   pedido.propostas.forEach(p=>{
+    template+=`
+     <span class="propostaTitulo"> <strong> Proposta</strong>:  ${p.nome} </span>
+     <table>
+      <tr>
+        <th>Referência</th>
+        <th style="min-width: 300px">Artigo</th>
+        <th>Qt</th>
+        <th>Preço Unitário</th>
+        <th>Total</th>
+      </tr>`
+      p.artigos.forEach(a=>{
+        template +=`
+          <tr>
+            <td>${a.referencia_artigo}</td>
+            <td>${a.artigo}</td>
+            <td>${a.quantidade}</td>
+            <td>${Number(a.preco).toFixed(2)}</td>
+            <td>${Number(a.quantidade*a.preco).toFixed(2)}</td>
+          </tr>`})
+        template+=`
+        </table>
+      `
+      })
+    
+    template+=`
+   </div>
+    <div class="rowContainer">
+    
+     <div class="totalContainer">
+       <div class="totalRow">
+         <span>Total</span>
+         <span>${Number(pedido.valor_total).toFixed(2)} €</span>
+       </div>
+       <div class="totalRow">
+         <span>IVA</span>
+         <span>23%</span>
+         <span>${(Number(pedido.valor_total)*0.23).toFixed(2)} €</span>
+
+       </div>
+       <div class="totalRow">
+         <span>Total fatura</span>
+         <span>${(Number(pedido.valor_total)*1.23).toFixed(2)} €</span>
+       </div>
+     </div>
+   </div>
+   <div class="rowContainer">
+     <div class="noteContainer">
+       <p class="note">As faturas devem mencionar o número de cabimento e de NE.</p>
+
+     </div>
+   </div>
+ </div>
+</body>
+
+</html>
+`
+return template
+}
+
+// pedidos_ref.get().then(data=>{
+//   //UPDATE PEDIDOS 
+//   data.forEach(p=>{
+//     const empresa = p.data().empresa
+//     empresas_ref.where("empresa", "=", empresa).get().then(emp=>{
+//       emp.forEach(e=>{
+//        pedidos_ref.doc(p.id).set({
+//         empresa_id: e.id
+//        },{merge: true})
+//       })
+//     })
+//   })
+// })
+
 app.post("/api/downloadPDF",jwtCheck, async (req, res)=>{
-  const template = req.body.template; 
-  const pedidoID = req.body.pedidoID
+  const pedidosID = req.body.pedidoID
+  let empresa
+  let pedido = {
+    ids: pedidosID,
+    propostas: [],
+    valor_total: 0
+  }
+  for(let i in pedidosID){
+    let retrieved_pedido = await pedidos_ref.doc(pedidosID[i]).get()
+    .catch(err=>{
+      res.json({
+        error: true,
+        msg: String(err)
+      })
+    })
+    retrieved_pedido = retrieved_pedido.data()
+    empresa = await empresas_ref.doc(retrieved_pedido.empresa_id).get()
+    .catch(err=>{
+      console.log(err)
+      res.json({
+        error: true,
+        msg: String(err)
+      })
+    })
+    empresa = empresa.data()
+    pedido.propostas.push({
+      nome: retrieved_pedido.proposta,
+      artigos: retrieved_pedido.artigos
+    })
+    pedido = {
+      ...pedido, 
+      valor_total: pedido.valor_total + retrieved_pedido.valor_total,
+      cabimento: retrieved_pedido.cabimento, 
+      ne: retrieved_pedido.ne,
+      empresa: retrieved_pedido.empresa
+    }
+
+  }
+
+  const template = getPedidoTemplate(pedido, empresa)
 
   const browser = await puppeteer.launch({ args: ['--no-sandbox'],headless: true })
   .catch(err => {
@@ -437,7 +741,7 @@ app.post("/api/downloadPDF",jwtCheck, async (req, res)=>{
 
   const pdf = await page.pdf({
       format: "A4", 
-      // preferCSSPageSize: true
+      preferCSSPageSize: true
   }).catch(err => {
       res.json({
           error: true,
@@ -446,17 +750,17 @@ app.post("/api/downloadPDF",jwtCheck, async (req, res)=>{
   }) 
 
 
-  const file =  `Content-Disposition': 'attachment; filename=pedido_${pedidoID}.pdf`
+  const file =  `Content-Disposition': 'attachment; filename=pedido_${pedidosID.toString()}.pdf`
   res.writeHead(200, {
     'Content-Type': 'application/pdf',
     file
   });
 
-  await pedidos_ref.doc(pedidoID).set({
-    pedido_feito: true,
-    pedido_feito_formated_date: new Date().toJSON(),
-    pedido_feito_timestamp: Date.now()
-  }, {merge: true})
+  // await pedidos_ref.doc(pedidoID).set({
+  //   pedido_feito: true,
+  //   pedido_feito_formated_date: new Date().toJSON(),
+  //   pedido_feito_timestamp: Date.now()
+  // }, {merge: true})
   res.end(pdf, err=> {
       if (err) {
           console.log("Error");

@@ -5,11 +5,11 @@ import PerformSearch from "./PerformSearch"
 
 const SearchPedidosComponent = ({
     setPedidosList, 
-    refetch
+    refetch,
 }) => {
     const [searchData, setSearchData] = React.useState({
         term: "", 
-        field: "remetente"
+        field: "artigo"
     })
     const [error, setError] = React.useState(false)
     const [submitSearch, setSubmitSearch] = React.useState(false)
@@ -61,6 +61,9 @@ const SearchPedidosComponent = ({
                     })
                 }}
             >
+                 <MenuItem  value="artigo">
+                    Artigo
+                </MenuItem>
                 <MenuItem  value="remetente">
                     Remetente
                 </MenuItem>

@@ -172,7 +172,7 @@ export default class PedidosRepository  {
         return response.then(res =>res.json())
     }
     
-    downloadPDF = (accessToken,template, pedidoID) =>{
+    downloadPDF = (accessToken, pedidoID) =>{
         let url = this.apiBaseUrl().toString()
         url += `downloadPDF`
         const response =  fetch(url,{
@@ -181,7 +181,7 @@ export default class PedidosRepository  {
             Authorization: accessToken ? `Bearer ${accessToken}`: "",
             "content-type": "application/json", 
             },
-            body: JSON.stringify({template, pedidoID}),
+            body: JSON.stringify({ pedidoID}),
             json: true
         })
         return response.then(res =>res.blob())

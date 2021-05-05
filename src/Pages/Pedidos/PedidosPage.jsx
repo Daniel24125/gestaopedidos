@@ -23,11 +23,11 @@ import { Paper,
     DialogContentText, 
     Toolbar,
     TextField,
+    Checkbox ,
     CircularProgress
 } from '@material-ui/core'
 import {
     useGetPedidos,
-    getPedidoTemplate,
     useGetFornecedores
 } from "../../Domain/useCases"
 import SearchComponent from "./SearchPedidosComponent"
@@ -49,6 +49,8 @@ import DownloadPDF from "./DownloadPDF"
 import ChangeArtigosState from "./ChangeArtigosStatus"
 import FaturarArtigos from "./FaturarArtigos"
 import BuildIcon from '@material-ui/icons/Build';
+import HighlightOffIcon from '@material-ui/icons/HighlightOff';
+import GetAppIcon from '@material-ui/icons/GetApp';
 
 const PedidosPage = () => {
     const [pedidosList, setPedidosList] = React.useState(null);
@@ -72,7 +74,8 @@ const PedidosPage = () => {
     const [maxArtigo, setMaxArtigo] = React.useState(0)
     const [changeArtigoFaturado, setChangeArtigoFaturado] = React.useState(false)
     const [artigoFaturado, setArtigoFaturado] = React.useState(false)
-
+    const [showSelectPedidos, setShowSelectPedidos] = React.useState(false)
+    const [selectedPedidos, setSelectedPedidos] = React.useState({})
 
     const Rubricas = {
         "gestures": ()=> <GestureIcon style={{color: "#9b59b6"}}/>, 
@@ -101,15 +104,14 @@ const PedidosPage = () => {
     }, [fetchingPedidos,fetchingEmpresas])
 
     if((fetchingPedidos || !pedidosList) && !isRefetch) return <Loading msg="A carregar os pedidos" />
+
     return (
         <>
         {changeArtigoFaturado  && <FaturarArtigos
             pedidoID={selectedPedido}
             index={selectedArtigoIndex}
             faturado={artigoFaturado}
-            refetch={refetch}
             setChangeArtigoFaturado={setChangeArtigoFaturado}
-            setRefetch={setIsRefetch}
         />}
 
         {chegadaArtigosState && <ChangeArtigosState
@@ -130,13 +132,7 @@ const PedidosPage = () => {
         </Paper>}
        {pedidosList.data.length > 0 && <div className="pedidosContainer">
             
-            {fazerPedido && <DownloadPDF
-                template={getPedidoTemplate(selectedPedidoData, empresas.data.filter(e=>e.empresa === selectedPedidoData.empresa)[0])}
-                setFazerPedido={setFazerPedido}
-                refecth={refetch}
-                setIsRefetch={setIsRefetch}
-                pedidoID={selectedPedido}
-            /> }
+            
             <Dialog open={openArtigoChegadaForm} onClose={()=>setOpenArtigoChegadaForm(false)} aria-labelledby="form-dialog-title">
                 <DialogTitle id="form-dialog-title">Chegada de artigo</DialogTitle>
                 <DialogContent>
@@ -218,16 +214,40 @@ const PedidosPage = () => {
                 </DialogActions>
 
             </Dialog>
-            <div className="pedidosHeader">
-                <Button component={Link} to="/pedidos/registo" color="primary" variant="contained">registar pedido</Button>
-                <Paper className="searchContainer">
+            <Paper className="pedidosHeader">
+                <div className="searchContainer">
                     <SearchComponent setPedidosList={setPedidosList} refetch={refetch}/>
-                </Paper>
-            </div>
+                </div>
+                <div style={{display: "flex", alignItems: "center"}}>
+                    {Object.keys(selectedPedidos).filter(p=>selectedPedidos[p]).length > 0&&<>
+                        
+                        <Typography color="primary">{Object.keys(selectedPedidos).filter(p=>selectedPedidos[p]).length} pedidos selecionados </Typography>
+                        <Tooltip title="Remover todos">
+                            <IconButton  onClick={()=>setSelectedPedidos({})}>
+                                <HighlightOffIcon/>
+                            </IconButton>
+                        </Tooltip>
+                        {fazerPedido && <DownloadPDF
+                            setFazerPedido={setFazerPedido}
+                            refecth={refetch}
+                            setIsRefetch={setIsRefetch}
+                            pedidoID={Object.keys(selectedPedidos).filter(p=>selectedPedidos[p])}
+                        /> }
+                     { !fazerPedido &&  <Tooltip title="Download">
+                            <IconButton onClick={()=>setFazerPedido(true)}>
+                                <GetAppIcon/>
+                            </IconButton>
+                        </Tooltip>}
+                    </>}
+                   {Object.keys(selectedPedidos).filter(p=>selectedPedidos[p]).length === 0&& <Button component={Link} to="/pedidos/registo" color="primary" variant="contained">registar pedido</Button>}
+                </div>
+            </Paper>
             <TableContainer style={{paddingTop: "20px"}} component={Paper}>
                 <Table size="small">
                     <TableHead>
                         <TableRow >
+                            {/* {showSelectPedidos && <TableCell ></TableCell>} */}
+                            <TableCell ></TableCell>
                             <TableCell ></TableCell>
                             <TableCell style={{color: "#878787"}} >Data Pedido</TableCell>
                             <TableCell align="center" style={{color: "#878787"}} >Rúbrica</TableCell>
@@ -245,6 +265,19 @@ const PedidosPage = () => {
                             return (
                                 <>
                                     <TableRow key={`pedido_${i}`}>
+                                        <TableCell padding="checkbox">
+                                            <Checkbox
+                                                color="primary"
+                                                checked={Boolean(selectedPedidos[p.id])}
+                                                onChange={(e)=>{
+                                                    setSelectedPedidos({
+                                                        ...selectedPedidos, 
+                                                        [p.id]: e.target.checked
+                                                    })
+                                                    
+                                                }}
+                                            />
+                                        </TableCell>
                                         <TableCell  component="th" scope="row">
                                             {!fazerPedido && <Tooltip title={ p.pedido_feito? `Pedido feito em ${p.pedido_feito_formated_date.substring(0,10)}`: "Este pedido ainda não foi realizado"}>
                                                 <StarIcon style={{
@@ -396,13 +429,18 @@ const PedidosPage = () => {
                                                                 {a.entrega.chegada? a.entrega.guia: "ND"}
                                                              </TableCell>
                                                              <TableCell style={{borderColor: "#232323"}} align="center" component="th" scope="row">
-                                                                {!changeArtigoFaturado && <IconButton onClick={()=>{
+                                                                <IconButton className={ a.faturado? "faturado": "naoFaturado"} onClick={(e)=>{
+
                                                                     setArtigoFaturado(!a.faturado)
                                                                     setChangeArtigoFaturado(true)
-                                                                }} style={{color: a.faturado? "#2ecc71" : "#bdc3c7"}}>
+                                                                    setSelectedArtigoIndex(index_artigos)
+                                                                    setSelectedPedido(p.id)
+                                                                    let tempPedidos = pedidosList.data
+                                                                    tempPedidos[i].artigos[index_artigos].faturado = !a.faturado
+                                                                    setPedidosList({data: tempPedidos})
+                                                                }} >
                                                                     <DescriptionIcon />
-                                                                </IconButton>}
-                                                                {changeArtigoFaturado && <CircularProgress size={30} />}
+                                                                </IconButton>
                                                              </TableCell>
                                                          </TableRow>)
                                                         })}
@@ -512,10 +550,10 @@ const PedidosPage = () => {
                     setOpenCollapsePedido(selectedPedido)
                     setAnchorPedidos(null)
                 }}>MAIS DETALHES</MenuItem>
-               <MenuItem onClick={()=>{
+               {/* <MenuItem onClick={()=>{
                     setAnchorPedidos(null)
                     setFazerPedido(true)
-                    }}>FAZER PEDIDO</MenuItem>
+                    }}>FAZER PEDIDO</MenuItem> */}
                 <MenuItem component={Link} to={`/pedidos/edit/${selectedPedido}`} onClick={()=>setAnchorPedidos(null)}>EDITAR</MenuItem>
                 <MenuItem onClick={()=>{
                     setAnchorPedidos(null)

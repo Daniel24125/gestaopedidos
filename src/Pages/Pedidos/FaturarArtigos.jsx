@@ -6,8 +6,6 @@ const FaturarArtigos = ({
     pedidoID, 
     index, 
     faturado, 
-    refetch,
-    setRefetch,
     setChangeArtigoFaturado
 }) => {
     const {
@@ -17,13 +15,11 @@ const FaturarArtigos = ({
 
     React.useEffect(()=>{
         if(!faturadoFetching){
-            refetch()
             setChangeArtigoFaturado(false)
-            setRefetch(true)
         }
     }, [faturadoFetching])
     
-    if(faturadoFetching) return (<CircularProgress size={30} />)
+    if(faturadoFetching) return (<></>)
     return (<div></div>)
 }
 export default FaturarArtigos

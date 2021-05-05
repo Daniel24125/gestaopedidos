@@ -75,7 +75,7 @@ import BuildIcon from '@material-ui/icons/Build';
                             </TableCell>
                             <TableCell >Nota de Encomenda</TableCell>
                             <TableCell >Cabimento</TableCell>
-                            <TableCell >Compromnisso</TableCell>
+                            <TableCell >Compromisso</TableCell>
                             <TableCell >Saldo</TableCell>
                             <TableCell></TableCell>
                         </TableRow>
@@ -102,7 +102,7 @@ import BuildIcon from '@material-ui/icons/Build';
                                             width: (n.saldo_disponivel/n.saldo_abertura)*100+"%",
                                             backgroundColor: RubricasIcons[n.rubrica].color, 
                                         }} className="saldoDisponivelContainer"></div>
-                                        <Typography>{n.saldo_disponivel}€/{n.saldo_abertura}€</Typography>
+                                        <Typography>{Number(n.saldo_disponivel).toFixed(2)}€/{Number(n.saldo_abertura).toFixed(2)}€</Typography>
                                     </div>
                                 </TableCell>
                             <TableCell>

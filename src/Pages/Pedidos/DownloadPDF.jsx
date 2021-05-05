@@ -1,9 +1,9 @@
  import React from 'react'
 import {useDownloadPDF} from "../../Domain/useCases"
 import {saveAs} from "file-saver"
+import { CircularProgress } from '@material-ui/core'
 
 const DownloadPDF = ({
-    template,
     pedidoID,
     setFazerPedido,
     refecth,
@@ -12,7 +12,7 @@ const DownloadPDF = ({
     const {
         data: result, 
         isFetching: pdfFetching
-    } = useDownloadPDF(template, pedidoID)
+    } = useDownloadPDF( pedidoID)
 
     React.useEffect(()=>{
         if(!pdfFetching){
@@ -22,12 +22,10 @@ const DownloadPDF = ({
             setFazerPedido(false)
         }
     }, [pdfFetching])
-    // if(isFetching) return (<CircularProgress size={30} />)
+    // if(isFetching) return ()
 
     return (
-        <div>
-            
-        </div>
+        <CircularProgress color="primary"  size={30} />
     )
 }
 export default DownloadPDF
