@@ -51,6 +51,7 @@ import FaturarArtigos from "./FaturarArtigos"
 import BuildIcon from '@material-ui/icons/Build';
 import HighlightOffIcon from '@material-ui/icons/HighlightOff';
 import GetAppIcon from '@material-ui/icons/GetApp';
+import IndeterminateCheckBoxIcon from '@material-ui/icons/IndeterminateCheckBox';
 
 const PedidosPage = () => {
     const [pedidosList, setPedidosList] = React.useState(null);
@@ -221,12 +222,6 @@ const PedidosPage = () => {
                 <div style={{display: "flex", alignItems: "center"}}>
                     {Object.keys(selectedPedidos).filter(p=>selectedPedidos[p]).length > 0&&<>
                         
-                        <Typography color="primary">{Object.keys(selectedPedidos).filter(p=>selectedPedidos[p]).length} pedidos selecionados </Typography>
-                        <Tooltip title="Remover todos">
-                            <IconButton  onClick={()=>setSelectedPedidos({})}>
-                                <HighlightOffIcon/>
-                            </IconButton>
-                        </Tooltip>
                         {fazerPedido && <DownloadPDF
                             setFazerPedido={setFazerPedido}
                             refecth={refetch}
@@ -238,6 +233,12 @@ const PedidosPage = () => {
                                 <GetAppIcon/>
                             </IconButton>
                         </Tooltip>}
+                        <Typography color="primary">{Object.keys(selectedPedidos).filter(p=>selectedPedidos[p]).length} pedidos selecionados </Typography>
+                        <Tooltip title="Remover todos">
+                            <IconButton  onClick={()=>setSelectedPedidos({})}>
+                                <IndeterminateCheckBoxIcon/>
+                            </IconButton>
+                        </Tooltip>
                     </>}
                    {Object.keys(selectedPedidos).filter(p=>selectedPedidos[p]).length === 0&& <Button component={Link} to="/pedidos/registo" color="primary" variant="contained">registar pedido</Button>}
                 </div>

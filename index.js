@@ -8,6 +8,7 @@ const puppeteer = require('puppeteer');
 const jwks = require('jwks-rsa');
 const port = process.env.PORT || 8000;
 const path = require("path");
+const saveDataToExcel = require("./utils")().saveDataToExcel
 
 require('dotenv').config()
 admin.initializeApp({
@@ -711,7 +712,13 @@ app.post("/api/downloadPDF",jwtCheck, async (req, res)=>{
       ne: retrieved_pedido.ne,
       empresa: retrieved_pedido.empresa
     }
-
+    if(!retrieved_pedido.pedidos_feito){
+      await pedidos_ref.doc(pedidosID[i]).set({
+        pedido_feito: true,
+        pedido_feito_formated_date: new Date().toJSON(),
+        pedido_feito_timestamp: Date.now()
+      }, {merge: true})
+    }
   }
 
   const template = getPedidoTemplate(pedido, empresa)
@@ -756,11 +763,7 @@ app.post("/api/downloadPDF",jwtCheck, async (req, res)=>{
     file
   });
 
-  // await pedidos_ref.doc(pedidoID).set({
-  //   pedido_feito: true,
-  //   pedido_feito_formated_date: new Date().toJSON(),
-  //   pedido_feito_timestamp: Date.now()
-  // }, {merge: true})
+  
   res.end(pdf, err=> {
       if (err) {
           console.log("Error");
@@ -803,74 +806,16 @@ app.get("/api/downloadDistCum", jwtCheck,async (req, res)=>{
     })
   })
 
-  let template = `
-  <!doctype html>
-  <html>
- 
-  <head>
-    <title>Distribuição Cumulativa de ${new Date().getFullYear()}</title>
-    <style>
-      html {
-        -webkit-print-color-adjust: exact;
-      }
-      .wrapper {
-       
-        min-height: 900px;
-        font-size: 12px;
-        padding: 20px;
-        font-family: Arial, Helvetica, sans-serif;
-        display: flex; 
-        align-items: center;
-        flex-direction: column;
-      }
-    .tableContainer{
-        width: 600px ;
-        display: flex;
-        justify-content: center;
-        margin-top: 20px;
-    }
-    th, td{
-        padding: 5px 20px;
-        border-top: 1px solid black;
-        text-align: center;
- 
-    }
-    table{
-        width: 600px
-    }
-   
-      
-    </style>
-  </head>
- 
-  <body>
-    <div class="wrapper">
-      <div style="width: 600px;height: 70px; display: flex; justify-content: space-between; align-items: center;">
-        <div class="imageContainer">
-            <img style="width: 100px" src="https://www.ceb.uminho.pt/Content/images/logoceb.png" alt="">
-            <img style="width: 60px" src="http://www.dps.uminho.pt/images/EditorTexto/um_eeng.jpg" alt="">
-        </div>
-        <h3>
-            <strong>Distribuição Anual Cumulativa de ${new Date().getFullYear()}</strong>
-        </h3>
-      </div>
-      <div class="tableContainer">
+  const selected_months =[]
+  months.slice(0,new Date().getMonth()).forEach(m=>{
+    selected_months.push(m)
+    selected_months.push("Total")
+  })
 
-          <table cellspacing="0" cellpadding="0">
-              <thead>
-                <tr style="color: white;background: #272727;">
-                    <th>Grupo</th>
-                    <th>Membros</th>
-                    ${months.slice(0,new Date().getMonth()+1).map(m =>{
-                      return `
-                        <th>${m}</th>
-                        <th>Total</th>
-                      `})}
-                </tr>
-              </thead>
-              <tbody>
-  `
- 
+  const data = [
+    ["Grupo", "Membros", ...selected_months]
+  ]
+
   let distAnual = await distAnualRef.get()
   .catch(err => {
     res.json({
@@ -882,8 +827,8 @@ app.get("/api/downloadDistCum", jwtCheck,async (req, res)=>{
   distAnual = distAnual.docs.map(doc=>doc.data())
   for(let g_index = 0; g_index < grupos.docs.length; g_index++){
     const g = grupos.docs[g_index]
-    const current_dist =distAnual.filter(d=>d.grupo === g.data().abrv)[0].anual
-    const selected_months = months.slice(0,new Date().getMonth()+1) 
+    const current_dist = distAnual.filter(d=>d.grupo === g.data().abrv)[0].anual
+
     const membros  = await  grupos_ref.doc(g.id).collection("membros").get()
     .catch(err => {
       res.json({
@@ -891,88 +836,32 @@ app.get("/api/downloadDistCum", jwtCheck,async (req, res)=>{
           msg: String(err)
       })
     })  
-    // eslint-disable-next-line no-loop-func
+    
     membros.docs.forEach((m, m_index)=>{
       const dist = m.data().dist.filter(d=>d.year===new Date().getFullYear())[0]
-      
-      template += `
-      <tr>
-        <td style="font-weight: bold; background: ${g.data().color};"> ${m_index=== 0? g.data().abrv:"" }</td>
-        <td style="background: ${g.data().color};">${m.data().name}</td>
-      `
-      selected_months.forEach((_mounth,index)=>{
- 
-        // <td style="background: ${g.data().color}ad;">${index === 0 ?dist["m1"] : dist[`m${index+1}`]}</td>
-        // ${m_index=== 0?`<td rowspan="${membros.docs.length}" style="font-size: 20px ;font-weight: bold;background: ${g.data().color}ad;">${index=== 0? current_dist["m1"]:current_dist[`m${index}`] +current_dist[`m${index+1}`]}</td>`: ""}
+      let tempMembroDist = [m_index=== 0? g.data().abrv:"", m.data().name]
 
-        template+= `
-          <td style="background: ${g.data().color}ad;">${ dist[`m${index+1}`].toFixed(2)}</td>
-
-          ${m_index=== 0?`<td rowspan="${membros.docs.length}" style="font-size: 20px ;font-weight: bold;background: ${g.data().color}ad;">${current_dist[`m${index+1}`].toFixed(2)}</td>`: ""}
-        `
+   
+      months.slice(0,new Date().getMonth()).forEach((_mounth,index)=>{
+        tempMembroDist.push(dist[`m${index+1}`].toFixed(2))
+        tempMembroDist.push(m_index=== 0? current_dist[`m${index+1}`].toFixed(2) : "" )
+        
       })
-      template +="</tr>"
+      data.push(tempMembroDist)
     })
   }
 
-  template += `
+  const workbook = saveDataToExcel(data, `Distribuição Mensal - ${new Date().getFullYear()}`)
   
-  </tbody>
-  </table>
-  </div>
-  </div>
-  </body>
-
-  </html>
-`
-  const browser = await puppeteer.launch({ args: ['--no-sandbox'],headless: true })
-  .catch(err => {
-      res.json({
-          error: true,
-          msg: String(err)
-      })
-  }) 
-  
-  const page = await browser.newPage()
-  .catch(err => {
-      res.json({
-          error: true,
-          msg: String(err)
-      })
-  }) 
-  await page.setContent(template, {waitUntil: 'load'})
-  .catch(err => {
-      res.json({
-          error: true,
-          msg: String(err)
-      })
-  }) 
-
-  const pdf = await page.pdf({
-      format: "A2", 
-      landscape: true,
-      preferCSSPageSize: true
-  }).catch(err => {
-      res.json({
-          error: true,
-          msg: String(err)
-      })
-  }) 
-
-
-  const file =  `Content-Disposition': 'attachment; filename=dist_anual_cumulativa_${new Date().getFullYear()}.pdf`
-  res.writeHead(200, {
-    'Content-Type': 'application/pdf',
-    file
-  });
-
-  res.end(pdf, err=> {
-      if (err) {
-          console.log("Error");
-          console.log(err);
-      }   
-  });
-  await browser.close()
+  res.setHeader('Access-Control-Expose-Headers', "Content-Disposition"); 
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  res.setHeader("Content-Disposition", "attachment; filename=Distribuição_Mensal - "+ new Date().getFullYear()+".xlsx");
+  workbook.xlsx.write(res)
+      .then(function() {
+          res.status(200).end();
+      }).catch(err=>{
+          console.log(err)
+      });
 })
 
 
@@ -988,73 +877,6 @@ app.post("/api/downloadDistCumGrupo", jwtCheck,async (req, res)=>{
     })
   })
 
-  let template = `
-  <!doctype html>
-  <html>
- 
-  <head>
-    <title>${grupo.data().abrv} - Distribuição Cumulativa de ${new Date().getFullYear()} </title>
-    <style>
-      html {
-        -webkit-print-color-adjust: exact;
-      }
-      .wrapper {
-       
-        min-height: 900px;
-        font-size: 12px;
-        padding: 20px;
-        font-family: Arial, Helvetica, sans-serif;
-        display: flex; 
-        align-items: center;
-        flex-direction: column;
-      }
-    .tableContainer{
-        width: 600px ;
-        display: flex;
-        justify-content: center;
-        margin-top: 20px;
-    }
-    th, td{
-        padding: 5px 20px;
-        border-top: 1px solid black;
-        text-align: center;
- 
-    }
-    table{
-        width: 600px
-    }
-   
-      
-    </style>
-  </head>
- 
-  <body>
-    <div class="wrapper">
-      <div style="width: 600px;height: 70px; display: flex; justify-content: space-between; align-items: center;">
-        <div class="imageContainer">
-            <img style="width: 100px" src="https://www.ceb.uminho.pt/Content/images/logoceb.png" alt="">
-            <img style="width: 60px" src="http://www.dps.uminho.pt/images/EditorTexto/um_eeng.jpg" alt="">
-        </div>
-        <h3>
-            <strong>${grupo.data().abrv} - Distribuição Anual Cumulativa de ${new Date().getFullYear()}</strong>
-        </h3>
-      </div>
-      <div class="tableContainer">
-
-          <table cellspacing="0" cellpadding="0">
-              <thead>
-                <tr style="color: white;background: #272727;">
-                    <th>Membros</th>
-                    ${months.slice(0,new Date().getMonth()+1).map(m =>{
-                      return `
-                        <th>${m}</th>
-                        <th>Total</th>
-                      `})}
-                </tr>
-              </thead>
-              <tbody>
-  `
- 
   let distAnual = await distAnualRef.where("grupo", "==", grupo.data().abrv).get()
   .catch(err => {
     res.json({
@@ -1063,8 +885,18 @@ app.post("/api/downloadDistCumGrupo", jwtCheck,async (req, res)=>{
     })
   })
 
+
+  const selected_months =[]
+  months.slice(0,new Date().getMonth()).forEach(m=>{
+    selected_months.push(m)
+    selected_months.push("Total")
+  })
+
+  const data = [
+    ["Membros", ...selected_months]
+  ]
+
   const current_dist = distAnual.docs.map(doc=>doc.data())[0].anual
- const selected_months = months.slice(0,new Date().getMonth()+1) 
   const membros  = await  grupos_ref.doc(grupoID).collection("membros").get()
   .catch(err => {
     res.json({
@@ -1074,80 +906,68 @@ app.post("/api/downloadDistCumGrupo", jwtCheck,async (req, res)=>{
   })  
   membros.docs.forEach((m, m_index)=>{
     const dist = m.data().dist.filter(d=>d.year===new Date().getFullYear())[0]
-    console.log(dist["m1"])
-    template += `
-    <tr>
-      <td style="background: ${grupo.data().color};">${m.data().name}</td>
-    `
-    selected_months.forEach((_mounth,index)=>{
-      template+= `
-        <td style="background: ${grupo.data().color}ad;">${index === 0 ?dist["m1"] : dist[`m${index}`]+ dist[`m${index+1}`]}</td>
-        ${m_index=== 0?`<td rowspan="${membros.docs.length}" style="font-size: 20px ;font-weight: bold;background: ${grupo.data().color}ad;">${index=== 0? current_dist["m1"]:current_dist[`m${index}`] +current_dist[`m${index+1}`]}</td>`: ""}
-      `
+    let tempMembroDist = [m.data().name]
+    months.slice(0,new Date().getMonth()).forEach((_mounth,index)=>{
+      tempMembroDist.push( dist[`m${index+1}`])
+      tempMembroDist.push(m_index=== 0 ? current_dist[`m${index+1}`]: "")
+  
     })
-    template +="</tr>"
+    data.push(tempMembroDist)
   })
-
-
-  template += `
   
-  </tbody>
-  </table>
-  </div>
-  </div>
-  </body>
 
-  </html>
-`
-  const browser = await puppeteer.launch({ args: ['--no-sandbox'],headless: true })
-  .catch(err => {
-      res.json({
-          error: true,
-          msg: String(err)
-      })
-  }) 
+  const workbook = saveDataToExcel(data, `${grupo.data().abrv}`)
   
-  const page = await browser.newPage()
-  .catch(err => {
-      res.json({
-          error: true,
-          msg: String(err)
-      })
-  }) 
-  await page.setContent(template, {waitUntil: 'load'})
-  .catch(err => {
-      res.json({
-          error: true,
-          msg: String(err)
-      })
-  }) 
-
-  const pdf = await page.pdf({
-      format: "A2", 
-      landscape: true,
-      preferCSSPageSize: true
-  }).catch(err => {
-      res.json({
-          error: true,
-          msg: String(err)
-      })
-  }) 
-
-
-  const file =  `Content-Disposition': 'attachment; filename=dist_anual_cumulativa_${new Date().getFullYear()}.pdf`
-  res.writeHead(200, {
-    'Content-Type': 'application/pdf',
-    file
-  });
-
-  res.end(pdf, err=> {
-      if (err) {
-          console.log("Error");
-          console.log(err);
-      }   
-  });
-  await browser.close()
+  res.setHeader('Access-Control-Expose-Headers', "Content-Disposition"); 
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  res.setHeader("Content-Disposition", "attachment; filename=Distribuição_Mensal - "+grupo.data().abrv+".xlsx");
+  workbook.xlsx.write(res)
+      .then(function() {
+          res.status(200).end();
+      }).catch(err=>{
+          console.log(err)
+      });
 })
+
+app.get("/api/exportSaldosFornecedores", jwtCheck,async (req, res)=>{
+
+  const data=[
+    ["Empresa", "Rúbrica", "Nota de Encomenda", "Cabimento", "Compromisso", "Saldo Disponível"]
+  ]
+  const nes = await notasEncomendaRef.get()
+  .catch(err => {
+    res.json({
+        error: true,
+        msg: String(err)
+    })
+  })  
+
+  nes.docs.forEach(n=>{
+    const ne = n.data()
+    data.push([
+      ne.empresa, 
+      ne.rubrica, 
+      ne.ne, 
+      ne.cabimento,
+      ne.compromisso,
+      Number(ne.saldo_disponivel).toFixed(2)
+    ]) 
+  })
+  console.log(data)
+
+  const workbook = saveDataToExcel(data, `Saldos`)
+  
+  res.setHeader('Access-Control-Expose-Headers', "Content-Disposition"); 
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  res.setHeader("Content-Disposition", "attachment; filename=Saldos.xlsx");
+  workbook.xlsx.write(res)
+      .then(function() {
+          res.status(200).end();
+      }).catch(err=>{
+          console.log(err)
+      });
+})
+
 
 
 const updateGrupoDist = async (valor_total, pedido, res)=>{
@@ -1962,9 +1782,9 @@ app.post("/api/editPedido",jwtCheck, async (req, res) => {
 });
 
 
-app.get('*', (req, res, next) => {
-  res.sendFile(path.join(__dirname, "/build/index.html"))     
-});
+// app.get('*', (req, res, next) => {
+//   res.sendFile(path.join(__dirname, "/build/index.html"))     
+// });
 
 app.listen(port, () => {
   console.log("App is listenning o port " + port);

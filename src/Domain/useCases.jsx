@@ -10,7 +10,21 @@ let accessToken
 
 export const useSetAccessToken =  at => accessToken = at
 
-
+export const useExportSaldos = () =>{
+    const fornecedores = Container.get(Fornecedores)
+    return useQuery({
+        queryKey: ['export_saldos'],
+        queryFn: async () => {
+            const info =  await fornecedores.exportSaldosFornecedores(accessToken )
+            return info
+        },
+        config: { 
+          refetchOnWindowFocus: false,
+          refetchInterval: false,
+          refetchIntervalInBackground: false,
+        }
+    })
+}
 
 
 export const useGetNumPedidos = () =>{

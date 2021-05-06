@@ -11,7 +11,7 @@ const DownloadDistCum = ({
     } = useDownloadDistCum()
     React.useEffect(()=>{
         if(!downloadDistFetching){
-            saveAs(result, `Distribuição Cumulativa ${new Date().getFullYear()}.pdf`)
+            saveAs(result, `Distribuição Mensal ${new Date().getFullYear()}.xlsx`)
             setExportDistAnual(false)
         }
     }, [downloadDistFetching])

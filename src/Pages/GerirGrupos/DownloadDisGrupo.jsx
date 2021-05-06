@@ -18,7 +18,7 @@ const DownloadDisGrupo = ({
 
     React.useEffect(()=>{
         if(!donwloadFetching && !fetchingGrupo){
-            saveAs(result, `Distribuição Cumulativa ${new Date().getFullYear()} - ${grupo.data.abrv}.pdf`)
+            saveAs(result, `Distribuição Mensal ${new Date().getFullYear()} - ${grupo.data.abrv}.xlsx`)
             setExportDistAnualGrupo(false)
         }
     }, [donwloadFetching, fetchingGrupo])

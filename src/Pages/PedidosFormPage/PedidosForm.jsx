@@ -76,6 +76,12 @@ const PedidosForm = () => {
 
     const [tempRemetente, setTempRemetente] = React.useState("");
 
+    const [tempRemetenteData, setTempRemetenteData] = React.useState({
+        nome: "",
+        artigos: [],
+        proposta: ""
+    })
+
     const [tempFatura, setTempFatura] = React.useState({
         name: "", 
         data_emissao: today, 
@@ -197,6 +203,7 @@ const PedidosForm = () => {
             }
         }, [isLoading])
         
+    console.log(tempRemetenteData)
     if((isLoading || Object.keys(submitData).length=== 0)) return <Loading msg="A carregar dados necessários..." />
     if(submitForm)  return <SubmitForm data={submitData}  id={id} submitFunction={id? useEditPedido: useSendPedidos}/>
     return (
@@ -213,12 +220,30 @@ const PedidosForm = () => {
                         value={tempRemetente}
                         onChange={(e)=>{
                             setTempRemetente(e.target.value)
+                            setTempRemetenteData({
+                                ...tempRemetenteData, 
+                                nome: e.target.value
+                            })
                         }}
                         variant="filled"
                         fullWidth
                         margin="normal"
                     />
                     {tempRemetente !== "" && <>
+                    <TextField
+                        id="proposta"
+                        label="Proposta"
+                        value={tempRemetenteData.proposta}
+                        onChange={(e)=>{
+                            setTempRemetenteData({
+                                ...tempRemetenteData, 
+                                proposta: e.target.value
+                            })
+                        }}
+                        variant="filled"
+                        fullWidth
+                        margin="normal"
+                    />
                     <FormControl 
                         variant="outlined"
                         fullWidth
@@ -384,17 +409,22 @@ const PedidosForm = () => {
                                  }else{
                                     tempRemetenteArtigo.push(tempArticle)
                                  }
+                                 setTempRemetenteData({
+                                     ...tempRemetenteData,
+                                     artigos: tempRemetenteArtigo
+                                 })
                                 setSubmitData({
                                     ...submitData,
                                     artigos: tempArtigos,
                                     valor_total: Number(submitData.valor_total) + Number(tempArticle.quantidade * tempArticle.preco),
-                                    remetentes: {
-                                        ...submitData.remetentes,
-                                        [tempRemetente]: {
-                                            nome: tempRemetente,
-                                            artigos: tempRemetenteArtigo
-                                        }
-                                    }
+                                    // remetentes: {
+                                    //     ...submitData.remetentes,
+                                    //     [tempRemetente]: {
+                                    //         ...submitData.remetentes[tempRemetente],
+                                    //         nome: tempRemetente,
+                                    //         artigos: tempRemetenteArtigo
+                                    //     }
+                                    // }
                                 })
                                 setTempArticle({
                                     artigo: "", 
@@ -415,8 +445,8 @@ const PedidosForm = () => {
 
                     </div>
                     
-                       {submitData.remetentes[tempRemetente] && <List dense>
-                            {submitData.remetentes[tempRemetente].artigos.map((a, index)=>{
+                       {tempRemetenteData.artigos.length > 0  && <List dense>
+                            {tempRemetenteData.artigos.map((a, index)=>{
                                 return(<ListItem>
                                     <ListItemText primary={a.artigo} secondary={`${a.referencia_artigo} - Quantidade: ${a.quantidade}`} />
                                     <ListItemSecondaryAction>
@@ -434,6 +464,7 @@ const PedidosForm = () => {
                                                  ...submitData,
                                                  remetentes: {
                                                     [tempRemetente]: {
+                                                        ...submitData.remetentes[tempRemetente],
                                                         nome: tempRemetente,
                                                         artigos: tempRemetenteArtigos
                                                     }
@@ -455,8 +486,15 @@ const PedidosForm = () => {
                             Cancelar
                         </Button>
                         
-                        <Button disabled={tempRemetente === ""|| !submitData.remetentes[tempRemetente]} onClick={()=>{
+                        <Button disabled={tempRemetente === ""||  tempRemetenteData.artigos.length === 0} onClick={()=>{
+                            setSubmitData({
+                                ...submitData, 
+                                remetentes: {
+                                    [tempRemetente]: tempRemetenteData
+                                }
+                            })
                             setTempRemetente("")
+
                             setAddArtigo(false)
                         }}>adcionar remetente</Button>
                 </DialogActions>
@@ -718,7 +756,7 @@ const PedidosForm = () => {
                 select
                 label="Nota de Encomenda"
                 value={submitData.ne}
-                helperText={submitData.ne !== "" && empresasList.length > 0 ? `Saldo disponível: ${empresasList.filter(e=> e.ne === submitData.ne)[0].saldo_disponivel}€`: ""}
+                helperText={submitData.ne !== "" && empresasList.length > 0 ? `Saldo disponível: ${Number(empresasList.filter(e=> e.ne === submitData.ne)[0].saldo_disponivel).toFixed(2)}€`: ""}
                 onChange={(evt, name)=>{
                     setSubmitData({
                         ...submitData, 
@@ -738,15 +776,7 @@ const PedidosForm = () => {
                 })}
             </TextField>}
 
-            <TextField
-                required
-                error={error.proposta}
-                id="proposta"
-                label="Proposta"
-                value={submitData.proposta}
-                onChange={onChangeInput}
-                variant="filled"
-            />
+           
             
             <TextField
                 id="notas"
@@ -896,10 +926,17 @@ const PedidosForm = () => {
                 open={Boolean(menuAnchor)}
                 onClose={()=>setMenuAnchor(null)}
             >
+               
                 <MenuItem onClick={()=>{
                     setMenuAnchor(null)
                     setCollapseRemetente(selectedRemetente)
                 }}>VER ARTIGOS</MenuItem>
+                 <MenuItem onClick={()=>{
+                    setMenuAnchor(null)
+                    setTempRemetente(selectedRemetente)
+                    setTempRemetenteData(submitData.remetentes[selectedRemetente])
+                    setAddArtigo(true)
+                }}>EDITAR</MenuItem>
                 <MenuItem onClick={()=>{
                     setMenuAnchor(null)
                     let tempRemetenteList = submitData.remetentes

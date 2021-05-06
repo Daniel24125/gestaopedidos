@@ -30,6 +30,18 @@ export default class FornecedoresRepository  {
         })
         return response.then(res =>res.json())
     }
+    exportSaldosFornecedores = (accessToken)=>{
+        let url = this.apiBaseUrl().toString()
+        url += `exportSaldosFornecedores`
+        const response =  fetch(url,{
+            method: "GET", 
+            headers: {
+                Authorization: accessToken ? `Bearer ${accessToken}`: ""
+            }
+        })
+        console.log(response)
+        return response.then(res =>res.blob())
+    }
 
     getRubricasByEmpresa = (accessToken,empresa) =>{
         let url = this.apiBaseUrl().toString()
@@ -209,4 +221,6 @@ export default class FornecedoresRepository  {
             })
         return response.then(res =>res.json())
     }
+
+    
 }
