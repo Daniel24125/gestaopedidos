@@ -453,7 +453,7 @@ const PedidosPage = () => {
                                                 {Object.keys(p.remetentes).map(r=>{
                                                     return (<>
                                                         <Toolbar style={{color: "white"}}>
-                                                            <Typography>{r}</Typography>
+                                                            <Typography>{r} {p.remetentes[r].proposta? ` - Proposta: ${p.remetentes[r].proposta}`: ""}</Typography>
                                                         </Toolbar>
                                                         <Table key={r} size="small">
                                                         <TableHead>
@@ -492,7 +492,7 @@ const PedidosPage = () => {
                                                 </>)
                                                 })}
                                                 <div className="artigoInfoContainer">
-                                                    <Typography> <strong style={{color: "#3498db"}}>Proposta:</strong> {p.proposta}</Typography>
+                                                    {p.proposta && <Typography> <strong style={{color: "#3498db"}}>Proposta:</strong> {p.proposta}</Typography>}
                                                     <Typography> <strong style={{color: "#3498db"}}>NE:</strong> {p.ne}</Typography>
                                                     <Typography> <strong style={{color: "#3498db"}}>Cabimento:</strong> {p.cabimento}</Typography>
                                                     {p.notas !== "" && <Tooltip title="Comentários">

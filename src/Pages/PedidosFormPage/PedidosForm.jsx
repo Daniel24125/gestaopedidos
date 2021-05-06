@@ -96,7 +96,6 @@ const PedidosForm = () => {
         remetentes: false,
         empresa: false,
         ne: false,
-        proposta: false,
         artigos: false,
     })
     
@@ -203,7 +202,7 @@ const PedidosForm = () => {
             }
         }, [isLoading])
         
-    console.log(tempRemetenteData)
+    
     if((isLoading || Object.keys(submitData).length=== 0)) return <Loading msg="A carregar dados necessários..." />
     if(submitForm)  return <SubmitForm data={submitData}  id={id} submitFunction={id? useEditPedido: useSendPedidos}/>
     return (
