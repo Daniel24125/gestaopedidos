@@ -394,10 +394,13 @@ const PedidosForm = () => {
                                 const artigoIndex = tempArtigos.findIndex(ta=>ta.referencia_artigo === tempArticle.referencia_artigo)
                                 if(artigoIndex === -1){
                                     tempArtigos.push(tempArticle)
-                                 }else{
+                                }else{
                                     tempArtigos[artigoIndex].quantidade = Number(tempArtigos[artigoIndex].quantidade) + Number(tempArticle.quantidade)
-                                 }
-                                 const tempRemetenteArtigo = submitData.remetentes[tempRemetente] ? submitData.remetentes[tempRemetente].artigos: []
+                                }
+                                console.log(submitData.remetentes[tempRemetente])
+                                // const tempRemetenteArtigo = submitData.remetentes[tempRemetente] ? submitData.remetentes[tempRemetente].artigos: []
+                                const tempRemetenteArtigo = tempRemetenteData.artigos
+                                
                                  if(tempRemetenteArtigo.length > 0){
                                      const remetenteArtigoIndex = tempRemetenteArtigo.findIndex(ta=>ta.referencia_artigo === tempArticle.referencia_artigo)
                                     if(remetenteArtigoIndex === -1){
