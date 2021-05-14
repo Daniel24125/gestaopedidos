@@ -193,7 +193,7 @@ const PedidosForm = () => {
                     responsavel:id?  pedido.data.responsavel :  grupos.data[0].membros[0],
                     proposta:id?  pedido.data.proposta : "",
                     notas:id?  pedido.data.notas: "",
-                    valor_total: id?  pedido.data.valor_total: "",
+                    valor_total: id?  pedido.data.valor_total: 0,
                     artigos: id?  pedido.data.artigos : [],
                 })
                 if(id){
@@ -201,7 +201,7 @@ const PedidosForm = () => {
                 }
             }
         }, [isLoading])
-        
+
     
     if((isLoading || Object.keys(submitData).length=== 0)) return <Loading msg="A carregar dados necessários..." />
     if(submitForm)  return <SubmitForm data={submitData}  id={id} submitFunction={id? useEditPedido: useSendPedidos}/>
@@ -456,6 +456,7 @@ const PedidosForm = () => {
                                              tempRemetenteArtigos.splice(index,1)
                                              let tempArtigos = submitData.artigos
                                              const artigoIndex = tempArtigos.findIndex(ta=>ta.referencia_artigo === a.referencia_artigo)
+                                         
                                              if(submitData.artigos[artigoIndex].quantidade - a.quantidade === 0){
                                                 tempArtigos.splice(artigoIndex, 1)
                                              }else{
@@ -466,6 +467,7 @@ const PedidosForm = () => {
                                                  artigos: tempRemetenteArtigos
                                              })
                                              setSubmitData({
+                                                 ...submitData,
                                                  artigos: tempArtigos,
                                                  valor_total: submitData.valor_total - (a.preco*a.quantidade)
                                              })
@@ -479,7 +481,15 @@ const PedidosForm = () => {
 
                     </DialogContent>
                     <DialogActions>
-                        <Button onClick={()=>setAddArtigo(false)} color="primary">
+                        <Button onClick={()=>{
+                            setAddArtigo(false)
+                            setTempRemetenteData({
+                                nome: "",
+                                artigos: [],
+                                proposta: ""
+                            })
+                            
+                        }} color="primary">
                             Cancelar
                         </Button>
                         
@@ -487,11 +497,16 @@ const PedidosForm = () => {
                             setSubmitData({
                                 ...submitData, 
                                 remetentes: {
+                                    ...submitData.remetentes,
                                     [tempRemetente]: tempRemetenteData
                                 }
                             })
                             setTempRemetente("")
-
+                            setTempRemetenteData({
+                                nome: "",
+                                artigos: [],
+                                proposta: ""
+                            })
                             setAddArtigo(false)
                         }}>adcionar remetente</Button>
                 </DialogActions>
@@ -902,7 +917,7 @@ const PedidosForm = () => {
                 </Typography>}
             </>}
 
-            
+            <Typography style={{marginTop: 20}} variant="h6">Total do Pedido: {submitData.valor_total}€</Typography>
 
             <Button
                 variant="contained"
