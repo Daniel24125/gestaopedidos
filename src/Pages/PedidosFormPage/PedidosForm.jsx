@@ -397,7 +397,6 @@ const PedidosForm = () => {
                                 }else{
                                     tempArtigos[artigoIndex].quantidade = Number(tempArtigos[artigoIndex].quantidade) + Number(tempArticle.quantidade)
                                 }
-                                console.log(submitData.remetentes[tempRemetente])
                                 // const tempRemetenteArtigo = submitData.remetentes[tempRemetente] ? submitData.remetentes[tempRemetente].artigos: []
                                 const tempRemetenteArtigo = tempRemetenteData.artigos
                                 
