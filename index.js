@@ -702,6 +702,7 @@ app.post("/api/downloadPDF",jwtCheck, async (req, res)=>{
       })
     })
     empresa = empresa.data()
+    console.log(retrieved_pedido.empresa_id)
     pedido.propostas.push({
       nome: retrieved_pedido.proposta,
       artigos: retrieved_pedido.artigos

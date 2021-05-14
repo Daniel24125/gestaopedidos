@@ -164,6 +164,7 @@ const PedidosForm = () => {
         
     }
 
+    console.log(empresasList)
     const isLoading = React.useMemo(() => {
         return  fetchingGrupos 
             || fetchingPedido
@@ -185,7 +186,6 @@ const PedidosForm = () => {
                     day:id?  pedido.data.day :  date.getDate(),
                     mounth:id?  pedido.data.mounth: date.getMonth()+1,
                     year:id?  pedido.data.year : date.getFullYear(),
-                    // remetente: id? pedido.data.remetente : "",
                     remetentes: id? pedido.data.remetentes : {},
                     grupo:id?  pedido.data.grupo : grupos.data[0].name,
                     grupo_abrv:id?  pedido.data.grupo_abrv : grupos.data[0].abrv,
@@ -744,7 +744,7 @@ const PedidosForm = () => {
                     setSubmitData({
                         ...submitData, 
                         empresa: e.target.value, 
-                        empresa_id:  empresasList.filter(n=>n.empresa===e.target.value)[0].id,
+                        empresa_id:  empresasList.filter(n=>n.empresa===e.target.value)[0].empresa_id,
                         ne: empresasList.filter(n=>n.empresa===e.target.value)[0].ne,
                         ne_id: empresasList.filter(n=>n.empresa===e.target.value)[0].id,
                         cabimento: empresasList.filter(n=>n.empresa===e.target.value)[0].cabimento
