@@ -452,7 +452,7 @@ const PedidosForm = () => {
                                     <ListItemText primary={a.artigo} secondary={`${a.referencia_artigo} - Quantidade: ${a.quantidade}`} />
                                     <ListItemSecondaryAction>
                                         <IconButton onClick={()=>{
-                                             let tempRemetenteArtigos = submitData.remetentes[tempRemetente].artigos
+                                             let tempRemetenteArtigos = tempRemetenteData.artigos
                                              tempRemetenteArtigos.splice(index,1)
                                              let tempArtigos = submitData.artigos
                                              const artigoIndex = tempArtigos.findIndex(ta=>ta.referencia_artigo === a.referencia_artigo)
@@ -461,15 +461,11 @@ const PedidosForm = () => {
                                              }else{
                                                 tempArtigos[artigoIndex].quantidade -= a.quantidade
                                              }
+                                             setTempRemetenteData({
+                                                 ...tempRemetenteData,
+                                                 artigos: tempRemetenteArtigos
+                                             })
                                              setSubmitData({
-                                                 ...submitData,
-                                                 remetentes: {
-                                                    [tempRemetente]: {
-                                                        ...submitData.remetentes[tempRemetente],
-                                                        nome: tempRemetente,
-                                                        artigos: tempRemetenteArtigos
-                                                    }
-                                                 },
                                                  artigos: tempArtigos,
                                                  valor_total: submitData.valor_total - (a.preco*a.quantidade)
                                              })
