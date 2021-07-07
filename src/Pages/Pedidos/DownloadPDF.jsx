@@ -1,9 +1,10 @@
  import React from 'react'
-import {useDownloadPDF} from "../../Domain/useCases"
+import {useExport} from "../../Domain/useCases"
 import {saveAs} from "file-saver"
 import { CircularProgress } from '@material-ui/core'
 
 const DownloadPDF = ({
+    type,
     pedidoID,
     setFazerPedido,
     refecth,
@@ -11,17 +12,17 @@ const DownloadPDF = ({
 }) => {
     const {
         data: result, 
-        isFetching: pdfFetching
-    } = useDownloadPDF( pedidoID)
+        isFetching: exportFetch
+    } = useExport( type,pedidoID)
 
     React.useEffect(()=>{
-        if(!pdfFetching){
+        if(!exportFetch){
             saveAs(result, `pedido_${pedidoID}`)
             setIsRefetch(true)
             refecth()
             setFazerPedido(false)
         }
-    }, [pdfFetching])
+    }, [exportFetch])
     // if(isFetching) return ()
 
     return (

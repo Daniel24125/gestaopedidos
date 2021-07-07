@@ -49,9 +49,9 @@ import DownloadPDF from "./DownloadPDF"
 import ChangeArtigosState from "./ChangeArtigosStatus"
 import FaturarArtigos from "./FaturarArtigos"
 import BuildIcon from '@material-ui/icons/Build';
-import HighlightOffIcon from '@material-ui/icons/HighlightOff';
 import GetAppIcon from '@material-ui/icons/GetApp';
 import IndeterminateCheckBoxIcon from '@material-ui/icons/IndeterminateCheckBox';
+import CancelIcon from '@material-ui/icons/Cancel';
 
 const PedidosPage = () => {
     const [pedidosList, setPedidosList] = React.useState(null);
@@ -75,8 +75,11 @@ const PedidosPage = () => {
     const [maxArtigo, setMaxArtigo] = React.useState(0)
     const [changeArtigoFaturado, setChangeArtigoFaturado] = React.useState(false)
     const [artigoFaturado, setArtigoFaturado] = React.useState(false)
-    const [showSelectPedidos, setShowSelectPedidos] = React.useState(false)
+    const [showExport, setShowExport] = React.useState(false)
     const [selectedPedidos, setSelectedPedidos] = React.useState({})
+    const [selectedExportMethod, setSelectedExportMethod] = React.useState(null)
+    const [anchorOptions, setAnchorOptions] = React.useState(null)
+
 
     const Rubricas = {
         "gestures": ()=> <GestureIcon style={{color: "#9b59b6"}}/>, 
@@ -223,6 +226,7 @@ const PedidosPage = () => {
                     {Object.keys(selectedPedidos).filter(p=>selectedPedidos[p]).length > 0&&<>
                         
                         {fazerPedido && <DownloadPDF
+                            type={selectedExportMethod}
                             setFazerPedido={setFazerPedido}
                             refecth={refetch}
                             setIsRefetch={setIsRefetch}
@@ -239,8 +243,23 @@ const PedidosPage = () => {
                                 <IndeterminateCheckBoxIcon/>
                             </IconButton>
                         </Tooltip>
+                        
                     </>}
+                  
                    {Object.keys(selectedPedidos).filter(p=>selectedPedidos[p]).length === 0&& <Button component={Link} to="/pedidos/registo" color="primary" variant="contained">registar pedido</Button>}
+                  {!showExport &&  <IconButton onClick={(e)=>{
+                       setAnchorOptions(e.target)
+                    }}>
+                        <MoreVertIcon />
+                    </IconButton>}
+                    {showExport && <Tooltip title="Cancelar">
+                            <IconButton  onClick={()=>{
+                                setSelectedPedidos({})
+                                setShowExport(false)
+                            }}>
+                                <CancelIcon/>
+                            </IconButton>
+                        </Tooltip>}
                 </div>
             </Paper>
             <TableContainer style={{paddingTop: "20px"}} component={Paper}>
@@ -255,7 +274,7 @@ const PedidosPage = () => {
                             {/* <TableCell style={{color: "#878787"}} >Remetente</TableCell> */}
                             <TableCell style={{color: "#878787"}} >Grupo</TableCell>
                             <TableCell style={{color: "#878787"}} >Empresa</TableCell>
-                            <TableCell style={{color: "#878787"}} >Valor Total</TableCell>
+                            <TableCell style={{color: "#878787"}} >Valor Total s/ IVA</TableCell>
                             <TableCell style={{color: "#878787"}} >Fatura</TableCell>
                             <TableCell ></TableCell>
 
@@ -267,17 +286,16 @@ const PedidosPage = () => {
                                 <>
                                     <TableRow key={`pedido_${i}`}>
                                         <TableCell padding="checkbox">
-                                            <Checkbox
+                                           {showExport &&  <Checkbox
                                                 color="primary"
                                                 checked={Boolean(selectedPedidos[p.id])}
                                                 onChange={(e)=>{
                                                     setSelectedPedidos({
                                                         ...selectedPedidos, 
                                                         [p.id]: e.target.checked
-                                                    })
-                                                    
+                                                    })                                                    
                                                 }}
-                                            />
+                                            />}
                                         </TableCell>
                                         <TableCell  component="th" scope="row">
                                             {!fazerPedido && <Tooltip title={ p.pedido_feito? `Pedido feito em ${p.pedido_feito_formated_date.substring(0,10)}`: "Este pedido ainda não foi realizado"}>
@@ -551,15 +569,30 @@ const PedidosPage = () => {
                     setOpenCollapsePedido(selectedPedido)
                     setAnchorPedidos(null)
                 }}>MAIS DETALHES</MenuItem>
-               {/* <MenuItem onClick={()=>{
-                    setAnchorPedidos(null)
-                    setFazerPedido(true)
-                    }}>FAZER PEDIDO</MenuItem> */}
+               
                 <MenuItem component={Link} to={`/pedidos/edit/${selectedPedido}`} onClick={()=>setAnchorPedidos(null)}>EDITAR</MenuItem>
                 <MenuItem onClick={()=>{
                     setAnchorPedidos(null)
                     setOpenDelete(true)
                 }}>ELIMINAR</MenuItem>
+            </Menu>
+            <Menu
+                id="options"
+                anchorEl={anchorOptions}
+                keepMounted
+                open={Boolean(anchorOptions)}
+                onClose={()=>setAnchorOptions(null)}
+            >
+                <MenuItem onClick={()=>{
+                    setSelectedExportMethod("excel")
+                    setAnchorOptions(null)
+                    setShowExport(true)
+                }}>EXPORTAR DADOS PARA EXCEL</MenuItem>
+                <MenuItem onClick={()=>{
+                    setSelectedExportMethod("pdf")
+                    setAnchorOptions(null)
+                    setShowExport(true)
+                }}>FAZER PEDIDO</MenuItem>
             </Menu>
         </div>}
         </>

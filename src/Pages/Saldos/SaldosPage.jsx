@@ -10,6 +10,7 @@ import {Link} from "react-router-dom"
 import DeleteEmpresa from "./DeleteEmpresa"
 import GetAppIcon from '@material-ui/icons/GetApp';
 import Export from './Export';
+
 const SaldosPage = () => {
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [selectedElementID, setSelectedElementID] = React.useState(null);
@@ -75,6 +76,7 @@ const SaldosPage = () => {
                         <TableRow>
                             <TableCell></TableCell>
                             <TableCell align="left">Empresa</TableCell>
+                            <TableCell align="left">Email</TableCell>
                             <TableCell align="left">NIF</TableCell>
                             <TableCell align="left">Morada</TableCell>
                             <TableCell align="left">CP</TableCell>
@@ -93,6 +95,7 @@ const SaldosPage = () => {
                                         </Avatar>
                                     </TableCell>
                                     <TableCell align="left">{f.empresa? f.empresa: "ND"}</TableCell>
+                                    <TableCell align="left">{f.email? f.email: "ND"}</TableCell>
                                     <TableCell align="left">{f.nif? f.nif: "ND"}</TableCell>
                                     <TableCell align="left">{f.morada? f.morada: "ND"}</TableCell>
                                     <TableCell align="left">{f.cp? f.cp: "ND"}</TableCell>

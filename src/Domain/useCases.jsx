@@ -609,12 +609,12 @@ export const useDeleteNES = (id) =>{
     })
 }
 
-export const useDownloadPDF = (pedidoID) =>{
+export const useExport = (type,pedidoID) =>{
     const pedidos = Container.get(Pedidos)
     return useQuery({
         queryKey: ['delete_ne'],
         queryFn: async () => {
-            const info =  await pedidos.downloadPDF(accessToken,pedidoID)
+            const info =  await pedidos.export(accessToken,type,pedidoID)
             return info
         },
         config: { 

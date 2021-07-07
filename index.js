@@ -675,6 +675,60 @@ return template
 //     })
 //   })
 // })
+app.post("/api/downloadExcel",jwtCheck, async (req, res)=>{
+  const pedidosID = req.body.pedidoID
+
+  const data = [
+    ["ID" , "Data Pedido", "Remetente", "Rúbrica", "Grupo","Responsável", "Empresa",  "NE", "Cabimento", "Referencia Artigo", "Artigo", "Qtd", "Preço Unitário", "Preço Total", "Pedido Efetuado"]
+  ]
+  
+
+  
+
+  for(let i in pedidosID){
+    let retrieved_pedido = await pedidos_ref.doc(pedidosID[i]).get()
+    .catch(err=>{
+      res.json({
+        error: true,
+        msg: String(err)
+      })
+    })
+    retrieved_pedido = retrieved_pedido.data()
+    Object.values(retrieved_pedido.remetentes).forEach(r=>{
+      r.artigos.forEach(a=>{
+        data.push([
+          pedidosID[i], 
+          retrieved_pedido.data_pedido_formated,
+          r.nome,
+          retrieved_pedido.rubrica.code,
+          retrieved_pedido.grupo_abrv,
+          retrieved_pedido.responsavel,
+          retrieved_pedido.empresa,
+          retrieved_pedido.ne,
+          retrieved_pedido.cabimento,
+          a.referencia_artigo,
+          a.artigo,
+          a.quantidade,
+          a.preco, 
+          Number(a.preco*a.quantidade).toFixed(2),
+          retrieved_pedido.pedido_feito? "Sim": "Não"
+        ])
+      })
+    })
+ 
+  }
+  const workbook = saveDataToExcel(data, "Pedidos")
+ 
+  res.setHeader('Access-Control-Expose-Headers', "Content-Disposition"); 
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  res.setHeader("Content-Disposition", "attachment; filename=Pedidos.xlsx");
+  workbook.xlsx.write(res)
+      .then(function() {
+          res.status(200).end();
+      }).catch(err=>{
+          console.log(err)
+      });
+})
 
 app.post("/api/downloadPDF",jwtCheck, async (req, res)=>{
   const pedidosID = req.body.pedidoID
@@ -702,7 +756,6 @@ app.post("/api/downloadPDF",jwtCheck, async (req, res)=>{
       })
     })
     empresa = empresa.data()
-    console.log(retrieved_pedido.empresa_id)
     pedido.propostas.push({
       nome: retrieved_pedido.proposta,
       artigos: retrieved_pedido.artigos
@@ -1061,7 +1114,7 @@ app.post("/api/novo_pedido", jwtCheck, async (req, res) => {
     })
   })
   await notasEncomendaRef.doc(pedido.ne_id).set({
-    saldo_disponivel: notaE.data().saldo_disponivel - pedido.valor_total
+    saldo_disponivel: notaE.data().saldo_disponivel - (pedido.valor_total*1.23)
   }, {merge: true})
 
   res.json({
@@ -1245,6 +1298,21 @@ app.post("/api/addNE",  jwtCheck, async (req, res) => {
   const ne = req.body.ne;
 
   await notasEncomendaRef.add(ne)
+  .catch(err => {
+    res.json({
+        error: true,
+        msg: String(err)
+    })
+  })
+  res.json({
+    error: false
+  })
+
+});
+app.post("/api/editNE",  jwtCheck, async (req, res) => {
+  const ne = req.body.ne;
+
+  await notasEncomendaRef.doc(ne.id).set(ne, {merge: true})
   .catch(err => {
     res.json({
         error: true,
@@ -1767,7 +1835,7 @@ app.post("/api/editPedido",jwtCheck, async (req, res) => {
           })
         })
         await notasEncomendaRef.doc(pedido.ne_id).set({
-          saldo_disponivel: notaE.data().saldo_disponivel + (valor_atualizar*-1)
+          saldo_disponivel: notaE.data().saldo_disponivel + (valor_atualizar*-1.23)
         }, {merge: true})
     }
     await pedidos_ref.doc(id)

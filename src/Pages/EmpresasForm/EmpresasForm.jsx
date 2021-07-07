@@ -1,9 +1,8 @@
 import React from 'react'
 import {useParams} from "react-router-dom"
 import FormComponent from "../../Components/FormComponent"
-import {List ,Dialog,DialogTitle,DialogContent,DialogContentText,DialogActions, ListItem, Button,ListItemText,ListItemSecondaryAction, TextField,  Typography, IconButton,  Popover, ListItemIcon, MenuItem} from "@material-ui/core"
+import {List ,Dialog,DialogTitle,DialogContent,DialogContentText,DialogActions, ListItem, Button,ListItemText,ListItemSecondaryAction, TextField,   IconButton,   ListItemIcon, MenuItem, Menu} from "@material-ui/core"
 import Loading from "../../Components/Loading"
-import DeleteIcon from '@material-ui/icons/Delete';
 import SubmitForm from "./SubmitForm"
 import {useAddEmpresa, useGetEmpresaById, useEditEmpresa, useGetRubricasByEmppresa} from "../../Domain/useCases"
 import WidgetsIcon from '@material-ui/icons/Widgets';
@@ -12,6 +11,8 @@ import GestureIcon from '@material-ui/icons/Gesture';
 import AddNE from "./AddNE"
 import DeleteNES from "./DeleteNES"
 import BuildIcon from '@material-ui/icons/Build';
+import MoreVertIcon from '@material-ui/icons/MoreVert';
+
 
 const EmpresasForm = () => {
     let { id } = useParams();
@@ -33,6 +34,7 @@ const EmpresasForm = () => {
     const [openDelete, setOpenDelete] = React.useState(false);
     const [deleteNE, setDeleteNE] = React.useState(false);
     const [selectedNEID, setSelectedNEID] = React.useState(null);
+    const [anchorEl, setAnchorEl] = React.useState(null);
 
     const [tempNE, setTempNE] = React.useState({
         ne: "",
@@ -48,6 +50,7 @@ const EmpresasForm = () => {
         empresa: "",
         nif: "",
         morada: "",
+        email: "",
         cp: "", 
         localidade: "",
         distrito: "",
@@ -68,6 +71,23 @@ const EmpresasForm = () => {
         })
     }
 
+    const closeMenu = ()=>{
+        setAnchorEl(null)
+        setSelectedNEID(null)
+    }
+    const closeTempNEDialog = ()=>{
+        setAddNe(false)
+        setSelectedNEID(null)
+        setTempNE({
+            ne: "",
+            cabimento: "",
+            compromisso: "",
+            rubrica: "PM",
+            saldo_abertura: 0,
+            data_registo: "",
+            data_registo_timestamp: "",
+        })
+    }
     React.useEffect(()=>{
         if(!empresaFetching  && !fetchingNES){
             if(id){
@@ -79,11 +99,13 @@ const EmpresasForm = () => {
         }
     }, [empresaFetching, fetchingNES])
 
+
+
     if(empresaFetching || fetchingNES) return <Loading msg="A carregar dados da empresa" />
     if(submitForm)  return <SubmitForm data={submitData} nesIDs={nes.data? nes.data.map(n=>n.id): null} id={id} submitFunction={id? useEditEmpresa: useAddEmpresa}/>
     return (
         <FormComponent title={id? `Editar a empresa ${empresa.data.empresa}`: "Registo de Novo Fornecedor"}>
-            {id && <Dialog open={addNE} onClose={()=>setAddNe(false)} aria-labelledby="form-dialog-title">
+            {id && <Dialog open={addNE} onClose={closeTempNEDialog} aria-labelledby="form-dialog-title">
                 <DialogTitle id="form-dialog-title">Adicionar Nota de Encomenda</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
@@ -142,7 +164,7 @@ const EmpresasForm = () => {
                             <MenuItem value="SEQ">
                                <GestureIcon style={{color: "#9b59b6", marginRight: 10}}/> Sequenciação
                             </MenuItem>
-                            <MenuItem value="SEQ">
+                            <MenuItem value="REP">
                                <BuildIcon style={{color: "#f39c12", marginRight: 10}}/> Reparações
                             </MenuItem>
                         </TextField>
@@ -159,7 +181,7 @@ const EmpresasForm = () => {
                         
                     </DialogContent>
                     <DialogActions>
-                        <Button onClick={()=>setAddNe(false)} color="primary">
+                        <Button onClick={closeTempNEDialog} color="primary">
                             Cancelar
                         </Button>
                         {submitAddNE && <AddNE 
@@ -176,7 +198,7 @@ const EmpresasForm = () => {
                                setSubmitAddNE(true)
                             }
                         }} color="primary">
-                            Adicionar
+                            {Boolean(selectedNEID) ? "Guardar": "Adicionar"}
                         </Button>}
                 </DialogActions>
             </Dialog>}
@@ -214,7 +236,13 @@ const EmpresasForm = () => {
                 onChange={onChangeInput}
                 variant="filled"
             />
-           
+            <TextField
+                id="email"
+                label="Email"
+                value={submitData.email}
+                onChange={onChangeInput}
+                variant="filled"
+            />
            <TextField
                 id="nif"
                 label="NIF"
@@ -269,11 +297,11 @@ const EmpresasForm = () => {
                                 </ListItemIcon>
                                 <ListItemText primary={`${n.ne}`} secondary={`Saldo de abertura: ${n.saldo_abertura}`} />
                                 <ListItemSecondaryAction>
-                                    <IconButton onClick={()=>{
-                                           setOpenDelete(true)
+                                    <IconButton onClick={(e)=>{
+                                            setAnchorEl(e.target)
                                            setSelectedNEID(n.id)
-                                    }} style={{color: "#e74c3c"}}>
-                                        <DeleteIcon/>
+                                    }}>
+                                        <MoreVertIcon/>
                                     </IconButton>
                                 </ListItemSecondaryAction>
                             </ListItem>
@@ -294,6 +322,23 @@ const EmpresasForm = () => {
             >
                 Submeter
             </Button>
+      
+            <Menu
+                anchorEl={anchorEl}
+                keepMounted
+                open={Boolean(anchorEl)}
+                onClose={closeMenu}
+            >
+                <MenuItem onClick={()=>{
+                    setTempNE(nes.data.filter(n=>n.id===selectedNEID)[0])
+                    setAddNe(true)
+                    setAnchorEl(null)
+                }}>EDITAR</MenuItem>
+                <MenuItem onClick={()=>{
+                    setOpenDelete(true)
+                    setAnchorEl(null)
+                }}>ELIMINAR</MenuItem>
+            </Menu>
         </FormComponent>
     )
 }

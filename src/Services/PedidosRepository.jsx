@@ -172,9 +172,9 @@ export default class PedidosRepository  {
         return response.then(res =>res.json())
     }
     
-    downloadPDF = (accessToken, pedidoID) =>{
+    export = (accessToken, type,pedidoID) =>{
         let url = this.apiBaseUrl().toString()
-        url += `downloadPDF`
+        url += type=== "pdf"? `downloadPDF`: "downloadExcel"
         const response =  fetch(url,{
             method: "POST", 
             headers:{

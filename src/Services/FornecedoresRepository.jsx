@@ -194,7 +194,7 @@ export default class FornecedoresRepository  {
 
     addNE = (accessToken,ne) =>{
         let url = this.apiBaseUrl().toString()
-        url += `addNE`
+        url += Boolean(ne.id) ? "editNE" :`addNE`
         const response =  fetch(url,{
             method: "POST", 
             headers:{
