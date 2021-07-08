@@ -134,7 +134,7 @@ const EmpresasForm = () => {
                             margin="normal"
                             variant="filled"
                             id="compromisso"
-                            label="Comprimisso"
+                            label="Compromisso"
                             fullWidth
                             onChange={onChangeInputNE}
                             value={tempNE.compromisso}
