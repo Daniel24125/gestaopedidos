@@ -172,13 +172,22 @@ const EmpresasForm = () => {
                             margin="normal"
                             variant="filled"
                             id="saldo_abertura"
-                            label="Montante"
+                            label="Saldo de Abertura"
                             fullWidth
                             onChange={onChangeInputNE}
                             type="number"
                             value={tempNE.saldo_abertura}
                         />
-                        
+                        <TextField
+                            margin="normal"
+                            variant="filled"
+                            id="saldo_disponivel"
+                            label="Saldo Disponível"
+                            fullWidth
+                            onChange={onChangeInputNE}
+                            type="number"
+                            value={tempNE.saldo_disponivel}
+                        />
                     </DialogContent>
                     <DialogActions>
                         <Button onClick={closeTempNEDialog} color="primary">

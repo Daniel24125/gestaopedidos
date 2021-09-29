@@ -269,6 +269,7 @@ const PedidosPage = () => {
                             {/* {showSelectPedidos && <TableCell ></TableCell>} */}
                             <TableCell ></TableCell>
                             <TableCell ></TableCell>
+                            <TableCell style={{color: "#878787"}} >ID Pedido</TableCell>
                             <TableCell style={{color: "#878787"}} >Data Pedido</TableCell>
                             <TableCell align="center" style={{color: "#878787"}} >Rúbrica</TableCell>
                             {/* <TableCell style={{color: "#878787"}} >Remetente</TableCell> */}
@@ -306,6 +307,9 @@ const PedidosPage = () => {
                                             </Tooltip>}
                                             {fazerPedido && selectedPedido === p.id && <CircularProgress size={30} />}
                                         </TableCell>
+                                        <TableCell  component="th" scope="row">
+                                            {p.pedido_id}
+                                        </TableCell>      
                                         <TableCell  component="th" scope="row">
                                             {String(p.day).length > 1?p.day: `0${p.day}` }/{String(p.mounth).length > 1?p.mounth: `0${p.mounth}` }/{p.year}
                                         </TableCell>
@@ -356,7 +360,7 @@ const PedidosPage = () => {
                                         </TableCell>
                                     </TableRow>
                                     <TableRow key={`Collapse_${i}`}>
-                                        <TableCell style={{padding:0 }} colSpan={8}>
+                                        <TableCell style={{padding:0 }} colSpan={12}>
                                             <Collapse style={{backgroundColor: "#2d3436", padding: "0 30px"}} in={openCollapsePedido === p.id} timeout="auto" unmountOnExit>
                                                 <div style={{
                                                     display: "flex",

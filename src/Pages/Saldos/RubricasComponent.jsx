@@ -98,10 +98,13 @@ import BuildIcon from '@material-ui/icons/Build';
                                 <TableCell >{n.compromisso}</TableCell>
                                 <TableCell>
                                     <div className="saldoContainer">
-                                        <div style={{
-                                            width: (n.saldo_disponivel/n.saldo_abertura)*100+"%",
-                                            backgroundColor: RubricasIcons[n.rubrica].color, 
-                                        }} className="saldoDisponivelContainer"></div>
+                                        <Tooltip title="Saldo Disponível">
+                                            <div style={{
+                                                width: (n.saldo_disponivel/n.saldo_abertura)*100+"%",
+                                                backgroundColor: RubricasIcons[n.rubrica].color, 
+                                            }} className="saldoDisponivelContainer"></div>
+                                        </Tooltip>
+
                                         <Typography>{Number(n.saldo_disponivel).toFixed(2)}€/{Number(n.saldo_abertura).toFixed(2)}€</Typography>
                                     </div>
                                 </TableCell>

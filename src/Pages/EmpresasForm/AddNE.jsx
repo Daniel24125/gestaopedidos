@@ -18,7 +18,8 @@ const AddNE =({
         ...ne,
         data_registo: new Date().toJSON(),
         data_registo_timestamp: Date.now(),
-        saldo_disponivel: ne.saldo_abertura,
+        saldo_disponivel: ne.saldo_disponivel,
+        saldo_abertura: ne.saldo_abertura,
         empresa, 
         empresa_id: empresaID
     })

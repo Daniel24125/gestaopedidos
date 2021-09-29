@@ -113,7 +113,7 @@ const SaldosPage = () => {
                                     </TableCell>
                                 </TableRow>
                                 <TableRow>
-                                    <TableCell style={{ padding: 0 }} colSpan={8}>
+                                    <TableCell style={{ padding: 0 }} colSpan={9}>
                                         <Collapse in={collapse===f.id} timeout="auto" unmountOnExit>
                                             <div className="collapseContainer">
                                                 <div style={{ marginBottom: 10}} className="titleContainer">

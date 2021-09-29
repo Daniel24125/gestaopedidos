@@ -97,6 +97,7 @@ const PedidosForm = () => {
         empresa: false,
         ne: false,
         artigos: false,
+        pedido_id: false
     })
     
     const onChangeInput = (e)=>{
@@ -164,7 +165,6 @@ const PedidosForm = () => {
         
     }
 
-    console.log(empresasList)
     const isLoading = React.useMemo(() => {
         return  fetchingGrupos 
             || fetchingPedido
@@ -181,6 +181,7 @@ const PedidosForm = () => {
                             icon: "widget",
                             name: "Materiais"
                     },
+                    pedido_id: id ? pedido.data.pedido_id : "" ,
                     data_pedido:id?  pedido.data.data_pedido : Date.now(),
                     data_pedido_formated:id?  pedido.data.data_pedido_formated: today,
                     day:id?  pedido.data.day :  date.getDate(),
@@ -651,6 +652,15 @@ const PedidosForm = () => {
                     Não existem notas de encomenda para a rúbrica selecionada    
                 </Typography>}
             
+            <TextField
+                id="pedido_id"
+                error={error.pedido_id}
+                label="ID do Pedido"
+                value={submitData.pedido_id}
+                onChange={onChangeInput}
+                variant="filled"
+            />
+
            <TextField
                 id="data_pedido"
                 label="Data do Pedido"
@@ -917,7 +927,7 @@ const PedidosForm = () => {
                 </Typography>}
             </>}
 
-            <Typography style={{marginTop: 20}} variant="h6">Total do Pedido: {submitData.valor_total}€</Typography>
+            <Typography style={{marginTop: 20}} variant="h6">Total do Pedido: {Number(submitData.valor_total).toFixed(2)}€</Typography>
 
             <Button
                 variant="contained"

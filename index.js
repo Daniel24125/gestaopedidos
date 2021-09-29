@@ -565,7 +565,7 @@ const getPedidoTemplate = (pedido, empresa) =>{
         template += `
       <div class="infoRow">
         <div class="infoCol"> <strong>ID PEDIDO: </strong></div>
-        <div class="infoCol">${id}</div>
+        <div class="infoCol">${pedido.pedido_id}</div>
       </div>
       `})
       template +=`
@@ -602,9 +602,9 @@ const getPedidoTemplate = (pedido, empresa) =>{
 <div class="rowContainer">
       `
       
-   pedido.propostas.forEach(p=>{
+   pedido.remetentes.forEach(p=>{
     template+=`
-     <span class="propostaTitulo"> <strong> Proposta</strong>:  ${p.nome} </span>
+     <span class="propostaTitulo"> <strong> Proposta</strong>:  ${p.proposta} </span>
      <table>
       <tr>
         <th>Referência</th>
@@ -683,8 +683,6 @@ app.post("/api/downloadExcel",jwtCheck, async (req, res)=>{
   ]
   
 
-  
-
   for(let i in pedidosID){
     let retrieved_pedido = await pedidos_ref.doc(pedidosID[i]).get()
     .catch(err=>{
@@ -735,7 +733,7 @@ app.post("/api/downloadPDF",jwtCheck, async (req, res)=>{
   let empresa
   let pedido = {
     ids: pedidosID,
-    propostas: [],
+    remetentes: [],
     valor_total: 0
   }
   for(let i in pedidosID){
@@ -756,16 +754,15 @@ app.post("/api/downloadPDF",jwtCheck, async (req, res)=>{
       })
     })
     empresa = empresa.data()
-    pedido.propostas.push({
-      nome: retrieved_pedido.proposta,
-      artigos: retrieved_pedido.artigos
-    })
+   
+    pedido.remetentes = [...pedido.remetentes, ...Object.values(retrieved_pedido.remetentes)]
     pedido = {
       ...pedido, 
       valor_total: pedido.valor_total + retrieved_pedido.valor_total,
       cabimento: retrieved_pedido.cabimento, 
       ne: retrieved_pedido.ne,
-      empresa: retrieved_pedido.empresa
+      empresa: retrieved_pedido.empresa,
+      pedido_id: retrieved_pedido.pedido_id
     }
     if(!retrieved_pedido.pedidos_feito){
       await pedidos_ref.doc(pedidosID[i]).set({
@@ -1643,7 +1640,7 @@ app.delete("/api/deletePedido", jwtCheck,async (req, res) => {
     })
   })
   await notasEncomendaRef.doc(pedido_data.ne_id).set({
-    saldo_disponivel: notaE.data().saldo_disponivel + pedido_data.valor_total
+    saldo_disponivel: notaE.data().saldo_disponivel + pedido_data.valor_total*1.23
   }, {merge: true})
 
   res.json({
