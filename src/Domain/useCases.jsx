@@ -18,7 +18,8 @@ export const useExportSaldos = () =>{
             const info =  await fornecedores.exportSaldosFornecedores(accessToken )
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -35,7 +36,8 @@ export const useGetNumPedidos = () =>{
             const info =  await pedidos.getNumPedidos(accessToken )
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -52,7 +54,8 @@ export const useQueryPedidos = () =>{
             const info =  await pedidos.queryPedidos(accessToken)
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -67,7 +70,8 @@ export const useGetPedidosAnual = () =>{
             const info =  await pedidos.getPedidosAnual(accessToken)
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -82,7 +86,8 @@ export const useGetPedidosNaoEncomendados = () =>{
             const info =  await pedidos.getPedidosNaoEncomendados(accessToken)
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -97,7 +102,8 @@ export const useGetPedidosAtrasados = () =>{
             const info =  await pedidos.getPedidosAtrasados(accessToken, )
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -113,7 +119,8 @@ export const useGetFornecedoresStats = () =>{
             const info =  await fornecedores.getFornecedoresStats(accessToken, )
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -130,7 +137,8 @@ export const useGetPedidos = () =>{
             const info =  await pedidos.getPedidos(accessToken, )
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -146,7 +154,8 @@ export const useGetGrupos = () =>{
             const info =  await grupos.getGrupos(accessToken, )
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -162,7 +171,8 @@ export const useGetFornecedores = () =>{
             const info =  await fornecedores.getFornecedores(accessToken, )
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -178,7 +188,8 @@ export const useGetArticle = term =>{
             const info =  await artigos.getArticle(accessToken, term)
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -194,7 +205,8 @@ export const useSendPedidos = data =>{
             const info =  await pedidos.sendPedidos(accessToken, data)
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -210,7 +222,8 @@ export const useGetDist = () =>{
             const info =  await grupos.getDist(accessToken, )
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -226,7 +239,8 @@ export const useGetRubricasByEmppresa = (empresa) =>{
             const info =  await fornecedores.getRubricasByEmpresa(accessToken, empresa)
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -243,7 +257,8 @@ export const useGetEmpresasByRubrica = (rubrica) =>{
             const info =  await fornecedores.getEmpresasByRubrica(accessToken, rubrica)
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -260,7 +275,8 @@ export const useGetFaturasByPedido = (pedidoID) =>{
             const info =  await fornecedores.getFaturasByPedido(accessToken, pedidoID)
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -277,7 +293,8 @@ export const useAddFatura = (fatura) =>{
             const info =  await fornecedores.addFatura(accessToken, fatura)
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -293,7 +310,8 @@ export const useDeleteFatura = (id) =>{
             const info =  await fornecedores.deleteFatura(accessToken, id)
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -309,7 +327,8 @@ export const useGetFaturasByEmppresa = (empresa) =>{
             const info =  await fornecedores.getFaturasByEmpresa(accessToken, empresa)
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -325,7 +344,8 @@ export const useGetArtigos = () =>{
             const info =  await artigos.fetchArticles(accessToken, )
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -341,7 +361,8 @@ export const useSearchPedidos = (word, field) =>{
             const info =  await pedidos.searchPedidos(accessToken, word, field)
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -358,7 +379,8 @@ export const useGetPedidoByID = (id) =>{
             const info =  await pedidos.getPedidoById(accessToken, id)
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -375,7 +397,8 @@ export const useEditPedido = (data, id) =>{
             const info =  await pedidos.editPedido(accessToken, data, id)
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -392,7 +415,8 @@ export const useDeletePedido = (id) =>{
             const info =  await pedidos.deletePedido(accessToken, id)
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -409,7 +433,8 @@ export const useNovoGrupo = (grupo) =>{
             const info =  await grupos.novoGrupo(accessToken, grupo)
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -426,7 +451,8 @@ export const useGetGrupoByID = (id) =>{
             const info =  await grupos.getGrupoById(accessToken, id)
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -443,7 +469,8 @@ export const useEditGrupo = (data, id) =>{
             const info =  await grupos.editGrupo(accessToken, data, id)
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -460,7 +487,8 @@ export const useDeleteGrupo = (id,selectedDistID) =>{
             const info =  await grupos.deleteGrupo(accessToken,id,selectedDistID)
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -477,7 +505,8 @@ export const useGetGrupoMembros = (id) =>{
             const info =  await grupos.getGrupoMembros(accessToken,id)
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -494,7 +523,8 @@ export const useGetDistAnual = (year) =>{
             const info =  await grupos.getDistAnual(accessToken,year)
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -512,7 +542,8 @@ export const useAddEmpresa = (empresa) =>{
             const info =  await fornecedores.addEmpresa(accessToken,empresa)
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -530,7 +561,8 @@ export const useEditEmpresa = (data, id, nesIDs) =>{
             const info =  await fornecedores.editEmpresa(accessToken,data, id, nesIDs)
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -548,7 +580,8 @@ export const useDeleteEmpresa = (id) =>{
             const info =  await fornecedores.deleteEmpresa(accessToken,id)
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -566,7 +599,8 @@ export const useGetEmpresaById = (id) =>{
             const info =  await fornecedores.getEmpresaById(accessToken,id)
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -583,7 +617,8 @@ export const useAddNE = (ne) =>{
             const info =  await fornecedores.addNE(accessToken,ne)
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -600,7 +635,8 @@ export const useDeleteNES = (id) =>{
             const info =  await fornecedores.deleteNE(accessToken,id)
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -617,7 +653,8 @@ export const useExport = (type,pedidoID) =>{
             const info =  await pedidos.export(accessToken,type,pedidoID)
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -634,7 +671,8 @@ export const useSetArtigoState = (pedidoID, index, chegada_data) =>{
             const info =  await artigos.setArticleStatus(accessToken, pedidoID, index, chegada_data)
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -651,7 +689,8 @@ export const useSetArtigoFaturado = (pedidoID, index, faturado) =>{
             const info =  await artigos.setArtigoFaturado(accessToken, pedidoID, index, faturado)
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -668,7 +707,8 @@ export const useAddArtigoToDB = (artigo) =>{
             const info =  await artigos.addArtigoToDB(accessToken, artigo)
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -685,7 +725,8 @@ export const useDeleteArtigo = (id) =>{
             const info =  await artigos.deleteArtigo(accessToken, id)
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -703,7 +744,8 @@ export const useGetConfigs = () =>{
             const info =  await configs.getConfig(accessToken, )
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -720,7 +762,8 @@ export const useSaveConfig = (configsData) =>{
             const info =  await configs.saveConfig(accessToken, configsData)
             return info
         },
-        config: { 
+        config: {
+retry: false, 
           refetchOnWindowFocus: false,
           refetchInterval: false,
           refetchIntervalInBackground: false,
@@ -737,7 +780,8 @@ export const useDownloadDistCum = () =>{
           const info =  await grupos.downloadDistCum(accessToken)
           return info
       },
-      config: { 
+      config: {
+retry: false, 
         refetchOnWindowFocus: false,
         refetchInterval: false,
         refetchIntervalInBackground: false,
@@ -755,7 +799,8 @@ export const useDownloadDistCumGrupo = (grupoID) =>{
           const info =  await grupos.downloadDistCumGrupo(accessToken,grupoID)
           return info
       },
-      config: { 
+      config: {
+retry: false, 
         refetchOnWindowFocus: false,
         refetchInterval: false,
         refetchIntervalInBackground: false,
