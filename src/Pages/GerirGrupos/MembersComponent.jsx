@@ -17,15 +17,18 @@ const MembersComponent = ({
         isFetching: grupoMembrosFetching
     } = useGetGrupoMembros(id)
 
+    console.log(selectedYear)
+
     React.useEffect(()=>{
         let tempMembersDatasets=[]
             if(!grupoMembrosFetching){
             membros.data.forEach(m=>{
                 const orderedDataMembers = []
                 const rc = RandomColor()
-                const currentMembroDist = m.dist.filter(d=>d.year=== selectedYear)[0]
+                // const currentMembroDist = m.dist.filter(d=>d.year=== selectedYear)[0]
+
                 for (let j = 1; j< 13; j++){
-                    orderedDataMembers.push(Number(currentMembroDist[`m${j}`]))
+                    orderedDataMembers.push(Number(m[selectedYear][`m${j}`]))
                 }
                 tempMembersDatasets.push({
                     label: m.name, 
@@ -38,7 +41,7 @@ const MembersComponent = ({
             
             setMemberDataset(tempMembersDatasets)
         }
-    }, [grupoMembrosFetching])
+    }, [grupoMembrosFetching, selectedYear])
 
     if (grupoMembrosFetching) 
     return <div style={{

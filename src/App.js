@@ -4,6 +4,10 @@ import { useAuth0 } from "@auth0/auth0-react";
 import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles'
 import {CssBaseline} from '@material-ui/core'
 import loadable from '@loadable/component'
+import LoginPage from "./Pages/Login/Login"
+import Admin from "./Pages/Admin/Admin"
+import Unauth from "./Pages/Unauth/Unauth"
+
 
 const theme = createMuiTheme({
   typography: {
@@ -35,9 +39,9 @@ const theme = createMuiTheme({
 })
 
 
-const LoginPage = loadable(() => import('./Pages/Login/Login'))
-const Admin = loadable(() => import('./Pages/Admin/Admin'))
-const Unauth = loadable(() => import('./Pages/Unauth/Unauth'))
+// const LoginPage = loadable(() => import('./Pages/Login/Login'))
+// const Admin = loadable(() => import('./Pages/Admin/Admin'))
+// const Unauth = loadable(() => import('./Pages/Unauth/Unauth'))
 
 const App = () => {
   const {user, isAuthenticated } = useAuth0();
@@ -56,7 +60,7 @@ const App = () => {
   }, [isAuthenticated])
   return (
     <ThemeProvider theme={theme}>
-    <CssBaseline />
+      <CssBaseline />
       {!isAuthenticated && <LoginPage/>}
       {isAuthenticated && allowed && <Admin/>}  
       {isAuthenticated && !allowed && <Unauth/>}  

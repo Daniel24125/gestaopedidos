@@ -12,7 +12,6 @@ const AddNE =({
     setTempNE
 })=> {
     const {
-        data: result, 
         isFetching: neFetching
     } = useAddNE({
         ...ne,

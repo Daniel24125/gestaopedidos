@@ -1,7 +1,7 @@
 import React from 'react'
-import {useGetGrupos, useGetDistAnual} from "../../Domain/useCases"
+import {useGetGrupos} from "../../Domain/useCases"
 import Loading from "../../Components/Loading"
-import {Button,   DialogTitle,Dialog,DialogActions, Snackbar, DialogContent,DialogContentText,  Paper,MenuItem,Menu, CircularProgress,Typography, IconButton, List, ListItem,Collapse, ListItemText, ListItemIcon} from "@material-ui/core"
+import {Button,   DialogTitle,Dialog,DialogActions, Snackbar, DialogContent,DialogContentText,  Paper,MenuItem,Menu, CircularProgress,Typography, IconButton, List, ListItem,Collapse, ListItemText, ListItemIcon, TextField} from "@material-ui/core"
 import {Link} from "react-router-dom"
 import GroupWorkIcon from '@material-ui/icons/GroupWork';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
@@ -20,18 +20,11 @@ const GerirGruposPage = () => {
     const [deleteGrupo, setDeleteGrupo] = React.useState(false);
     const [openDelete, setOpenDelete] = React.useState(false);
     const [deleteResult, setDeleteResult] = React.useState(null);
-    const [selectedYear, setSelectedYear] = React.useState(2021);
+    const [selectedYear, setSelectedYear] = React.useState(new Date().getFullYear());
     const [selectedDistID, setSelectedDistID] = React.useState(null);
     const [exportDistAnual, setExportDistAnual] = React.useState(null);
     const [exportDistAnualGrupo, setExportDistAnualGrupo] = React.useState(null);
     
-    const {
-        data: distAnual, 
-        isFetching: fetchingDistAnual,
-        refetch: refetchDist
-    } = useGetDistAnual(selectedYear)
-
-
     const {
         data: grupos, 
         isFetching: fetchingGrupos,
@@ -43,35 +36,30 @@ const GerirGruposPage = () => {
           return;
         } 
         refetch()
-        refetchDist()
         setOpenDelete(false)
     };
 
     const isLoading = React.useMemo(() => {
         return  fetchingGrupos
-        || fetchingDistAnual
-    }, [fetchingGrupos, fetchingDistAnual])
+    }, [fetchingGrupos])
 
     React.useEffect(()=>{
-        let tempAnualDatasets=[]
         if(!isLoading){
-            distAnual.data.forEach(d=>{
-                 let orderedDataAnual= []
-                 const grupoColor = grupos.data.filter(g=>g.abrv === d.grupo)[0].color
+            setDatasets(grupos.data.map(g=>{
+                let orderedDataAnual= []
                 for (let i = 1; i< 13; i++){
-                    orderedDataAnual.push(Number(d.anual[`m${i}`]))
+                    orderedDataAnual.push(Number(g.dist[selectedYear].data[`m${i}`]))
                 }
-                tempAnualDatasets.push( {
-                    label: d.grupo, 
+                return {
+                    label: g.abrv, 
                     data:  orderedDataAnual, 
-                    backgroundColor: grupoColor,
+                    backgroundColor: g.color,
                     fill: true,
-                    borderColor: grupoColor
-                })
-            })
-            setDatasets(tempAnualDatasets)
+                    borderColor: g.color
+                }
+            }))
         }
-    }, [isLoading])
+    }, [isLoading, selectedYear])
     
     if(isLoading) return <Loading msg="A carregar dados relacionados com os grupos de investigação..." />
     return (
@@ -122,15 +110,24 @@ const GerirGruposPage = () => {
                     }} variant="contained" color="secondary" >
                         {exportDistAnual && <DownloadDistCum 
                             setExportDistAnual={setExportDistAnual}
+                            selectedYear={selectedYear}
                         /> }   
                         exportar dados
                         
                     </Button>
+                    <TextField style={{marginLeft: 10}} select value={selectedYear} onChange={(e)=>setSelectedYear(e.target.value)}>
+                       {[...Array(new Date().getFullYear() - 2021 +1).keys()].map(y=>{
+                        return <MenuItem value={2021+y} key={`Year${y}`}>
+                            {2021+y}
+                        </MenuItem>
+                       })}
+                    </TextField>
                 </div>
             </div>
             {exportDistAnualGrupo && <DownloadDistGrupo 
                 setExportDistAnualGrupo={setExportDistAnualGrupo}
                 grupoID={selectedGroup}
+                selectedYear={selectedYear}
             />}
             <Paper className="dataContainer">
                
@@ -226,7 +223,7 @@ const GerirGruposPage = () => {
                         </IconButton>
                     </ListItem>
                     <Collapse key={"col_"+g.id} in={collapse===g.id} timeout="auto" unmountOnExit>
-                        <MembersComponent selectedYear={2021} setCollapse={setCollapse} id={g.id} />
+                        <MembersComponent selectedYear={selectedYear} setCollapse={setCollapse} id={g.id} />
                     </Collapse>
                 </>)
                 })

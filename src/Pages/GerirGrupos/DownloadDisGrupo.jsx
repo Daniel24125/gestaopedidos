@@ -4,12 +4,13 @@ import {saveAs} from "file-saver"
 
 const DownloadDisGrupo = ({
     setExportDistAnualGrupo,
+    selectedYear,
     grupoID
 }) => {
     const {
         data: result, 
         isFetching: donwloadFetching
-    } = useDownloadDistCumGrupo(grupoID)
+    } = useDownloadDistCumGrupo(grupoID, selectedYear)
 
     const {
         data: grupo, 

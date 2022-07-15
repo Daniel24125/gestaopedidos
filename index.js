@@ -20,7 +20,6 @@ app.use(cors({
   origin: [
       "https://gestaopedidos.herokuapp.com",
       "http://localhost:3000",
-      "http://localhost:3001",
   ],
   methods: "GET,PATCH,POST,DELETE",
   allowedHeaders: [
@@ -292,22 +291,32 @@ app.post('/api/getGrupoMembros',jwtCheck, async  (req, res) =>{
 });
 
 app.get('/api/getGrupos', jwtCheck, async  (req, res) =>{
-  const grupos = await grupos_ref
-    .get()
-    .catch(err => {
-      res.json({
-          error: true,
-          msg: String(err)
-      })
-    })    
+  const currentYear = new Date().getFullYear().toString()
+  const grupos = await grupos_ref.get()
+  .catch(err => {
     res.json({
-      data: grupos.docs.map(doc=>{
-        return {
-          ...doc.data(), 
-          id: doc.id,
-        }
-      })
+        error: true,
+        msg: String(err)
     })
+  })   
+  let parsedGrupos = []
+  for(let doc of grupos.docs){
+    const g_dist = doc.data().dist
+    const needsUpdate = !Boolean(g_dist[currentYear])
+    const {dist_data} = needsUpdate? await addDistNewYear(doc.id): {dist_data: g_dist[currentYear]}
+    parsedGrupos.push({
+      ...doc.data(), 
+      dist: {
+        ...g_dist,
+        [currentYear]: dist_data
+      },
+      id: doc.id
+    })
+  }
+  
+  res.json({
+    data: parsedGrupos
+  })
  
 });
 
@@ -846,9 +855,13 @@ app.post("/api/getDistAnual",jwtCheck, async (req, res) => {
   })
 })
 
-app.get("/api/downloadDistCum", jwtCheck,async (req, res)=>{
-  const months = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto","Setembro", "Outubro", "Novembro", "Dezembro"]
 
+
+app.post("/api/downloadDistCum", jwtCheck,async (req, res)=>{
+  const months = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto","Setembro", "Outubro", "Novembro", "Dezembro"]
+  let {selectedYear} = req.body
+ 
+  selectedYear = Boolean(selectedYear) ? selectedYear: new Date().getFullYear().toString()
 
   const grupos = await grupos_ref.get()
   .catch(err => {
@@ -859,7 +872,8 @@ app.get("/api/downloadDistCum", jwtCheck,async (req, res)=>{
   })
 
   const selected_months =[]
-  months.slice(0,new Date().getMonth()).forEach(m=>{
+  const slicedMonths =  months.slice(0,new Date().getMonth())
+  slicedMonths.forEach(m=>{
     selected_months.push(m)
     selected_months.push("Total")
   })
@@ -868,36 +882,16 @@ app.get("/api/downloadDistCum", jwtCheck,async (req, res)=>{
     ["Grupo", "Membros", ...selected_months]
   ]
 
-  let distAnual = await distAnualRef.get()
-  .catch(err => {
-    res.json({
-        error: true,
-        msg: String(err)
-    })
-  })
-
-  distAnual = distAnual.docs.map(doc=>doc.data())
-  for(let g_index = 0; g_index < grupos.docs.length; g_index++){
-    const g = grupos.docs[g_index]
-    const current_dist = distAnual.filter(d=>d.grupo === g.data().abrv)[0].anual
-
+  for(let g of grupos.docs){
+    const current_dist = g.data().dist[selectedYear].data
     const membros  = await  grupos_ref.doc(g.id).collection("membros").get()
-    .catch(err => {
-      res.json({
-          error: true,
-          msg: String(err)
-      })
-    })  
     
     membros.docs.forEach((m, m_index)=>{
-      const dist = m.data().dist.filter(d=>d.year===new Date().getFullYear())[0]
+      const dist = m.data()[selectedYear]
       let tempMembroDist = [m_index=== 0? g.data().abrv:"", m.data().name]
-
-   
-      months.slice(0,new Date().getMonth()).forEach((_mounth,index)=>{
+      slicedMonths.forEach((_mounth,index)=>{
         tempMembroDist.push(dist[`m${index+1}`].toFixed(2))
         tempMembroDist.push(m_index=== 0? current_dist[`m${index+1}`].toFixed(2) : "" )
-        
       })
       data.push(tempMembroDist)
     })
@@ -919,25 +913,12 @@ app.get("/api/downloadDistCum", jwtCheck,async (req, res)=>{
 
 app.post("/api/downloadDistCumGrupo", jwtCheck,async (req, res)=>{
   const months = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto","Setembro", "Outubro", "Novembro", "Dezembro"]
-  const grupoID = req.body.grupoID
+  const {grupoID, selectedYear} = req.body
+  const parsedYear = Boolean(selectedYear) ? selectedYear: new Date().getFullYear().toString()
 
   const grupo = await grupos_ref.doc(grupoID).get()
-  .catch(err => {
-    res.json({
-        error: true,
-        msg: String(err)
-    })
-  })
-
-  let distAnual = await distAnualRef.where("grupo", "==", grupo.data().abrv).get()
-  .catch(err => {
-    res.json({
-        error: true,
-        msg: String(err)
-    })
-  })
-
-
+  console.log(req.body)
+ 
   const selected_months =[]
   months.slice(0,new Date().getMonth()).forEach(m=>{
     selected_months.push(m)
@@ -948,16 +929,11 @@ app.post("/api/downloadDistCumGrupo", jwtCheck,async (req, res)=>{
     ["Membros", ...selected_months]
   ]
 
-  const current_dist = distAnual.docs.map(doc=>doc.data())[0].anual
+  const current_dist = grupo.data().dist[selectedYear].data
   const membros  = await  grupos_ref.doc(grupoID).collection("membros").get()
-  .catch(err => {
-    res.json({
-        error: true,
-        msg: String(err)
-    })
-  })  
+
   membros.docs.forEach((m, m_index)=>{
-    const dist = m.data().dist.filter(d=>d.year===new Date().getFullYear())[0]
+    const dist = m.data()[selectedYear]
     let tempMembroDist = [m.data().name]
     months.slice(0,new Date().getMonth()).forEach((_mounth,index)=>{
       tempMembroDist.push( dist[`m${index+1}`])
@@ -1022,58 +998,89 @@ app.get("/api/exportSaldosFornecedores", jwtCheck,async (req, res)=>{
 
 
 
-const updateGrupoDist = async (valor_total, pedido, res)=>{
-  const dist_data = await distAnualRef
-    .where("grupo", "==", pedido.grupo_abrv)
-    .where("year", "==", pedido.year)
-    .get()
-    .catch(err => {
-      res.json({
-          error: true,
-          msg: String(err)
-      })
-    })
-  const dist_data_membros = await grupos_ref.doc(pedido.grupo_id).collection("membros")
-    .get()
-    .catch(err => {
-      res.json({
-          error: true,
-          msg: String(err)
-      })
-    })
-  let current_dist = dist_data.docs.map(doc=>{
+const addDistNewYear = async (g_id)=>{
+  console.log("UPDATING YEAR")
+  const year = new Date().getFullYear()
+  const gruposDoc = grupos_ref.doc(g_id)
+  const dist_data = {
+    data: {
+      "m1": 0,
+      "m2": 0,
+      "m3": 0,
+      "m4": 0,
+      "m5": 0,
+      "m6": 0,
+      "m7": 0,
+      "m8": 0,
+      "m9": 0,
+      "m10": 0,
+      "m11": 0,
+      "m12": 0,
+    },
+    total: 0,
+  }
+
+  await gruposDoc.set({
+    dist: {[year]: dist_data}
+  }, {merge: true})
+  
+  const membros = await gruposDoc.collection("membros").get()
+  const current_dist_membro = membros.docs.map(doc=>{
     return {
       ...doc.data(),
-      id: doc.id
+      [year]: {
+        ...dist_data.data,
+        total: 0 
+      }
     }
-  }).filter(d=>d.year=== pedido.year)[0]
-  
+  })
+
+  membros.forEach(async doc=>{
+    await gruposDoc.collection("membros").doc(doc.id).set({
+      [year]: {
+        ...dist_data.data,
+        total: 0 
+      }
+    },{merge: true})
+  })
+
+  return  {dist_data, current_dist_membro}
+}
+
+
+const updateGrupoDist = async (valor_total, pedido, res)=>{
+
+  const grupo = await grupos_ref.doc(pedido.grupo_id).get()
+  const {dist} = grupo.data()
+  const dist_data_membros = await grupos_ref.doc(pedido.grupo_id).collection("membros").get()
   const dist_membro = dist_data_membros.docs.map(doc=>{
     return {
       ...doc.data(),
       id: doc.id
     }
   }).filter(d=>d.name=== pedido.responsavel)[0]
+  
+  let {dist_data, current_dist_membro} = Boolean(dist[pedido.year]) ? {
+    dist_data: dist[pedido.year], 
+    current_dist_membro: dist_membro[pedido.year]
+  } : await addDistNewYear(pedido.grupo_id)
+ 
+  dist_data.data[`m${pedido.mounth}`] = Number(dist_data.data[`m${pedido.mounth}`]) + valor_total
+  dist_data.total = Number(dist_data.total ) + valor_total
 
-  let current_dist_membro = dist_membro.dist.filter(d=>d.year === pedido.year)[0]
-  
-  current_dist.anual[`m${pedido.mounth}`] = Number(current_dist.anual[`m${pedido.mounth}`]) + valor_total
-  current_dist.total = Number(current_dist.total ) + valor_total
-  
+  current_dist_membro = typeof current_dist_membro === "function" ? current_dist_membro.filter(m=>m.name===pedido.responsavel)[0][pedido.year]: current_dist_membro
   current_dist_membro[`m${pedido.mounth}`]= Number(current_dist_membro[`m${pedido.mounth}`])+ valor_total
   current_dist_membro.total = Number(current_dist_membro.total) + valor_total
   
-  const yearIndex = dist_membro.dist.findIndex(d=>d.year===pedido.year)
-  dist_membro.dist[yearIndex] = current_dist_membro
-  await distAnualRef.doc(current_dist.id).set(current_dist, {merge: true})
-  .catch(err => {
-    res.json({
-        error: true,
-        msg: String(err)
-    })
-  })
-
-  await grupos_ref.doc(pedido.grupo_id).collection("membros").doc(dist_membro.id).set(dist_membro, {merge: true})
+  await grupos_ref.doc(pedido.grupo_id).set({
+    dist: {
+      [pedido.year]: dist_data
+    }
+  }, {merge: true})
+  
+  await grupos_ref.doc(pedido.grupo_id).collection("membros").doc(dist_membro.id).set({
+    [pedido.year]: current_dist_membro
+  }, {merge: true})
   .catch(err => {
     res.json({
         error: true,
@@ -1209,14 +1216,59 @@ app.post("/api/setArtigoFaturado", jwtCheck,async (req, res) => {
   })
 })
 
+// const fixBug = async ()=>{
+
+//   const grupos = await grupos_ref.get()
+//   grupos.docs.forEach(async d=>{
+//      const val = await grupos_ref.doc(d.id).collection("dist").listDocuments()
+//      val.map((val) => {
+//       val.delete()
+//   })
+    // const {dist} = d.data()
+    // const distData = await distAnualRef.doc(dist).get()
+    // const {anual, total} = distData.data()
+    // await grupos_ref.doc(d.id).set({
+    //   dist: {
+    //     "2021":{
+    //       data: anual,
+    //       total,
+    //     },
+    //     "2022": {
+    //       data: {
+    //         "m1": 0,
+    //         "m2": 0,
+    //         "m3": 0,
+    //         "m4": 0,
+    //         "m5": 0,
+    //         "m6": 0,
+    //         "m7": 0,
+    //         "m8": 0,
+    //         "m9": 0,
+    //         "m10": 0,
+    //         "m11": 0,
+    //         "m12": 0,
+    //       },
+    //       total: 0
+    //     }
+    //   }
+    // },  {merge: true})
+//   })
+// }
+
+// fixBug()
 app.post("/api/novo_grupo", jwtCheck,async (req, res) => {
   let grupo = req.body.grupo;
   const year = new Date().getFullYear()
 
-  const dist = await distAnualRef.add({
-    grupo: grupo.abrv,
-    year,
-    anual: {
+  const new_group = await grupos_ref.add(grupo)
+  .catch(err => {
+    res.json({
+      error: true,
+      msg: String(err)
+    })
+  })
+  grupos_ref.doc(new_group.id).collection("dist").add({
+    dist: {
       "m1": 0,
       "m2": 0,
       "m3": 0,
@@ -1230,23 +1282,14 @@ app.post("/api/novo_grupo", jwtCheck,async (req, res) => {
       "m11": 0,
       "m12": 0,
     },
-    total: 0
+    total: 0, 
+    year
   })
 
-  const new_group = await grupos_ref.add({
-    ...grupo, 
-    dist: dist.id
-  })
-  .catch(err => {
-    res.json({
-        error: true,
-        msg: String(err)
-    })
-  })
   grupo.membros.forEach(async m=>{
     await grupos_ref.doc(new_group.id).collection("membros").add({
       name: m,
-      dist: [{
+      [year]: {
         "m1": 0,
         "m2": 0,
         "m3": 0,
@@ -1260,16 +1303,13 @@ app.post("/api/novo_grupo", jwtCheck,async (req, res) => {
         "m11": 0,
         "m12": 0,
         total: 0,
-        year
-      }]
+      }
     })
     .catch(err => {
-      res.json({
-          error: true,
-          msg: String(err)
-      })
+      return true
     })
   })
+  
   res.json({
     error: false
   })

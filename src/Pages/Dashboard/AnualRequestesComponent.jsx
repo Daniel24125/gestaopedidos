@@ -11,10 +11,7 @@ const AnualRequestesComponent = () => {
         isFetching: fetchingPedidosAnual
     } = useGetPedidosAnual()
    
-    const isLoading = React.useMemo(() => {
-        return  fetchingPedidosAnual
-    }, [fetchingPedidosAnual])
-
+  
     React.useEffect(()=>{
         let tempDatasets=[]
         if(!fetchingPedidosAnual){

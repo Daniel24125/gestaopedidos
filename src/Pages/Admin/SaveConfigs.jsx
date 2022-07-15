@@ -9,7 +9,6 @@ const SaveConfigs = ({
 }) => {
 
     const {
-        data: result, 
         isFetching: saveConfigFetching,
     } = useSaveConfig(configs)
 

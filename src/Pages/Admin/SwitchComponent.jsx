@@ -14,6 +14,7 @@ const SwitchComponent = ()=>{
     const AddGroup = loadable(() => import('../AddGroup/AddGroup'))
     const EmpresasForm = loadable(() => import('../EmpresasForm/EmpresasForm'))
     
+
     return <Switch location={location} key={location.pathname}>
         <Route path="/dashboard" exact render={
           ()=>{

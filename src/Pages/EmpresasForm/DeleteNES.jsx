@@ -9,7 +9,6 @@ const DeleteNES = ({
     setDeleteNE
 }) => {
     const {
-        data: result, 
         isFetching: deleteFetching,
     } = useDeleteNES(id)
 

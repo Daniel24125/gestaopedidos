@@ -106,33 +106,37 @@ export default class GruposRepository  {
         return response.then(res =>res.json())
     }
 
-    getDistAnual = (accessToken,year) =>{
+    getDistAnual = (accessToken,selectedYear) =>{
         let url = this.apiBaseUrl().toString()
         url += `getDistAnual`
         const response =  fetch(url,{
             method: "POST", 
             headers:{
-            Authorization: accessToken ? `Bearer ${accessToken}`: "",
-            "content-type": "application/json", 
-            },
-            body: JSON.stringify({year}),
+                Authorization: accessToken ? `Bearer ${accessToken}`: "",
+                "content-type": "application/json", 
+                },
+            body: JSON.stringify({
+                selectedYear
+            }),
             json: true
         })
         return response.then(res =>res.json())
     }
 
-    downloadDistCum = (accessToken) =>{
+    downloadDistCum = (accessToken, selectedYear) =>{
         let url = this.apiBaseUrl().toString()
         url += `downloadDistCum`
+        console.log(selectedYear)
         const response =  fetch(url,{
-            method: "GET", 
+            method: "POST", 
             headers:{
                 Authorization: accessToken ? `Bearer ${accessToken}`: "",
             },
+            body: JSON.stringify({selectedYear: String(selectedYear)})
         })
         return response.then(res =>res.blob())
     }
-    downloadDistCumGrupo = (accessToken, grupoID) =>{
+    downloadDistCumGrupo = (accessToken, grupoID, selectedYear) =>{
         let url = this.apiBaseUrl().toString()
         url += `downloadDistCumGrupo`
         const response =  fetch(url,{
@@ -141,7 +145,7 @@ export default class GruposRepository  {
                 Authorization: accessToken ? `Bearer ${accessToken}`: "",
                 "content-type": "application/json",
             },
-            body: JSON.stringify({grupoID}),
+            body: JSON.stringify({grupoID,selectedYear: String(selectedYear)}),
             json: true
         })
         return response.then(res =>res.blob())

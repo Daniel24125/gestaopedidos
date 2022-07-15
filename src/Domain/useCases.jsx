@@ -772,12 +772,12 @@ retry: false,
     })
 }
 
-export const useDownloadDistCum = () =>{
+export const useDownloadDistCum = (selectedYear) =>{
   const grupos = Container.get(Grupos)
   return useQuery({
       queryKey: ['download_dist_cum'],
       queryFn: async () => {
-          const info =  await grupos.downloadDistCum(accessToken)
+          const info =  await grupos.downloadDistCum(accessToken, selectedYear)
           return info
       },
       config: {
@@ -791,12 +791,12 @@ retry: false,
 }
 
 
-export const useDownloadDistCumGrupo = (grupoID) =>{
+export const useDownloadDistCumGrupo = (grupoID, selectedYear) =>{
   const grupos = Container.get(Grupos)
   return useQuery({
       queryKey: ['download_dist_cum_grupo'],
       queryFn: async () => {
-          const info =  await grupos.downloadDistCumGrupo(accessToken,grupoID)
+          const info =  await grupos.downloadDistCumGrupo(accessToken,grupoID, selectedYear)
           return info
       },
       config: {

@@ -96,7 +96,6 @@ const PedidosPage = () => {
 
 
     const {
-        data: empresas, 
         isFetching: fetchingEmpresas, 
     } = useGetFornecedores()
 
@@ -106,6 +105,7 @@ const PedidosPage = () => {
             setPedidosList(pedidos)
         }
     }, [fetchingPedidos,fetchingEmpresas])
+
 
     if((fetchingPedidos || !pedidosList) && !isRefetch) return <Loading msg="A carregar os pedidos" />
 
@@ -193,6 +193,7 @@ const PedidosPage = () => {
                 </Button>}
                 </DialogActions>
             </Dialog> 
+
             <Dialog open={openDelete}  onClose={()=>{
                 setOpenDelete(false)
             }} aria-labelledby="simple-dialog-title">
@@ -218,6 +219,7 @@ const PedidosPage = () => {
                 </DialogActions>
 
             </Dialog>
+            
             <Paper className="pedidosHeader">
                 <div className="searchContainer">
                     <SearchComponent setPedidosList={setPedidosList} refetch={refetch}/>
@@ -266,14 +268,13 @@ const PedidosPage = () => {
                 <Table size="small">
                     <TableHead>
                         <TableRow >
-                            {/* {showSelectPedidos && <TableCell ></TableCell>} */}
                             <TableCell ></TableCell>
                             <TableCell ></TableCell>
                             <TableCell style={{color: "#878787"}} >ID Pedido</TableCell>
                             <TableCell style={{color: "#878787"}} >Data Pedido</TableCell>
                             <TableCell align="center" style={{color: "#878787"}} >Rúbrica</TableCell>
-                            {/* <TableCell style={{color: "#878787"}} >Remetente</TableCell> */}
                             <TableCell style={{color: "#878787"}} >Grupo</TableCell>
+                            <TableCell style={{color: "#878787"}} >Responsável</TableCell>
                             <TableCell style={{color: "#878787"}} >Empresa</TableCell>
                             <TableCell style={{color: "#878787"}} >Valor Total s/ IVA</TableCell>
                             <TableCell style={{color: "#878787"}} >Fatura</TableCell>
@@ -318,15 +319,16 @@ const PedidosPage = () => {
                                                 {Rubricas[p.rubrica.icon]()}
                                             </Tooltip>
                                         </TableCell>
-                                        {/* <TableCell  component="th" scope="row">
-                                            {p.remetente}
-                                        </TableCell> */}
+                                 
                                         <TableCell  component="th" scope="row">
                                             <Tooltip title={p.grupo.length < 30? "":p.grupo}>
                                                 <Typography>
                                                     {p.grupo.length > 30? `${p.grupo.substring(0,30)}...`: p.grupo}
                                                 </Typography>
                                             </Tooltip>
+                                        </TableCell>
+                                        <TableCell  component="th" scope="row">
+                                            {p.responsavel}
                                         </TableCell>
                                         <TableCell  component="th" scope="row">
                                             <Tooltip title={p.empresa.length < 30? "":p.empresa}>

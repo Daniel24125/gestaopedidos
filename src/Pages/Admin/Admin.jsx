@@ -15,14 +15,16 @@ import AllInboxIcon from '@material-ui/icons/AllInbox';
 import GroupIcon from '@material-ui/icons/Group';
 
 const appBarHeight = 65
-const Nav = loadable(() => import('.//Nav'))
+const Nav = loadable(() => import('./Nav'))
 const Footer = loadable(() => import('./Footer'))
 
 const Admin = () => {
     const [hideMenu, setHideMenu] = React.useState(true) 
-    const closeMenu = ()=> setHideMenu(true)
-    const { getAccessTokenSilently } = useAuth0();
     const [accessToken, setAccessToken] = React.useState(null) 
+    const { getAccessTokenSilently } = useAuth0();
+    
+    const closeMenu = ()=> setHideMenu(true)
+
     const history = React.useMemo(() => {
         return createBrowserHistory()
       }, [])
@@ -46,13 +48,14 @@ const Admin = () => {
      }, [])
      
      useSetAccessToken(accessToken) 
-     
+
     return (
         <BrowserRouter history={history}>
             {accessToken && <>
                 <Drawer
                     variant="temporary"
                     anchor="left"
+                    onClose={closeMenu}
                     open={!hideMenu}
                     className="drawerContainer">
                         <div className="drawerHeader">
