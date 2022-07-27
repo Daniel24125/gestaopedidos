@@ -754,7 +754,7 @@ app.post("/api/downloadPDF",jwtCheck, async (req, res)=>{
       })
     })
     retrieved_pedido = retrieved_pedido.data()
-    empresa = await empresas_ref.doc(retrieved_pedido.empresa_id).get()
+    empresa = await empresas_ref.where("empresa", "==", retrieved_pedido.empresa).get()
     .catch(err=>{
       console.log(err)
       res.json({
@@ -762,7 +762,8 @@ app.post("/api/downloadPDF",jwtCheck, async (req, res)=>{
         msg: String(err)
       })
     })
-    empresa = empresa.data()
+    empresa = empresa.docs.map(d=>d.data())[0]
+    console.log(empresa)
    
     pedido.remetentes = [...pedido.remetentes, ...Object.values(retrieved_pedido.remetentes)]
     pedido = {
@@ -917,7 +918,7 @@ app.post("/api/downloadDistCumGrupo", jwtCheck,async (req, res)=>{
   const parsedYear = Boolean(selectedYear) ? selectedYear: new Date().getFullYear().toString()
 
   const grupo = await grupos_ref.doc(grupoID).get()
-  console.log(req.body)
+ 
  
   const selected_months =[]
   months.slice(0,new Date().getMonth()).forEach(m=>{
