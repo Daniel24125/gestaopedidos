@@ -18,7 +18,7 @@ admin.initializeApp({
 
 app.use(cors({
   origin: [
-      "https://gestaopedidos.herokuapp.com",
+      "https://gestao-pedidos-ceb.onrender.com",
       "http://localhost:3000",
   ],
   methods: "GET,PATCH,POST,DELETE",
@@ -763,7 +763,6 @@ app.post("/api/downloadPDF",jwtCheck, async (req, res)=>{
       })
     })
     empresa = empresa.docs.map(d=>d.data())[0]
-    console.log(empresa)
    
     pedido.remetentes = [...pedido.remetentes, ...Object.values(retrieved_pedido.remetentes)]
     pedido = {
@@ -1890,9 +1889,9 @@ app.post("/api/editPedido",jwtCheck, async (req, res) => {
 });
 
 
-// app.get('*', (req, res, next) => {
-//   res.sendFile(path.join(__dirname, "/build/index.html"))     
-// });
+app.get('*', (req, res, next) => {
+  res.sendFile(path.join(__dirname, "/build/index.html"))     
+});
 
 app.listen(port, () => {
   console.log("App is listenning o port " + port);
