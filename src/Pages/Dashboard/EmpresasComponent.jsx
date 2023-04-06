@@ -27,7 +27,7 @@ const EmpresasComponent = () => {
         "PM": ()=> <WidgetsIcon style={{color: "#3498db"}}/>,
         "PR":()=>  <WhatshotIcon style={{color: "#e74c3c"}}/>,
         "SEQ": ()=> <GestureIcon style={{color: "#9b59b6"}}/>, 
-         "SEQ": ()=> <BuildIcon style={{color: "#f39c12"}}/>, 
+         "REP": ()=> <BuildIcon style={{color: "#f39c12"}}/>, 
     }
 
     return (
