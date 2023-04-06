@@ -15,6 +15,7 @@ import Skeleton from '@material-ui/lab/Skeleton'
 import WidgetsIcon from '@material-ui/icons/Widgets';
 import WhatshotIcon from '@material-ui/icons/Whatshot';
 import GestureIcon from '@material-ui/icons/Gesture';
+import BuildIcon from '@material-ui/icons/Build';
 
 const EmpresasComponent = () => {
     const {
@@ -26,6 +27,7 @@ const EmpresasComponent = () => {
         "PM": ()=> <WidgetsIcon style={{color: "#3498db"}}/>,
         "PR":()=>  <WhatshotIcon style={{color: "#e74c3c"}}/>,
         "SEQ": ()=> <GestureIcon style={{color: "#9b59b6"}}/>, 
+         "SEQ": ()=> <BuildIcon style={{color: "#f39c12"}}/>, 
     }
 
     return (
